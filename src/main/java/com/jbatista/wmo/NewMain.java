@@ -29,14 +29,16 @@ public class NewMain {
 
         // start
         final Instrument instrument = new Instrument("TEST");
+        final byte[] buffer = new byte[4];
 
         new Thread(() -> {
             try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
-                sourceDataLine.open(new AudioFormat(44100, 8, 1, true, true));
+                sourceDataLine.open(new AudioFormat(44100, 16, 2, true, true));
                 sourceDataLine.start();
 
                 while (true) {
-                    sourceDataLine.write(instrument.getByteArray(2), 0, 2);
+                    instrument.getBytes(buffer);
+                    sourceDataLine.write(buffer, 0, 4);
                 }
             } catch (LineUnavailableException ex) {
                 Logger.getLogger(NewMain.class.getName()).log(Level.SEVERE, null, ex);
@@ -45,6 +47,10 @@ public class NewMain {
 
         instrument.pressKey();
         Thread.sleep(2000);
+        instrument.releaseKey();
+        Thread.sleep(1000);
+        instrument.pressKey();
+        Thread.sleep(1000);
         instrument.releaseKey();
         Thread.sleep(1000);
         instrument.pressKey();

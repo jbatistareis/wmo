@@ -15,6 +15,8 @@ public class Instrument {
     private double sustain = 1;
     private double release = 0.5;
 
+    private byte frameByte;
+
     private double attackFrames;
     private double attackStep;
     private double attackAmplitude;
@@ -41,9 +43,7 @@ public class Instrument {
     }
 
     // reacts to key press, apply envelope
-    public byte[] getByteArray(int size) {
-        final byte[] data = new byte[size];
-
+    public void getBytes(byte[] buffer) {
         switch (keyState) {
             // setup
             case HIT:
@@ -68,11 +68,17 @@ public class Instrument {
                 break;
 
             case ATTACK:
-                for (int i = 0; i < size; i++) {
-                    data[i] = (byte) ((attackAmplitude = attackAmplitude + attackStep) * Math.sin((2 * Math.PI) * (carrierFrequency / sampleRate) * elapsed++));
-                    attackFrames--;
-                }
-                keyState = (attackFrames > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
+                frameByte = (byte) oscilator((attackAmplitude = attackAmplitude + attackStep), (carrierFrequency / sampleRate), elapsed++);
+
+                // L
+                buffer[0] = frameByte;
+                buffer[1] = frameByte;
+
+                // R
+                buffer[2] = frameByte;
+                buffer[3] = frameByte;
+
+                keyState = (attackFrames-- > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
 
                 break;
 
@@ -82,28 +88,45 @@ public class Instrument {
                 break;
 
             case SUSTAIN:
-                for (int i = 0; i < size; i++) {
-                    data[i] = (byte) (sustainAmplitude * Math.sin((2 * Math.PI) * (carrierFrequency / sampleRate) * elapsed++));
-                }
+                frameByte = (byte) oscilator(sustainAmplitude, (carrierFrequency / sampleRate), elapsed++);
+
+                // L
+                buffer[0] = frameByte;
+                buffer[1] = frameByte;
+
+                // R
+                buffer[2] = frameByte;
+                buffer[3] = frameByte;
 
                 break;
 
             case RELEASE:
-                keyState = (releaseFrames > 0) ? KeyState.RELEASE : KeyState.IDLE;
-                releaseFrames--;
+                frameByte = (byte) oscilator((releaseAmplitude = releaseAmplitude - releaseStep), (carrierFrequency / sampleRate), elapsed++);
+
+                // L
+                buffer[0] = frameByte;
+                buffer[1] = frameByte;
+
+                // R
+                buffer[2] = frameByte;
+                buffer[3] = frameByte;
+
+                keyState = (releaseFrames-- > 0) ? KeyState.RELEASE : KeyState.IDLE;
 
                 break;
 
             // reset
             case IDLE:
-                for (int i = 0; i < size; i++) {
-                    data[i] = 0;
-                }
+                // L
+                buffer[0] = 0;
+                buffer[1] = 0;
+
+                // R
+                buffer[2] = 0;
+                buffer[3] = 0;
 
                 break;
         }
-
-        return data;
     }
 
     public void pressKey() {
@@ -116,6 +139,10 @@ public class Instrument {
 
     private double lerp(double start, double end, double factor) {
         return start + factor * (end - start);
+    }
+
+    private double oscilator(double amplitude, double phi, long frame) {
+        return amplitude * Math.sin(2 * Math.PI * phi * frame);
     }
 
 }
