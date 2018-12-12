@@ -10,15 +10,29 @@ public class Instrument {
     private double carrierFrequency = 440;
     private double amplitude = 20;
 
-    private double attack = 1;
-    private double decay = 1;
+    private double attack = 0.5;
+    private double decay = 0;
     private double sustain = 1;
-    private double release = 1;
+    private double release = 0.5;
+
+    private double attackFrames;
+    private double attackStep;
+    private double attackAmplitude;
+
+    private double decayFrames;
+    private double decayStep;
+    private double decayAmplitude;
+
+    private double sustainAmplitude;
+
+    private double releaseFrames;
+    private double releaseStep;
+    private double releaseAmplitude;
 
     private long elapsed = 0;
 
     private static enum KeyState {
-        PRESSED, RELEASE, IDLE
+        HIT, ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
     }
     private KeyState keyState = KeyState.IDLE;
 
@@ -31,28 +45,57 @@ public class Instrument {
         final byte[] data = new byte[size];
 
         switch (keyState) {
-            // attack, decay, sustain
-            case PRESSED:
+            // setup
+            case HIT:
+                elapsed = 0;
+
+                sustainAmplitude = lerp(0, amplitude, sustain);
+
+                attackFrames = sampleRate * attack;
+                attackStep = amplitude / attackFrames;
+                attackAmplitude = 0;
+
+                decayFrames = sampleRate * decay;
+                decayStep = (amplitude - sustainAmplitude) / decayFrames;
+                decayAmplitude = amplitude;
+
+                releaseFrames = sampleRate * release;
+                releaseStep = sustainAmplitude / releaseFrames;
+                releaseAmplitude = sustainAmplitude;
+
+                keyState = (attackFrames > 0) ? KeyState.ATTACK : KeyState.SUSTAIN;
+
+                break;
+
+            case ATTACK:
                 for (int i = 0; i < size; i++) {
-                    data[i] = (byte) (amplitude * Math.sin((2 * Math.PI) * (carrierFrequency / sampleRate) * elapsed++));
+                    data[i] = (byte) ((attackAmplitude = attackAmplitude + attackStep) * Math.sin((2 * Math.PI) * (carrierFrequency / sampleRate) * elapsed++));
+                    attackFrames--;
+                }
+                keyState = (attackFrames > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
+
+                break;
+
+            case DECAY:
+                keyState = (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
+
+                break;
+
+            case SUSTAIN:
+                for (int i = 0; i < size; i++) {
+                    data[i] = (byte) (sustainAmplitude * Math.sin((2 * Math.PI) * (carrierFrequency / sampleRate) * elapsed++));
                 }
 
                 break;
 
-            // release
             case RELEASE:
-                for (int i = 0; i < size; i++) {
-                    data[i] = 0;
-                }
-
-                // after envelope
-                keyState = KeyState.IDLE;
+                keyState = (releaseFrames > 0) ? KeyState.RELEASE : KeyState.IDLE;
+                releaseFrames--;
 
                 break;
 
             // reset
             case IDLE:
-                elapsed = 0;
                 for (int i = 0; i < size; i++) {
                     data[i] = 0;
                 }
@@ -64,11 +107,15 @@ public class Instrument {
     }
 
     public void pressKey() {
-        keyState = KeyState.PRESSED;
+        keyState = KeyState.HIT;
     }
 
     public void releaseKey() {
         keyState = KeyState.RELEASE;
+    }
+
+    private double lerp(double start, double end, double factor) {
+        return start + factor * (end - start);
     }
 
 }
