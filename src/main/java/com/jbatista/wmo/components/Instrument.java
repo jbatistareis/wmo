@@ -10,10 +10,10 @@ public class Instrument {
     private double carrierFrequency = 440;
     private double amplitude = 20;
 
-    private double attack = 0.5;
+    private double attack = 0.1;
     private double decay = 0;
     private double sustain = 1;
-    private double release = 0.5;
+    private double release = 0.1;
 
     private byte frameByte;
 
@@ -142,7 +142,23 @@ public class Instrument {
     }
 
     private double oscilator(double amplitude, double phi, long frame) {
-        return amplitude * Math.sin(2 * Math.PI * phi * frame);
+        switch (waveForm) {
+            case SINE:
+                return amplitude * Math.sin(2 * Math.PI * phi * frame);
+            case SQUARE:
+                return amplitude * Math.signum(Math.sin(2 * Math.PI * phi * frame));
+            case TRIANGLE:
+                return amplitude * (2 / Math.PI) * Math.asin(Math.sin(2 * Math.PI * phi * frame));
+            case SAWTOOTH:
+                // solve the mistery
+                return 0;
+            default:
+                throw new AssertionError(waveForm.name());
+        }
+    }
+
+    private double modulator() {
+        return 0;
     }
 
 }
