@@ -29,7 +29,6 @@ public class NewMain {
 
         // start
         final Instrument instrument = new Instrument("TEST");
-        final byte[] buffer = new byte[4];
 
         new Thread(() -> {
             try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
@@ -37,8 +36,7 @@ public class NewMain {
                 sourceDataLine.start();
 
                 while (true) {
-                    instrument.getBytes(buffer);
-                    sourceDataLine.write(buffer, 0, 4);
+                    sourceDataLine.write(instrument.getFrame(), 0, 4);
                 }
             } catch (LineUnavailableException ex) {
                 Logger.getLogger(NewMain.class.getName()).log(Level.SEVERE, null, ex);

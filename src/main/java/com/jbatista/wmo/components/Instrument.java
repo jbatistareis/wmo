@@ -4,18 +4,24 @@ import com.jbatista.wmo.WaveForm;
 
 public class Instrument {
 
+    private static final double _2xPI = 2 * Math.PI;
+    private static final double _2dPI = 2 / Math.PI;
+
+    private final byte[] buffer = new byte[]{0, 0, 0, 0};
+
     private String name = "Instrument";
     private WaveForm waveForm = WaveForm.SINE;
     private double sampleRate = 44100;
     private double carrierFrequency = 440;
-    private double amplitude = 20;
+    // max 32768 (half of 16bit)
+    private double amplitude = 15000;
 
     private double attack = 0.1;
     private double decay = 0;
     private double sustain = 1;
     private double release = 0.1;
 
-    private byte frameByte;
+    private short frameData;
 
     private double attackFrames;
     private double attackStep;
@@ -43,7 +49,7 @@ public class Instrument {
     }
 
     // reacts to key press, apply envelope
-    public void getBytes(byte[] buffer) {
+    public byte[] getFrame() {
         switch (keyState) {
             // setup
             case HIT:
@@ -68,15 +74,15 @@ public class Instrument {
                 break;
 
             case ATTACK:
-                frameByte = (byte) oscilator((attackAmplitude = attackAmplitude + attackStep), (carrierFrequency / sampleRate), elapsed++);
+                frameData = (short) oscilator((attackAmplitude = attackAmplitude + attackStep), (carrierFrequency / sampleRate), elapsed++);
 
                 // L
-                buffer[0] = frameByte;
-                buffer[1] = frameByte;
+                buffer[0] = (byte) (frameData >> 8);
+                buffer[1] = (byte) frameData;
 
                 // R
-                buffer[2] = frameByte;
-                buffer[3] = frameByte;
+                buffer[2] = (byte) (frameData >> 8);
+                buffer[3] = (byte) frameData;
 
                 keyState = (attackFrames-- > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
 
@@ -88,28 +94,28 @@ public class Instrument {
                 break;
 
             case SUSTAIN:
-                frameByte = (byte) oscilator(sustainAmplitude, (carrierFrequency / sampleRate), elapsed++);
+                frameData = (short) oscilator(sustainAmplitude, (carrierFrequency / sampleRate), elapsed++);
 
                 // L
-                buffer[0] = frameByte;
-                buffer[1] = frameByte;
+                buffer[0] = (byte) (frameData >> 8);
+                buffer[1] = (byte) frameData;
 
                 // R
-                buffer[2] = frameByte;
-                buffer[3] = frameByte;
+                buffer[2] = (byte) (frameData >> 8);
+                buffer[3] = (byte) frameData;
 
                 break;
 
             case RELEASE:
-                frameByte = (byte) oscilator((releaseAmplitude = releaseAmplitude - releaseStep), (carrierFrequency / sampleRate), elapsed++);
+                frameData = (short) oscilator((releaseAmplitude = releaseAmplitude - releaseStep), (carrierFrequency / sampleRate), elapsed++);
 
                 // L
-                buffer[0] = frameByte;
-                buffer[1] = frameByte;
+                buffer[0] = (byte) (frameData >> 8);
+                buffer[1] = (byte) frameData;
 
                 // R
-                buffer[2] = frameByte;
-                buffer[3] = frameByte;
+                buffer[2] = (byte) (frameData >> 8);
+                buffer[3] = (byte) frameData;
 
                 keyState = (releaseFrames-- > 0) ? KeyState.RELEASE : KeyState.IDLE;
 
@@ -127,6 +133,8 @@ public class Instrument {
 
                 break;
         }
+
+        return buffer;
     }
 
     public void pressKey() {
@@ -141,14 +149,14 @@ public class Instrument {
         return start + factor * (end - start);
     }
 
-    private double oscilator(double amplitude, double phi, long frame) {
+    private double oscilator(double amplitude, double frequency, long frame) {
         switch (waveForm) {
             case SINE:
-                return amplitude * Math.sin(2 * Math.PI * phi * frame);
+                return amplitude * Math.sin(_2xPI * frequency * frame);
             case SQUARE:
-                return amplitude * Math.signum(Math.sin(2 * Math.PI * phi * frame));
+                return amplitude * Math.signum(Math.sin(_2xPI * frequency * frame));
             case TRIANGLE:
-                return amplitude * (2 / Math.PI) * Math.asin(Math.sin(2 * Math.PI * phi * frame));
+                return amplitude * _2dPI * Math.asin(Math.sin(_2xPI * frequency * frame));
             case SAWTOOTH:
                 // solve the mistery
                 return 0;
