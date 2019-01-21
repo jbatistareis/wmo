@@ -1,6 +1,7 @@
 package com.jbatista.wmo;
 
 import com.jbatista.wmo.components.Instrument;
+import com.jbatista.wmo.components.Key;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
@@ -28,7 +29,7 @@ public class NewMain {
         System.out.println();
 
         // start
-        final Instrument instrument = new Instrument("TEST");
+        final Key key = new Key("A4", new Instrument());
 
         new Thread(() -> {
             try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
@@ -36,22 +37,22 @@ public class NewMain {
                 sourceDataLine.start();
 
                 while (true) {
-                    sourceDataLine.write(instrument.getFrame(), 0, 4);
+                    sourceDataLine.write(key.getFrame(), 0, 4);
                 }
             } catch (LineUnavailableException ex) {
                 Logger.getLogger(NewMain.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
 
-        instrument.pressKey();
+        key.pressKey();
         Thread.sleep(2000);
-        instrument.releaseKey();
+        key.releaseKey();
         Thread.sleep(1000);
-        instrument.pressKey();
+        key.pressKey();
         Thread.sleep(1000);
-        instrument.releaseKey();
+        key.releaseKey();
         Thread.sleep(1000);
-        instrument.pressKey();
+        key.pressKey();
 
         // sourceDataLine.write(data, 0, data.length);
     }
