@@ -1,4 +1,4 @@
 # Wave Magic Orchestra
 ###### (Yes, really)
 
-An atempt to make a FM sound synthsizer library
+An atempt to build a FM sound synthsizer library
