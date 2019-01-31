@@ -11,7 +11,7 @@ public class Key {
     private final String name;
     private final Instrument instrument;
 
-    private final WaveForm waveForm = WaveForm.SINE;
+    private final WaveForm waveForm = WaveForm.SAWTOOTH;
     private double sampleRate = 44100;
     private double carrierFrequency = 440;
     // max 32768 (half of 16bit)
@@ -76,7 +76,7 @@ public class Key {
                 break;
 
             case ATTACK:
-                frameData = (short) oscilator((attackAmplitude = attackAmplitude + attackStep), (carrierFrequency / sampleRate), elapsed++);
+                frameData = (short) oscilator((attackAmplitude = attackAmplitude + attackStep), sampleRate, carrierFrequency, elapsed++);
 
                 // L
                 buffer[0] = (byte) (frameData >> 8);
@@ -96,7 +96,7 @@ public class Key {
                 break;
 
             case SUSTAIN:
-                frameData = (short) oscilator(sustainAmplitude, (carrierFrequency / sampleRate), elapsed++);
+                frameData = (short) oscilator(sustainAmplitude, sampleRate, carrierFrequency, elapsed++);
 
                 // L
                 buffer[0] = (byte) (frameData >> 8);
@@ -109,7 +109,7 @@ public class Key {
                 break;
 
             case RELEASE:
-                frameData = (short) oscilator((releaseAmplitude = releaseAmplitude - releaseStep), (carrierFrequency / sampleRate), elapsed++);
+                frameData = (short) oscilator((releaseAmplitude = releaseAmplitude - releaseStep), sampleRate, carrierFrequency, elapsed++);
 
                 // L
                 buffer[0] = (byte) (frameData >> 8);
@@ -151,17 +151,16 @@ public class Key {
         return start + factor * (end - start);
     }
 
-    private double oscilator(double amplitude, double frequency, long frame) {
+    private double oscilator(double amplitude, double sampleRate, double carrierFrequency, long frame) {
         switch (waveForm) {
             case SINE:
-                return amplitude * Math.sin(_2xPI * frequency * frame);
+                return amplitude * Math.sin(_2xPI * (carrierFrequency / sampleRate) * frame);
             case SQUARE:
-                return amplitude * Math.signum(Math.sin(_2xPI * frequency * frame));
+                return amplitude * Math.signum(Math.sin(_2xPI * (carrierFrequency / sampleRate) * frame));
             case TRIANGLE:
-                return amplitude * _2dPI * Math.asin(Math.sin(_2xPI * frequency * frame));
+                return amplitude * _2dPI * Math.asin(Math.sin(_2xPI * (carrierFrequency / sampleRate) * frame));
             case SAWTOOTH:
-                // solve the mistery
-                return 0;
+                return amplitude * ((frame + sampleRate / carrierFrequency * 2) % (sampleRate / carrierFrequency)) / (sampleRate / carrierFrequency) - amplitude / 2;
             default:
                 throw new AssertionError(waveForm.name());
         }
