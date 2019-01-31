@@ -11,7 +11,7 @@ public class Key {
     private final String name;
     private final Instrument instrument;
 
-    private final WaveForm waveForm = WaveForm.SAWTOOTH;
+    private final WaveForm waveForm = WaveForm.SINE;
     private double sampleRate = 44100;
     private double carrierFrequency = 440;
     // max 32768 (half of 16bit)
@@ -76,7 +76,7 @@ public class Key {
                 break;
 
             case ATTACK:
-                frameData = (short) oscilator((attackAmplitude = attackAmplitude + attackStep), sampleRate, carrierFrequency, elapsed++);
+                frameData = (short) oscilator((attackAmplitude += attackStep), sampleRate, carrierFrequency, elapsed++);
 
                 // L
                 buffer[0] = (byte) (frameData >> 8);
@@ -91,7 +91,17 @@ public class Key {
                 break;
 
             case DECAY:
-                keyState = (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
+                frameData = (short) oscilator((decayAmplitude -= decayStep), sampleRate, carrierFrequency, elapsed++);
+                
+                // L
+                buffer[0] = (byte) (frameData >> 8);
+                buffer[1] = (byte) frameData;
+
+                // R
+                buffer[2] = (byte) (frameData >> 8);
+                buffer[3] = (byte) frameData;
+                
+                keyState = (decayFrames-- > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
 
                 break;
 
@@ -109,7 +119,7 @@ public class Key {
                 break;
 
             case RELEASE:
-                frameData = (short) oscilator((releaseAmplitude = releaseAmplitude - releaseStep), sampleRate, carrierFrequency, elapsed++);
+                frameData = (short) oscilator((releaseAmplitude -= releaseStep), sampleRate, carrierFrequency, elapsed++);
 
                 // L
                 buffer[0] = (byte) (frameData >> 8);
