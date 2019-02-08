@@ -12,7 +12,7 @@ public class Instrument {
     private final byte[] buffer = new byte[]{0, 0, 0, 0};
 
     private final Set<Key> keys = new HashSet<>();
-    private final Iterator<Key> keysIterator = keys.iterator();
+    private Iterator<Key> keysIterator;
     private Key key;
 
     private WaveForm waveForm = WaveForm.SINE;
@@ -103,11 +103,18 @@ public class Instrument {
     // </editor-fold>
 
     public byte[] getFrame() {
-        keys.forEach(key -> {
+        keysIterator = keys.iterator();
+        while (keysIterator.hasNext()) {
+            key = keysIterator.next();
+
             key.calculate();
             frameData += Util.oscillator(waveForm, key.getCalculatedAmplitude(), sampleRate, key.getFrequency(), key.getElapsed());
             frameData /= keys.size();
-        });
+
+            if (key.getKeyState().equals(Key.KeyState.IDLE)) {
+                keysIterator.remove();
+            }
+        }
 
         // TODO channel stuff
         // L
@@ -119,13 +126,6 @@ public class Instrument {
         buffer[3] = (byte) frameData;
 
         frameData = 0;
-
-        while (keysIterator.hasNext()) {
-            key = keysIterator.next();
-            if (key.getKeyState().equals(Key.KeyState.IDLE)) {
-                keysIterator.remove();
-            }
-        }
 
         return buffer;
     }
