@@ -1,5 +1,7 @@
 package com.jbatista.wmo.components;
 
+import com.jbatista.wmo.WaveForm;
+
 public class Key {
 
     private String name;
@@ -30,21 +32,12 @@ public class Key {
     }
     private KeyState keyState = KeyState.IDLE;
 
-    protected Key(String name, double frequency, Instrument instrument) {
-        this.name = name;
+    protected Key(double frequency, Instrument instrument) {
         this.frequency = frequency;
         this.instrument = instrument;
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Instrument getInstrument() {
         return instrument;
     }
@@ -57,35 +50,27 @@ public class Key {
         this.frequency = frequency;
     }
 
-    protected double getCalculatedAmplitude() {
-        return calculatedAmplitude;
-    }
-
-    protected long getElapsed() {
-        return elapsed;
-    }
-
     public KeyState getKeyState() {
         return keyState;
     }
     // </editor-fold>
 
     // reacts to key press, apply envelope
-    protected void calculate() {
+    protected double calculateFrame(WaveForm waveForm, double sampleRate, double amplitude) {
         switch (keyState) {
             // setup
             case HIT:
                 elapsed = 0;
 
-                sustainAmplitude = Util.lerp(0, instrument.getAmplitudeValue(), instrument.getSustain());
+                sustainAmplitude = Util.lerp(0, amplitude, instrument.getSustain());
 
                 attackFrames = instrument.getSampleRate() * instrument.getAttack();
-                attackStep = instrument.getAmplitudeValue() / attackFrames;
+                attackStep = amplitude / attackFrames;
                 attackAmplitude = 0;
 
                 decayFrames = instrument.getSampleRate() * instrument.getDecay();
-                decayStep = (instrument.getAmplitudeValue() - sustainAmplitude) / decayFrames;
-                decayAmplitude = instrument.getAmplitudeValue();
+                decayStep = (amplitude - sustainAmplitude) / decayFrames;
+                decayAmplitude = amplitude;
 
                 releaseFrames = instrument.getSampleRate() * instrument.getRelease();
                 releaseStep = sustainAmplitude / releaseFrames;
@@ -128,9 +113,12 @@ public class Key {
             // reset
             case IDLE:
                 calculatedAmplitude = 0;
+                elapsed = 0;
 
                 break;
         }
+
+        return Util.oscillator(waveForm, calculatedAmplitude, sampleRate, frequency, elapsed);
     }
 
     public void pressKey() {

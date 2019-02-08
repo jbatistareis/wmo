@@ -7,8 +7,6 @@ import java.util.Set;
 
 public class Instrument {
 
-    private String name;
-
     private final byte[] buffer = new byte[]{0, 0, 0, 0};
 
     private final Set<Key> keys = new HashSet<>();
@@ -27,19 +25,7 @@ public class Instrument {
     private double amplitudeValue = 16384;
     private short frameData = 0;
 
-    public Instrument(String name) {
-        this.name = name;
-    }
-
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public WaveForm getWaveForm() {
         return waveForm;
     }
@@ -63,10 +49,6 @@ public class Instrument {
     public void setAmplitude(double amplitude) {
         this.amplitude = amplitude;
         amplitudeValue = Util.lerp(0, 32768, amplitude);
-    }
-
-    protected double getAmplitudeValue() {
-        return amplitudeValue;
     }
 
     public double getAttack() {
@@ -107,8 +89,7 @@ public class Instrument {
         while (keysIterator.hasNext()) {
             key = keysIterator.next();
 
-            key.calculate();
-            frameData += Util.oscillator(waveForm, key.getCalculatedAmplitude(), sampleRate, key.getFrequency(), key.getElapsed());
+            frameData += key.calculateFrame(waveForm, sampleRate, amplitudeValue);
             frameData /= keys.size();
 
             if (key.getKeyState().equals(Key.KeyState.IDLE)) {
@@ -134,8 +115,8 @@ public class Instrument {
         keys.add(key);
     }
 
-    public Key buildKey(String name, double frequency) {
-        return new Key(name, frequency, this);
+    public Key buildKey(double frequency) {
+        return new Key(frequency, this);
     }
 
 }
