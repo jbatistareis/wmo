@@ -13,20 +13,21 @@ public class Instrument {
     private String name;
 
     private final byte[] buffer = new byte[]{0, 0, 0, 0};
+
     private final Set<Key> keys = new HashSet<>();
     private final Iterator<Key> keysIterator = keys.iterator();
     private Key key;
 
     private WaveForm waveForm = WaveForm.SINE;
     private double sampleRate = 44100;
-    // max 32768 (half of 16bit)
-    private double amplitude = 15000;
 
+    private double amplitude = 0.5;
     private double attack = 0.1;
     private double decay = 0;
     private double sustain = 1;
     private double release = 0.1;
 
+    private double amplitudeValue = 16384;
     private short frameData = 0;
 
     public Instrument(String name) {
@@ -64,6 +65,11 @@ public class Instrument {
 
     public void setAmplitude(double amplitude) {
         this.amplitude = amplitude;
+        amplitudeValue = Util.lerp(0, 32768, amplitude);
+    }
+
+    protected double getAmplitudeValue() {
+        return amplitudeValue;
     }
 
     public double getAttack() {

@@ -57,11 +57,11 @@ public class Key {
         this.frequency = frequency;
     }
 
-    public double getCalculatedAmplitude() {
+    protected double getCalculatedAmplitude() {
         return calculatedAmplitude;
     }
 
-    public long getElapsed() {
+    protected long getElapsed() {
         return elapsed;
     }
 
@@ -77,15 +77,15 @@ public class Key {
             case HIT:
                 elapsed = 0;
 
-                sustainAmplitude = lerp(0, instrument.getAmplitude(), instrument.getSustain());
+                sustainAmplitude = Util.lerp(0, instrument.getAmplitudeValue(), instrument.getSustain());
 
                 attackFrames = instrument.getSampleRate() * instrument.getAttack();
-                attackStep = instrument.getAmplitude() / attackFrames;
+                attackStep = instrument.getAmplitudeValue() / attackFrames;
                 attackAmplitude = 0;
 
                 decayFrames = instrument.getSampleRate() * instrument.getDecay();
-                decayStep = (instrument.getAmplitude() - sustainAmplitude) / decayFrames;
-                decayAmplitude = instrument.getAmplitude();
+                decayStep = (instrument.getAmplitudeValue() - sustainAmplitude) / decayFrames;
+                decayAmplitude = instrument.getAmplitudeValue();
 
                 releaseFrames = instrument.getSampleRate() * instrument.getRelease();
                 releaseStep = sustainAmplitude / releaseFrames;
@@ -140,10 +140,6 @@ public class Key {
 
     public void releaseKey() {
         keyState = KeyState.RELEASE;
-    }
-
-    private double lerp(double start, double end, double factor) {
-        return start + factor * (end - start);
     }
 
 }
