@@ -7,9 +7,6 @@ import java.util.Set;
 
 public class Instrument {
 
-    private static final double _2xPI = 2 * Math.PI;
-    private static final double _2dPI = 2 / Math.PI;
-
     private String name;
 
     private final byte[] buffer = new byte[]{0, 0, 0, 0};
@@ -108,10 +105,11 @@ public class Instrument {
     public byte[] getFrame() {
         keys.forEach(key -> {
             key.calculate();
-            frameData += oscilator(key.getCalculatedAmplitude(), sampleRate, key.getFrequency(), key.getElapsed());
+            frameData += Util.oscillator(waveForm, key.getCalculatedAmplitude(), sampleRate, key.getFrequency(), key.getElapsed());
             frameData /= keys.size();
         });
 
+        // TODO channel stuff
         // L
         buffer[0] = (byte) (frameData >> 8);
         buffer[1] = (byte) frameData;
@@ -138,21 +136,6 @@ public class Instrument {
 
     protected void removeKey(Key key) {
         keys.remove(key);
-    }
-
-    private double oscilator(double amplitude, double sampleRate, double frequency, long frame) {
-        switch (getWaveForm()) {
-            case SINE:
-                return amplitude * Math.sin(_2xPI * (frequency / sampleRate) * frame);
-            case SQUARE:
-                return amplitude * Math.signum(Math.sin(_2xPI * (frequency / sampleRate) * frame));
-            case TRIANGLE:
-                return amplitude * _2dPI * Math.asin(Math.sin(_2xPI * (frequency / sampleRate) * frame));
-            case SAWTOOTH:
-                return amplitude * ((frame + sampleRate / frequency * 2) % (sampleRate / frequency)) / (sampleRate / frequency) - amplitude / 2;
-            default:
-                throw new AssertionError(getWaveForm().name());
-        }
     }
 
 }
