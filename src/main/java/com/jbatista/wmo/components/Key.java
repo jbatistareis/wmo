@@ -30,7 +30,7 @@ public class Key {
     }
     private KeyState keyState = KeyState.IDLE;
 
-    public Key(String name, double frequency, Instrument instrument) {
+    protected Key(String name, double frequency, Instrument instrument) {
         this.name = name;
         this.frequency = frequency;
         this.instrument = instrument;

@@ -134,4 +134,8 @@ public class Instrument {
         keys.add(key);
     }
 
+    public Key buildKey(String name, double frequency) {
+        return new Key(name, frequency, this);
+    }
+
 }

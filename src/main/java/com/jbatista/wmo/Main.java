@@ -30,8 +30,8 @@ public class Main {
 
         // start
         final Instrument instrument = new Instrument("");
-        final Key key1 = new Key("A4", 440, instrument);
-        final Key key2 = new Key("E5", 659.25, instrument);
+        final Key key1 = instrument.buildKey("A4", 440);
+        final Key key2 = instrument.buildKey("E5", 659.25);
 
         new Thread(() -> {
             try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
