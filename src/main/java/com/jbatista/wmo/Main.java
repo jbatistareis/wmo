@@ -11,7 +11,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
-public class NewMain {
+public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         // setup
@@ -29,7 +29,9 @@ public class NewMain {
         System.out.println();
 
         // start
-        final Key key = new Key("A4", new Instrument());
+        final Instrument instrument = new Instrument("");
+        final Key key1 = new Key("A4", 440, instrument);
+        final Key key2 = new Key("E5", 659.25, instrument);
 
         new Thread(() -> {
             try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
@@ -37,24 +39,28 @@ public class NewMain {
                 sourceDataLine.start();
 
                 while (true) {
-                    sourceDataLine.write(key.getFrame(), 0, 4);
+                    sourceDataLine.write(instrument.getFrame(), 0, 4);
                 }
             } catch (LineUnavailableException ex) {
-                Logger.getLogger(NewMain.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
 
-        key.pressKey();
+        key1.pressKey();
         Thread.sleep(2000);
-        key.releaseKey();
+        
+        key1.releaseKey();
         Thread.sleep(1000);
-        key.pressKey();
+        
+        key2.pressKey();
+        Thread.sleep(2000);
+        
+        key2.releaseKey();
         Thread.sleep(1000);
-        key.releaseKey();
+        
         Thread.sleep(1000);
-        key.pressKey();
-
-        // sourceDataLine.write(data, 0, data.length);
+        key1.pressKey();
+        key2.pressKey();
     }
 
 }

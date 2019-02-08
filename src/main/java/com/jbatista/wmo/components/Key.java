@@ -1,28 +1,13 @@
 package com.jbatista.wmo.components;
 
-import com.jbatista.wmo.WaveForm;
-
 public class Key {
 
-    private static final double _2xPI = 2 * Math.PI;
-    private static final double _2dPI = 2 / Math.PI;
-
-    private final byte[] buffer = new byte[]{0, 0, 0, 0};
-    private final String name;
+    private String name;
     private final Instrument instrument;
 
-    private final WaveForm waveForm = WaveForm.SINE;
-    private double sampleRate = 44100;
-    private double carrierFrequency = 440;
-    // max 32768 (half of 16bit)
-    private double amplitude = 15000;
+    private double calculatedAmplitude = 0;
 
-    private double attack = 0.1;
-    private double decay = 0;
-    private double sustain = 1;
-    private double release = 0.1;
-
-    private short frameData;
+    private double frequency;
 
     private double attackFrames;
     private double attackStep;
@@ -40,34 +25,69 @@ public class Key {
 
     private long elapsed = 0;
 
-    private static enum KeyState {
+    protected static enum KeyState {
         HIT, ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
     }
     private KeyState keyState = KeyState.IDLE;
 
-    public Key(String name, Instrument instrument) {
+    public Key(String name, double frequency, Instrument instrument) {
         this.name = name;
+        this.frequency = frequency;
         this.instrument = instrument;
     }
 
+    // <editor-fold defaultstate="collapsed" desc="getters/setters">
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Instrument getInstrument() {
+        return instrument;
+    }
+
+    public double getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(double frequency) {
+        this.frequency = frequency;
+    }
+
+    public double getCalculatedAmplitude() {
+        return calculatedAmplitude;
+    }
+
+    public long getElapsed() {
+        return elapsed;
+    }
+
+    public KeyState getKeyState() {
+        return keyState;
+    }
+    // </editor-fold>
+
     // reacts to key press, apply envelope
-    public byte[] getFrame() {
+    protected void calculate() {
         switch (keyState) {
             // setup
             case HIT:
                 elapsed = 0;
 
-                sustainAmplitude = lerp(0, amplitude, sustain);
+                sustainAmplitude = lerp(0, instrument.getAmplitude(), instrument.getSustain());
 
-                attackFrames = sampleRate * attack;
-                attackStep = amplitude / attackFrames;
+                attackFrames = instrument.getSampleRate() * instrument.getAttack();
+                attackStep = instrument.getAmplitude() / attackFrames;
                 attackAmplitude = 0;
 
-                decayFrames = sampleRate * decay;
-                decayStep = (amplitude - sustainAmplitude) / decayFrames;
-                decayAmplitude = amplitude;
+                decayFrames = instrument.getSampleRate() * instrument.getDecay();
+                decayStep = (instrument.getAmplitude() - sustainAmplitude) / decayFrames;
+                decayAmplitude = instrument.getAmplitude();
 
-                releaseFrames = sampleRate * release;
+                releaseFrames = instrument.getSampleRate() * instrument.getRelease();
                 releaseStep = sustainAmplitude / releaseFrames;
                 releaseAmplitude = sustainAmplitude;
 
@@ -76,58 +96,30 @@ public class Key {
                 break;
 
             case ATTACK:
-                frameData = (short) oscilator((attackAmplitude += attackStep), sampleRate, carrierFrequency, elapsed++);
-
-                // L
-                buffer[0] = (byte) (frameData >> 8);
-                buffer[1] = (byte) frameData;
-
-                // R
-                buffer[2] = (byte) (frameData >> 8);
-                buffer[3] = (byte) frameData;
+                calculatedAmplitude = attackAmplitude += attackStep;
+                elapsed++;
 
                 keyState = (attackFrames-- > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
 
                 break;
 
             case DECAY:
-                frameData = (short) oscilator((decayAmplitude -= decayStep), sampleRate, carrierFrequency, elapsed++);
-                
-                // L
-                buffer[0] = (byte) (frameData >> 8);
-                buffer[1] = (byte) frameData;
+                calculatedAmplitude = decayAmplitude -= decayStep;
+                elapsed++;
 
-                // R
-                buffer[2] = (byte) (frameData >> 8);
-                buffer[3] = (byte) frameData;
-                
                 keyState = (decayFrames-- > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
 
                 break;
 
             case SUSTAIN:
-                frameData = (short) oscilator(sustainAmplitude, sampleRate, carrierFrequency, elapsed++);
-
-                // L
-                buffer[0] = (byte) (frameData >> 8);
-                buffer[1] = (byte) frameData;
-
-                // R
-                buffer[2] = (byte) (frameData >> 8);
-                buffer[3] = (byte) frameData;
+                calculatedAmplitude = sustainAmplitude;
+                elapsed++;
 
                 break;
 
             case RELEASE:
-                frameData = (short) oscilator((releaseAmplitude -= releaseStep), sampleRate, carrierFrequency, elapsed++);
-
-                // L
-                buffer[0] = (byte) (frameData >> 8);
-                buffer[1] = (byte) frameData;
-
-                // R
-                buffer[2] = (byte) (frameData >> 8);
-                buffer[3] = (byte) frameData;
+                calculatedAmplitude = releaseAmplitude -= releaseStep;
+                elapsed++;
 
                 keyState = (releaseFrames-- > 0) ? KeyState.RELEASE : KeyState.IDLE;
 
@@ -135,21 +127,14 @@ public class Key {
 
             // reset
             case IDLE:
-                // L
-                buffer[0] = 0;
-                buffer[1] = 0;
-
-                // R
-                buffer[2] = 0;
-                buffer[3] = 0;
+                calculatedAmplitude = 0;
 
                 break;
         }
-
-        return buffer;
     }
 
     public void pressKey() {
+        instrument.addKey(this);
         keyState = KeyState.HIT;
     }
 
@@ -159,25 +144,6 @@ public class Key {
 
     private double lerp(double start, double end, double factor) {
         return start + factor * (end - start);
-    }
-
-    private double oscilator(double amplitude, double sampleRate, double carrierFrequency, long frame) {
-        switch (waveForm) {
-            case SINE:
-                return amplitude * Math.sin(_2xPI * (carrierFrequency / sampleRate) * frame);
-            case SQUARE:
-                return amplitude * Math.signum(Math.sin(_2xPI * (carrierFrequency / sampleRate) * frame));
-            case TRIANGLE:
-                return amplitude * _2dPI * Math.asin(Math.sin(_2xPI * (carrierFrequency / sampleRate) * frame));
-            case SAWTOOTH:
-                return amplitude * ((frame + sampleRate / carrierFrequency * 2) % (sampleRate / carrierFrequency)) / (sampleRate / carrierFrequency) - amplitude / 2;
-            default:
-                throw new AssertionError(waveForm.name());
-        }
-    }
-
-    private double modulator() {
-        return 0;
     }
 
 }
