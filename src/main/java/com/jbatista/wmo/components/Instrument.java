@@ -134,8 +134,4 @@ public class Instrument {
         keys.add(key);
     }
 
-    protected void removeKey(Key key) {
-        keys.remove(key);
-    }
-
 }
