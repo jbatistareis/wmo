@@ -24,7 +24,8 @@ while (true) {
 
 // plays it
 key.pressKey();
-```
+```  
+Besides modulators, the instrument has an envelope configuration that can be played with to achieve different sounds.
 
 
 ## TODO
