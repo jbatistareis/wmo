@@ -11,19 +11,35 @@ public class Util {
         return start + factor * (end - start);
     }
 
-    public static double oscillator(WaveForm waveForm, double amplitude, double sampleRate, double frequency, long frame) {
+    public static double oscillator(WaveForm waveForm, double sampleRate, double frequency, long time) {
         switch (waveForm) {
             case SINE:
-                return amplitude * Math.sin(_2xPI * (frequency / sampleRate) * frame);
+                return sineWave(sampleRate, frequency, time);
             case SQUARE:
-                return amplitude * Math.signum(Math.sin(_2xPI * (frequency / sampleRate) * frame));
+                return squareWave(sampleRate, frequency, time);
             case TRIANGLE:
-                return amplitude * _2dPI * Math.asin(Math.sin(_2xPI * (frequency / sampleRate) * frame));
+                return triangleWave(sampleRate, frequency, time);
             case SAWTOOTH:
-                return amplitude * ((frame + sampleRate / frequency * 2) % (sampleRate / frequency)) / (sampleRate / frequency) - amplitude / 2;
+                return sawtoothWave(sampleRate, frequency, time);
             default:
                 throw new AssertionError(waveForm.name());
         }
+    }
+
+    public static double sineWave(double sampleRate, double frequency, long time) {
+        return Math.sin(_2xPI * (frequency / sampleRate) * time);
+    }
+
+    public static double squareWave(double sampleRate, double frequency, long time) {
+        return Math.signum(Math.sin(_2xPI * (frequency / sampleRate) * time));
+    }
+
+    public static double triangleWave(double sampleRate, double frequency, long time) {
+        return _2dPI * Math.asin(Math.sin(_2xPI * (frequency / sampleRate) * time));
+    }
+
+    public static double sawtoothWave(double sampleRate, double frequency, long time) {
+        return ((time + sampleRate / frequency * 2) % (sampleRate / frequency)) / (sampleRate / frequency) - 0.5;
     }
 
 }
