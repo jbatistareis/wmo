@@ -11,35 +11,35 @@ public class MathUtil {
         return start + factor * (end - start);
     }
 
-    public static double oscillator(WaveForm waveForm, double sampleRate, double frequency, long time) {
+    public static double oscillator(WaveForm waveForm, double frequency, long time) {
         switch (waveForm) {
             case SINE:
-                return sineWave(sampleRate, frequency, time);
+                return sineWave(frequency, time);
             case SQUARE:
-                return squareWave(sampleRate, frequency, time);
+                return squareWave(frequency, time);
             case TRIANGLE:
-                return triangleWave(sampleRate, frequency, time);
+                return triangleWave(frequency, time);
             case SAWTOOTH:
-                return sawtoothWave(sampleRate, frequency, time);
+                return sawtoothWave(frequency, time);
             default:
                 throw new AssertionError(waveForm.name());
         }
     }
 
-    public static double sineWave(double sampleRate, double frequency, long time) {
-        return Math.sin(_2xPI * (frequency / sampleRate) * time);
+    public static double sineWave(double frequency, long time) {
+        return Math.sin(_2xPI * frequency * time);
     }
 
-    public static double squareWave(double sampleRate, double frequency, long time) {
-        return Math.signum(Math.sin(_2xPI * (frequency / sampleRate) * time));
+    public static double squareWave(double frequency, long time) {
+        return Math.signum(Math.sin(_2xPI * frequency * time));
     }
 
-    public static double triangleWave(double sampleRate, double frequency, long time) {
-        return _2dPI * Math.asin(Math.sin(_2xPI * (frequency / sampleRate) * time));
+    public static double triangleWave(double frequency, long time) {
+        return _2dPI * Math.asin(Math.sin(_2xPI * frequency * time));
     }
 
-    public static double sawtoothWave(double sampleRate, double frequency, long time) {
-        return ((time + sampleRate / frequency * 2) % (sampleRate / frequency)) / (sampleRate / frequency) - 0.5;
+    public static double sawtoothWave(double frequency, long time) {
+        return ((time + frequency * 2) % frequency) / frequency - 0.5;
     }
 
 }
