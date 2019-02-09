@@ -59,7 +59,6 @@ public class Main {
         key2.releaseKey();
         Thread.sleep(1000);
 
-        key1.pressKey();
         key2.pressKey();
         Thread.sleep(2000);
 

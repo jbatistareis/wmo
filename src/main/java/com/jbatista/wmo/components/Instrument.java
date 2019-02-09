@@ -1,6 +1,8 @@
 package com.jbatista.wmo.components;
 
+import com.jbatista.wmo.Note;
 import com.jbatista.wmo.WaveForm;
+import com.jbatista.wmo.components.Key.KeyState;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -95,7 +97,7 @@ public class Instrument {
 
             frameData += key.calculateFrame();
 
-            if (key.getKeyState().equals(Key.KeyState.IDLE)) {
+            if (key.getKeyState().equals(KeyState.IDLE)) {
                 keysIterator.remove();
             }
         }
@@ -120,6 +122,10 @@ public class Instrument {
 
     public Key buildKey(double frequency) {
         return new Key(frequency, this);
+    }
+
+    public Key buildKey(Note note) {
+        return new Key(note.getFrequency(), this);
     }
 
 }
