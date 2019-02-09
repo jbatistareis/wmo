@@ -1,10 +1,7 @@
 package com.jbatista.wmo.components;
 
-import com.jbatista.wmo.WaveForm;
-
 public class Key {
 
-    private String name;
     private final Instrument instrument;
 
     private double calculatedAmplitude = 0;
@@ -27,10 +24,11 @@ public class Key {
 
     private long elapsed = 0;
 
+    private KeyState keyState = KeyState.IDLE;
+
     protected static enum KeyState {
         HIT, ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
     }
-    private KeyState keyState = KeyState.IDLE;
 
     protected Key(double frequency, Instrument instrument) {
         this.frequency = frequency;
@@ -56,21 +54,21 @@ public class Key {
     // </editor-fold>
 
     // reacts to key press, apply envelope
-    protected double calculateFrame(WaveForm waveForm, double sampleRate, double amplitude) {
+    protected double calculateFrame() {
         switch (keyState) {
             // setup
             case HIT:
                 elapsed = 0;
 
-                sustainAmplitude = Util.lerp(0, amplitude, instrument.getSustain());
+                sustainAmplitude = Util.lerp(0, instrument.getEffectiveAmplitude(), instrument.getSustain());
 
                 attackFrames = instrument.getSampleRate() * instrument.getAttack();
-                attackStep = amplitude / attackFrames;
+                attackStep = instrument.getEffectiveAmplitude() / attackFrames;
                 attackAmplitude = 0;
 
                 decayFrames = instrument.getSampleRate() * instrument.getDecay();
-                decayStep = (amplitude - sustainAmplitude) / decayFrames;
-                decayAmplitude = amplitude;
+                decayStep = (instrument.getEffectiveAmplitude() - sustainAmplitude) / decayFrames;
+                decayAmplitude = instrument.getEffectiveAmplitude();
 
                 releaseFrames = instrument.getSampleRate() * instrument.getRelease();
                 releaseStep = sustainAmplitude / releaseFrames;
@@ -118,7 +116,7 @@ public class Key {
                 break;
         }
 
-        return Util.oscillator(waveForm, calculatedAmplitude, sampleRate, frequency, elapsed);
+        return Util.oscillator(instrument.getWaveForm(), calculatedAmplitude, instrument.getSampleRate(), frequency, elapsed);
     }
 
     public void pressKey() {

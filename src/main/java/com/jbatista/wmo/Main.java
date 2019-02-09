@@ -32,7 +32,7 @@ public class Main {
         final Instrument instrument = new Instrument();
         final Key key1 = instrument.buildKey(440);
         final Key key2 = instrument.buildKey(880);
-        final Key key3 = instrument.buildKey(220);
+        final Key key3 = instrument.buildKey(660);
 
         new Thread(() -> {
             try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
@@ -64,7 +64,7 @@ public class Main {
         Thread.sleep(2000);
         
         key3.pressKey();
-        Thread.sleep(2000);
+        Thread.sleep(4000);
         
         key3.releaseKey();
     }

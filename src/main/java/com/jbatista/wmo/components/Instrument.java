@@ -22,7 +22,7 @@ public class Instrument {
     private double sustain = 1;
     private double release = 0.1;
 
-    private double amplitudeValue = 16384;
+    private double effectiveAmplitude = 16384;
     private short frameData = 0;
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -48,7 +48,7 @@ public class Instrument {
 
     public void setAmplitude(double amplitude) {
         this.amplitude = amplitude;
-        amplitudeValue = Util.lerp(0, 32768, amplitude);
+        effectiveAmplitude = Util.lerp(0, 32768, amplitude);
     }
 
     public double getAttack() {
@@ -82,6 +82,10 @@ public class Instrument {
     public void setRelease(double release) {
         this.release = release;
     }
+
+    protected double getEffectiveAmplitude() {
+        return effectiveAmplitude / keys.size();
+    }
     // </editor-fold>
 
     public byte[] getFrame() {
@@ -89,8 +93,7 @@ public class Instrument {
         while (keysIterator.hasNext()) {
             key = keysIterator.next();
 
-            frameData += key.calculateFrame(waveForm, sampleRate, amplitudeValue);
-            frameData /= keys.size();
+            frameData += key.calculateFrame();
 
             if (key.getKeyState().equals(Key.KeyState.IDLE)) {
                 keysIterator.remove();
