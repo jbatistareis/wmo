@@ -47,7 +47,7 @@ public class Main {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
-        
+
         key1.pressKey();
         Thread.sleep(1000);
 
