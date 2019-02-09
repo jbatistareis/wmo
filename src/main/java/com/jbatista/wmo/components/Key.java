@@ -53,10 +53,14 @@ public class Key {
     public KeyState getKeyState() {
         return keyState;
     }
+
+    protected double getAmplitude() {
+        return calculatedAmplitude;
+    }
     // </editor-fold>
 
     // reacts to key press, apply envelope
-    protected double calculateFrame() {
+    protected double getSample() {
         switch (keyState) {
             // setup
             case HIT:
@@ -118,7 +122,7 @@ public class Key {
                 break;
         }
 
-        return calculatedAmplitude * MathUtil.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, elapsed);
+        return MathUtil.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, elapsed);
     }
 
     public void pressKey() {
