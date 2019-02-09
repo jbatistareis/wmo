@@ -1,5 +1,6 @@
 package com.jbatista.wmo.components;
 
+import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.Note;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.components.Key.KeyState;
@@ -50,7 +51,7 @@ public class Instrument {
 
     public void setAmplitude(double amplitude) {
         this.amplitude = amplitude;
-        effectiveAmplitude = Util.lerp(0, 32768, amplitude);
+        effectiveAmplitude = MathUtil.lerp(0, 32768, amplitude);
     }
 
     public double getAttack() {

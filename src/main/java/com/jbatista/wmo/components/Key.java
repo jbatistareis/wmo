@@ -1,5 +1,7 @@
 package com.jbatista.wmo.components;
 
+import com.jbatista.wmo.MathUtil;
+
 public class Key {
 
     private final Instrument instrument;
@@ -60,7 +62,7 @@ public class Key {
             case HIT:
                 elapsed = 0;
 
-                sustainAmplitude = Util.lerp(0, instrument.getEffectiveAmplitude(), instrument.getSustain());
+                sustainAmplitude = MathUtil.lerp(0, instrument.getEffectiveAmplitude(), instrument.getSustain());
 
                 attackFrames = instrument.getSampleRate() * instrument.getAttack();
                 attackStep = instrument.getEffectiveAmplitude() / attackFrames;
@@ -116,7 +118,7 @@ public class Key {
                 break;
         }
 
-        return calculatedAmplitude * Util.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, elapsed);
+        return calculatedAmplitude * MathUtil.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, elapsed);
     }
 
     public void pressKey() {

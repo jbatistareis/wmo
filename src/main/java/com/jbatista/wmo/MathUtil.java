@@ -1,8 +1,8 @@
-package com.jbatista.wmo.components;
+package com.jbatista.wmo;
 
 import com.jbatista.wmo.WaveForm;
 
-public class Util {
+public class MathUtil {
 
     private static final double _2xPI = 2 * Math.PI;
     private static final double _2dPI = 2 / Math.PI;
