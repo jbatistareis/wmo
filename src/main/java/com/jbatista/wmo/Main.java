@@ -33,6 +33,7 @@ public class Main {
         final Key key1 = instrument.buildKey(440);
         final Key key2 = instrument.buildKey(880);
         final Key key3 = instrument.buildKey(660);
+        final Key key4 = instrument.buildKey(80);
 
         new Thread(() -> {
             try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
@@ -46,7 +47,7 @@ public class Main {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
-
+        
         key1.pressKey();
         Thread.sleep(2000);
 
@@ -59,6 +60,7 @@ public class Main {
         key2.releaseKey();
         Thread.sleep(1000);
 
+        key1.pressKey();
         key2.pressKey();
         Thread.sleep(2000);
 
