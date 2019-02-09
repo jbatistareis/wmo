@@ -128,4 +128,9 @@ public class Key {
         keyState = KeyState.RELEASE;
     }
 
+    @Override
+    public int hashCode() {
+        return ((Double) frequency).hashCode();
+    }
+
 }

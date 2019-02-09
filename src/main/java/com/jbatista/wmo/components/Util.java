@@ -7,11 +7,11 @@ public class Util {
     private static final double _2xPI = 2 * Math.PI;
     private static final double _2dPI = 2 / Math.PI;
 
-    protected static double lerp(double start, double end, double factor) {
+    public static double lerp(double start, double end, double factor) {
         return start + factor * (end - start);
     }
 
-    protected static double oscillator(WaveForm waveForm, double amplitude, double sampleRate, double frequency, long frame) {
+    public static double oscillator(WaveForm waveForm, double amplitude, double sampleRate, double frequency, long frame) {
         switch (waveForm) {
             case SINE:
                 return amplitude * Math.sin(_2xPI * (frequency / sampleRate) * frame);

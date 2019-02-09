@@ -62,10 +62,10 @@ public class Main {
         key1.pressKey();
         key2.pressKey();
         Thread.sleep(2000);
-        
+
         key3.pressKey();
         Thread.sleep(4000);
-        
+
         key3.releaseKey();
     }
 
