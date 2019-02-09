@@ -27,6 +27,7 @@ public class Key {
     private long elapsed = 0;
 
     private KeyState keyState = KeyState.IDLE;
+    private boolean wasActve = false;
 
     protected static enum KeyState {
         HIT, ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
@@ -64,13 +65,13 @@ public class Key {
         switch (keyState) {
             // setup
             case HIT:
-                elapsed = 0;
+                elapsed = wasActve ? elapsed : 0;
 
                 sustainAmplitude = MathUtil.lerp(0, instrument.getEffectiveAmplitude(), instrument.getSustain());
 
                 attackFrames = instrument.getSampleRate() * instrument.getAttack();
-                attackStep = instrument.getEffectiveAmplitude() / attackFrames;
-                attackAmplitude = 0;
+                attackStep = (wasActve ? (instrument.getEffectiveAmplitude() - calculatedAmplitude) : instrument.getEffectiveAmplitude()) / attackFrames;
+                attackAmplitude = wasActve ? calculatedAmplitude : 0;
 
                 decayFrames = instrument.getSampleRate() * instrument.getDecay();
                 decayStep = (instrument.getEffectiveAmplitude() - sustainAmplitude) / decayFrames;
@@ -81,6 +82,7 @@ public class Key {
                 releaseAmplitude = sustainAmplitude;
 
                 keyState = (attackFrames > 0) ? KeyState.ATTACK : KeyState.SUSTAIN;
+                wasActve = false;
 
                 break;
 
@@ -126,6 +128,10 @@ public class Key {
     }
 
     public void pressKey() {
+        if (!keyState.equals(KeyState.IDLE)) {
+            wasActve = true;
+        }
+
         instrument.addKey(this);
         keyState = KeyState.HIT;
     }

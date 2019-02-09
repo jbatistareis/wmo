@@ -49,13 +49,13 @@ public class Main {
         }).start();
         
         key1.pressKey();
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         key1.releaseKey();
         Thread.sleep(1000);
 
         key2.pressKey();
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         key2.releaseKey();
         Thread.sleep(1000);
