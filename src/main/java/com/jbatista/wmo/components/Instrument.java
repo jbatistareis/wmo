@@ -3,18 +3,17 @@ package com.jbatista.wmo.components;
 import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.Note;
 import com.jbatista.wmo.WaveForm;
-import com.jbatista.wmo.components.Key.KeyState;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class Instrument {
 
     private final byte[] buffer = new byte[]{0, 0, 0, 0};
 
-    private final Set<Key> keys = new HashSet<>();
-    private Iterator<Key> keysIterator;
-    private Key key;
+    private final Map<Double, Key> keys = new HashMap<>();
+    private final LinkedList<Modulator> modulators = new LinkedList<>();
 
     private WaveForm waveForm = WaveForm.SINE;
     private double sampleRate = 44100;
@@ -26,6 +25,7 @@ public class Instrument {
     private double release = 0.1;
 
     private double effectiveAmplitude = 16384;
+    private double modulation = 0;
     private short frameData = 0;
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -92,15 +92,8 @@ public class Instrument {
     // </editor-fold>
 
     public synchronized byte[] getFrame() {
-        keysIterator = keys.iterator();
-        while (keysIterator.hasNext()) {
-            key = keysIterator.next();
-
-            frameData += key.getSample();
-
-            if (key.getKeyState().equals(KeyState.IDLE)) {
-                keysIterator.remove();
-            }
+        for (Entry<Double, Key> entry : keys.entrySet()) {
+            frameData += entry.getValue().getSample();
         }
 
         // TODO channel stuff
@@ -117,21 +110,38 @@ public class Instrument {
         return buffer;
     }
 
-    // TODO
     protected double getModulation(long time) {
-        return 0;
-    }
+        modulation = 0;
 
-    protected void addKey(Key key) {
-        keys.add(key);
+        for (Modulator modulator : modulators) {
+            modulation += modulator.calculate(time);
+        }
+
+        return modulation;
     }
 
     public Key buildKey(double frequency) {
-        return new Key(frequency, this);
+        if (!keys.containsKey(frequency)) {
+            final Key key = new Key(frequency, this);
+            keys.put(frequency, key);
+        }
+
+        return keys.get(frequency);
     }
 
     public Key buildKey(Note note) {
-        return new Key(note.getFrequency(), this);
+        if (!keys.containsKey(note.getFrequency())) {
+            final Key key = new Key(note.getFrequency(), this);
+            keys.put(note.getFrequency(), key);
+        }
+
+        return keys.get(note.getFrequency());
+    }
+
+    public synchronized Modulator buildModulator() {
+        modulators.add(new Modulator(this));
+
+        return modulators.peekLast();
     }
 
 }

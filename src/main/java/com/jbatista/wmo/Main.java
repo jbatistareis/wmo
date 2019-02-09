@@ -2,6 +2,7 @@ package com.jbatista.wmo;
 
 import com.jbatista.wmo.components.Instrument;
 import com.jbatista.wmo.components.Key;
+import com.jbatista.wmo.components.Modulator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
@@ -35,37 +36,50 @@ public class Main {
         final Key key3 = instrument.buildKey(660);
         final Key key4 = instrument.buildKey(80);
 
-        new Thread(() -> {
-            try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
-                sourceDataLine.open(new AudioFormat(44100, 16, 2, true, true));
-                sourceDataLine.start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try (SourceDataLine sourceDataLine = (SourceDataLine) mixer.getLine(lineInfo[0])) {
+                    sourceDataLine.open(new AudioFormat(44100, 16, 2, true, true));
+                    sourceDataLine.start();
 
-                while (true) {
-                    sourceDataLine.write(instrument.getFrame(), 0, 4);
+                    while (true) {
+                        sourceDataLine.write(instrument.getFrame(), 0, 4);
+                    }
+                } catch (LineUnavailableException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            } catch (LineUnavailableException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
 
         key1.pressKey();
         Thread.sleep(1000);
 
+        final Modulator mod1 = instrument.buildModulator();
+        mod1.setWaveForm(WaveForm.SINE);
+        mod1.setFrequency(110);
+        mod1.setStrength(5);
+
         key1.releaseKey();
-        Thread.sleep(1000);
+        Thread.sleep(200);
 
         key2.pressKey();
         Thread.sleep(1000);
 
         key2.releaseKey();
-        Thread.sleep(1000);
+        Thread.sleep(200);
 
         key1.pressKey();
         key2.pressKey();
         Thread.sleep(2000);
 
         key3.pressKey();
-        Thread.sleep(4000);
+
+        final Modulator mod2 = instrument.buildModulator();
+        mod2.setWaveForm(WaveForm.TRIANGLE);
+        mod2.setFrequency(10);
+        mod2.setStrength(5);
+        Thread.sleep(2000);
 
         key3.releaseKey();
     }

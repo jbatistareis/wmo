@@ -1,7 +1,6 @@
 package com.jbatista.wmo.components;
 
 import com.jbatista.wmo.MathUtil;
-import com.jbatista.wmo.WaveForm;
 
 public class Key {
 
@@ -117,11 +116,7 @@ public class Key {
                 return 0.0;
         }
 
-        return calculatedAmplitude * MathUtil.oscillator(
-                instrument.getWaveForm(),
-                instrument.getWaveForm().equals(WaveForm.SAWTOOTH) ? (instrument.getSampleRate() / frequency) : (frequency / instrument.getSampleRate()),
-                instrument.getModulation(elapsed),
-                elapsed);
+        return calculatedAmplitude * MathUtil.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, instrument.getModulation(elapsed), elapsed);
     }
 
     public void pressKey() {
@@ -129,7 +124,6 @@ public class Key {
             wasActve = true;
         }
 
-        instrument.addKey(this);
         keyState = KeyState.HIT;
     }
 
