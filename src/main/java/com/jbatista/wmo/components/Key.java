@@ -55,10 +55,6 @@ public class Key {
     public KeyState getKeyState() {
         return keyState;
     }
-
-    protected double getAmplitude() {
-        return calculatedAmplitude;
-    }
     // </editor-fold>
 
     // reacts to key press, apply envelope
@@ -117,15 +113,11 @@ public class Key {
 
                 break;
 
-            // reset
             case IDLE:
-                calculatedAmplitude = 0;
-                elapsed = 0;
-
-                break;
+                return 0.0;
         }
 
-        return MathUtil.oscillator(
+        return calculatedAmplitude * MathUtil.oscillator(
                 instrument.getWaveForm(),
                 instrument.getWaveForm().equals(WaveForm.SAWTOOTH) ? (instrument.getSampleRate() / frequency) : (frequency / instrument.getSampleRate()),
                 instrument.getModulation(elapsed),

@@ -91,12 +91,12 @@ public class Instrument {
     }
     // </editor-fold>
 
-    public byte[] getFrame() {
+    public synchronized byte[] getFrame() {
         keysIterator = keys.iterator();
         while (keysIterator.hasNext()) {
             key = keysIterator.next();
 
-            frameData += key.getAmplitude() * key.getSample();
+            frameData += key.getSample();
 
             if (key.getKeyState().equals(KeyState.IDLE)) {
                 keysIterator.remove();
