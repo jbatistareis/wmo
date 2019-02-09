@@ -124,7 +124,7 @@ public class Key {
                 break;
         }
 
-        return MathUtil.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, elapsed);
+        return MathUtil.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, elapsed %= instrument.getSampleRate() / frequency);
     }
 
     public void pressKey() {
