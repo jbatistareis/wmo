@@ -128,6 +128,7 @@ public class Key {
         return MathUtil.oscillator(
                 instrument.getWaveForm(),
                 instrument.getWaveForm().equals(WaveForm.SAWTOOTH) ? (instrument.getSampleRate() / frequency) : (frequency / instrument.getSampleRate()),
+                instrument.getModulation(elapsed),
                 elapsed);
     }
 

@@ -96,7 +96,7 @@ public class Instrument {
         while (keysIterator.hasNext()) {
             key = keysIterator.next();
 
-            frameData += key.getAmplitude() * applyModulation(key.getSample());
+            frameData += key.getAmplitude() * key.getSample();
 
             if (key.getKeyState().equals(KeyState.IDLE)) {
                 keysIterator.remove();
@@ -118,8 +118,8 @@ public class Instrument {
     }
 
     // TODO
-    private double applyModulation(double sample) {
-        return sample;
+    protected double getModulation(long time) {
+        return 0;
     }
 
     protected void addKey(Key key) {

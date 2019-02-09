@@ -11,35 +11,35 @@ public class MathUtil {
         return start + factor * (end - start);
     }
 
-    public static double oscillator(WaveForm waveForm, double frequency, long time) {
+    public static double oscillator(WaveForm waveForm, double frequency, double modulation, long time) {
         switch (waveForm) {
             case SINE:
-                return sineWave(frequency, time);
+                return sineWave(frequency, modulation, time);
             case SQUARE:
-                return squareWave(frequency, time);
+                return squareWave(frequency, modulation, time);
             case TRIANGLE:
-                return triangleWave(frequency, time);
+                return triangleWave(frequency, modulation, time);
             case SAWTOOTH:
-                return sawtoothWave(frequency, time);
+                return sawtoothWave(frequency, modulation, time);
             default:
                 throw new AssertionError(waveForm.name());
         }
     }
 
-    public static double sineWave(double frequency, long time) {
-        return Math.sin(_2xPI * frequency * time);
+    public static double sineWave(double frequency, double modulation, long time) {
+        return Math.sin(_2xPI * frequency * time + modulation);
     }
 
-    public static double squareWave(double frequency, long time) {
-        return Math.signum(Math.sin(_2xPI * frequency * time));
+    public static double squareWave(double frequency, double modulation, long time) {
+        return Math.signum(sineWave(frequency, modulation, time));
     }
 
-    public static double triangleWave(double frequency, long time) {
-        return _2dPI * Math.asin(Math.sin(_2xPI * frequency * time));
+    public static double triangleWave(double frequency, double modulation, long time) {
+        return _2dPI * Math.asin(sineWave(frequency, modulation, time));
     }
 
-    public static double sawtoothWave(double frequency, long time) {
-        return ((time + frequency * 2) % frequency) / frequency - 0.5;
+    public static double sawtoothWave(double frequency, double modulation, long time) {
+        return ((time + frequency * 2) % frequency) / (frequency + modulation) - 0.5;
     }
 
 }
