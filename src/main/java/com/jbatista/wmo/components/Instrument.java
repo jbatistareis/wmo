@@ -185,4 +185,19 @@ public class Instrument {
         return modulators.peekLast();
     }
 
+    public synchronized void removeModulator(Modulator modulator) {
+        modulators.remove(modulator);
+    }
+
+    public synchronized void shiftModulators(Modulator modulator1, Modulator modulator2) {
+        final int index1 = modulators.indexOf(modulator1);
+        final int index2 = modulators.indexOf(modulator2);
+
+        removeModulator(modulator1);
+        removeModulator(modulator2);
+
+        modulators.add(index2, modulator1);
+        modulators.add(index1, modulator2);
+    }
+
 }
