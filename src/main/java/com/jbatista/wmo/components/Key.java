@@ -65,7 +65,7 @@ public class Key {
 
                 sustainAmplitude = MathUtil.lerp(0, instrument.getEffectiveAmplitude(), instrument.getSustain());
 
-                attackFrames = instrument.getSampleRate() * instrument.getAttack();
+                attackFrames = instrument.getSampleRate() * Math.max(instrument.getAttack(), 0.01);
                 attackStep = (wasActve ? (instrument.getEffectiveAmplitude() - calculatedAmplitude) : instrument.getEffectiveAmplitude()) / attackFrames;
                 attackAmplitude = wasActve ? calculatedAmplitude : 0;
 
@@ -73,11 +73,11 @@ public class Key {
                 decayStep = (instrument.getEffectiveAmplitude() - sustainAmplitude) / decayFrames;
                 decayAmplitude = instrument.getEffectiveAmplitude();
 
-                releaseFrames = instrument.getSampleRate() * instrument.getRelease();
+                releaseFrames = instrument.getSampleRate() * Math.max(instrument.getRelease(), 0.01);
                 releaseStep = sustainAmplitude / releaseFrames;
                 releaseAmplitude = sustainAmplitude;
 
-                keyState = (attackFrames > 0) ? KeyState.ATTACK : KeyState.SUSTAIN;
+                keyState = KeyState.ATTACK;
                 wasActve = false;
 
                 break;

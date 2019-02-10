@@ -11,16 +11,10 @@ public class MathUtil {
 
     public static double oscillator(WaveForm waveForm, double sampleRate, double frequency, double modulation, long time) {
         switch (waveForm) {
-            case SINE:
-                return sineWave(frequency / sampleRate, modulation, time);
-            case SQUARE:
-                return squareWave(frequency / sampleRate, modulation, time);
-            case TRIANGLE:
-                return triangleWave(frequency / sampleRate, modulation, time);
             case SAWTOOTH:
                 return sawtoothWave(sampleRate / frequency, modulation, time);
             default:
-                throw new AssertionError(waveForm.name());
+                return oscillator(waveForm, frequency / sampleRate, modulation, time);
         }
     }
 
