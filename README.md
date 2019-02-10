@@ -25,7 +25,7 @@ while (true) {
 // plays it
 key.pressKey();
 ```  
-To achieve different sounds, you can change the phase, set an envelope or modulation.
+To achieve different sounds, you can change the phase, set an envelope or add modulation.
 
 
 ## TODO
