@@ -1,7 +1,7 @@
 package com.jbatista.wmo.components;
 
 import com.jbatista.wmo.MathUtil;
-import com.jbatista.wmo.Note;
+import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.WaveForm;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,7 +19,7 @@ public class Instrument {
     private double sampleRate = 44100;
 
     private double amplitude = 0.5;
-    private double attack = 0.1;
+    private double attack = 0;
     private double decay = 0;
     private double sustain = 1;
     private double release = 0.1;
@@ -129,13 +129,13 @@ public class Instrument {
         return keys.get(frequency);
     }
 
-    public Key buildKey(Note note) {
-        if (!keys.containsKey(note.getFrequency())) {
-            final Key key = new Key(note.getFrequency(), this);
-            keys.put(note.getFrequency(), key);
+    public Key buildKey(KeyboardNote keyboardNote) {
+        if (!keys.containsKey(keyboardNote.getFrequency())) {
+            final Key key = new Key(keyboardNote.getFrequency(), this);
+            keys.put(keyboardNote.getFrequency(), key);
         }
 
-        return keys.get(note.getFrequency());
+        return keys.get(keyboardNote.getFrequency());
     }
 
     public synchronized Modulator buildModulator() {
