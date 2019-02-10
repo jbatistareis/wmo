@@ -10,8 +10,6 @@ import java.util.Map.Entry;
 
 public class Instrument {
 
-    private final byte[] buffer = new byte[]{0, 0, 0, 0};
-
     private final Map<Double, Key> keys = new HashMap<>();
     private final LinkedList<Modulator> modulators = new LinkedList<>();
 
@@ -24,9 +22,18 @@ public class Instrument {
     private double sustain = 1;
     private double release = 0.1;
 
+    private double phaseL = 0;
+    private double phaseR = 0;
+
     private double effectiveAmplitude = 16384;
-    private double modulation = 0;
-    private short frameData = 0;
+    private double effectivePhaseL = 0;
+    private double effectivePhaseR = 0;
+    private double[] tempModulation;
+    private final double[] modulation = new double[2];
+
+    private double[] tempFrameData;
+    private final double[] frameData = new double[]{0, 0};
+    private final byte[] buffer = new byte[]{0, 0, 0, 0};
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public WaveForm getWaveForm() {
@@ -50,8 +57,8 @@ public class Instrument {
     }
 
     public void setAmplitude(double amplitude) {
-        this.amplitude = amplitude;
-        effectiveAmplitude = MathUtil.lerp(0, 32768, amplitude);
+        this.amplitude = Math.max(0, Math.min(amplitude, 1));
+        effectiveAmplitude = MathUtil.lerp(0, 32768, this.amplitude);
     }
 
     public double getAttack() {
@@ -59,7 +66,7 @@ public class Instrument {
     }
 
     public void setAttack(double attack) {
-        this.attack = attack;
+        this.attack = Math.max(0, attack);
     }
 
     public double getDecay() {
@@ -67,7 +74,7 @@ public class Instrument {
     }
 
     public void setDecay(double decay) {
-        this.decay = decay;
+        this.decay = Math.max(0, decay);
     }
 
     public double getSustain() {
@@ -75,7 +82,7 @@ public class Instrument {
     }
 
     public void setSustain(double sustain) {
-        this.sustain = sustain;
+        this.sustain = Math.max(0, sustain);
     }
 
     public double getRelease() {
@@ -83,38 +90,72 @@ public class Instrument {
     }
 
     public void setRelease(double release) {
-        this.release = release;
+        this.release = Math.max(0, release);
+    }
+
+    public double getPhaseL() {
+        return phaseL;
+    }
+
+    public void setPhaseL(double phaseL) {
+        this.phaseL = Math.max(0, Math.min(phaseL, 1));
+        this.effectivePhaseL = MathUtil.lerp(0, MathUtil.PIx2, this.phaseL);
+    }
+
+    public double getPhaseR() {
+        return phaseR;
+    }
+
+    public void setPhaseR(double phaseR) {
+        this.phaseR = Math.max(0, Math.min(phaseR, 1));
+        this.effectivePhaseR = MathUtil.lerp(0, MathUtil.PIx2, this.phaseR);
     }
 
     protected double getEffectiveAmplitude() {
         return effectiveAmplitude / keys.size();
     }
+
+    protected double getEffectivePhaseL() {
+        return effectivePhaseL;
+    }
+
+    protected double getEffectivePhaseR() {
+        return effectivePhaseR;
+    }
     // </editor-fold>
 
     public synchronized byte[] getFrame() {
         for (Entry<Double, Key> entry : keys.entrySet()) {
-            frameData += entry.getValue().getSample();
+            tempFrameData = entry.getValue().getSample();
+
+            frameData[0] += tempFrameData[0];
+            frameData[1] += tempFrameData[1];
         }
 
         // TODO channel stuff
         // L
-        buffer[0] = (byte) (frameData >> 8);
-        buffer[1] = (byte) frameData;
+        buffer[0] = (byte) ((int) frameData[0] >> 8);
+        buffer[1] = (byte) frameData[0];
 
         // R
-        buffer[2] = (byte) (frameData >> 8);
-        buffer[3] = (byte) frameData;
+        buffer[2] = (byte) ((int) frameData[1] >> 8);
+        buffer[3] = (byte) frameData[1];
 
-        frameData = 0;
+        frameData[0] = 0.0;
+        frameData[1] = 0.0;
 
         return buffer;
     }
 
-    protected double getModulation(long time) {
-        modulation = 0;
+    protected double[] getModulation(long time) {
+        modulation[0] = 0;
+        modulation[1] = 0;
 
         for (Modulator modulator : modulators) {
-            modulation += modulator.calculate(time);
+            tempModulation = modulator.calculate(time);
+
+            modulation[0] += tempModulation[0];
+            modulation[1] += tempModulation[1];
         }
 
         return modulation;

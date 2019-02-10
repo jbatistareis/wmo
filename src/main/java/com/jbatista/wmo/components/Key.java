@@ -29,6 +29,10 @@ public class Key {
     private KeyState keyState = KeyState.IDLE;
     private boolean wasActve = false;
 
+    // L - R
+    private final double[] sample = new double[2];
+    private double[] modulation;
+
     protected static enum KeyState {
         HIT, ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
     }
@@ -57,7 +61,7 @@ public class Key {
     // </editor-fold>
 
     // reacts to key press, apply envelope
-    protected double getSample() {
+    protected double[] getSample() {
         switch (keyState) {
             // setup
             case HIT:
@@ -113,10 +117,31 @@ public class Key {
                 break;
 
             case IDLE:
-                return 0.0;
+                sample[0] = 0.0;
+                sample[1] = 0.0;
+
+                return sample;
         }
 
-        return calculatedAmplitude * MathUtil.oscillator(instrument.getWaveForm(), instrument.getSampleRate(), frequency, instrument.getModulation(elapsed), elapsed);
+        modulation = instrument.getModulation(elapsed);
+
+        sample[0] = calculatedAmplitude * MathUtil.oscillator(
+                instrument.getWaveForm(),
+                instrument.getSampleRate(),
+                frequency,
+                instrument.getEffectivePhaseL(),
+                modulation[0],
+                elapsed);
+
+        sample[1] = calculatedAmplitude * MathUtil.oscillator(
+                instrument.getWaveForm(),
+                instrument.getSampleRate(),
+                frequency,
+                instrument.getEffectivePhaseR(),
+                modulation[1],
+                elapsed);
+
+        return sample;
     }
 
     public void pressKey() {
