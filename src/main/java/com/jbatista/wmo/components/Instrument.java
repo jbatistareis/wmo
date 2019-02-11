@@ -20,7 +20,7 @@ public class Instrument {
     private double attack = 0;
     private double decay = 0;
     private double sustain = 1;
-    private double release = 0.1;
+    private double release = 0;
 
     private double phaseL = 0;
     private double phaseR = 0;
