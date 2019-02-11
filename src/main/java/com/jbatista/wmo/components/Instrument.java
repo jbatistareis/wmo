@@ -16,7 +16,7 @@ public class Instrument {
     private WaveForm waveForm = WaveForm.SINE;
     private double sampleRate = 44100;
 
-    private double amplitude = 0.5;
+    private double amplitude = 1;
     private double attack = 0;
     private double decay = 0;
     private double sustain = 1;
