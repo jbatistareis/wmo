@@ -2,6 +2,9 @@
 ###### A FM sound synthesis library
 
 
+### [Demo here!](https://github.com/jbatistareis/wmo-demo)
+
+
 ## Usage  
 _tl;dr instantiate an instrument, build its keys based on a frequency, add modulators as seen fit, press some keys, get the frame_  
 This library create audio frames at 16bit 44100Hz. To produce a constant sound, you need to perform multiple calls to it using a loop, or feeding an audio dataline:   
