@@ -28,6 +28,7 @@ public class Key {
 
     private KeyState keyState = KeyState.IDLE;
     private boolean wasActve = false;
+    private boolean wasAttackOrDecay = false;
 
     // L - R
     private final double[] sample = new double[2];
@@ -77,12 +78,11 @@ public class Key {
                 decayStep = (instrument.getEffectiveAmplitude() - sustainAmplitude) / decayFrames;
                 decayAmplitude = instrument.getEffectiveAmplitude();
 
-                releaseFrames = instrument.getSampleRate() * Math.max(instrument.getRelease(), 0.01);
-                releaseStep = sustainAmplitude / releaseFrames;
-                releaseAmplitude = sustainAmplitude;
+                calculateRelease(sustainAmplitude);
 
                 keyState = KeyState.ATTACK;
                 wasActve = false;
+                wasAttackOrDecay = false;
 
                 break;
 
@@ -91,6 +91,7 @@ public class Key {
                 elapsed++;
 
                 keyState = (attackFrames-- > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
+                wasAttackOrDecay = true;
 
                 break;
 
@@ -99,16 +100,22 @@ public class Key {
                 elapsed++;
 
                 keyState = (decayFrames-- > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
+                wasAttackOrDecay = true;
 
                 break;
 
             case SUSTAIN:
-                calculatedAmplitude = sustainAmplitude;
                 elapsed++;
+                wasAttackOrDecay = false;
 
                 break;
 
             case RELEASE:
+                if (wasAttackOrDecay) {
+                    calculateRelease(calculatedAmplitude);
+                    wasAttackOrDecay = false;
+                }
+
                 calculatedAmplitude = releaseAmplitude -= releaseStep;
                 elapsed++;
 
@@ -142,6 +149,12 @@ public class Key {
                 elapsed);
 
         return sample;
+    }
+
+    private void calculateRelease(double baseAmplitude) {
+        releaseFrames = instrument.getSampleRate() * Math.max(instrument.getRelease(), 0.01);
+        releaseStep = baseAmplitude / releaseFrames;
+        releaseAmplitude = baseAmplitude;
     }
 
     public void pressKey() {
