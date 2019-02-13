@@ -32,7 +32,7 @@ public class Key {
 
     // L - R
     private final double[] sample = new double[2];
-    private double[] modulation;
+    private final double[] modulation = new double[2];
 
     protected static enum KeyState {
         HIT, ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
@@ -130,7 +130,7 @@ public class Key {
                 return sample;
         }
 
-        modulation = instrument.getModulation(elapsed);
+        instrument.getModulation(modulation, elapsed);
 
         sample[0] = calculatedAmplitude * MathUtil.oscillator(
                 instrument.getWaveForm(),

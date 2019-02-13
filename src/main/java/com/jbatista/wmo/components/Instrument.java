@@ -29,7 +29,6 @@ public class Instrument {
     private double effectivePhaseL = 0;
     private double effectivePhaseR = 0;
     private double[] tempModulation;
-    private final double[] modulation = new double[2];
 
     private double[] tempFrameData;
     private final double[] frameData = new double[]{0, 0};
@@ -147,18 +146,16 @@ public class Instrument {
         return buffer;
     }
 
-    protected double[] getModulation(long time) {
-        modulation[0] = 0;
-        modulation[1] = 0;
+    protected void getModulation(double[] buffer, long time) {
+        buffer[0] = 0;
+        buffer[1] = 0;
 
         for (Modulator modulator : modulators) {
             tempModulation = modulator.calculate(time);
 
-            modulation[0] += tempModulation[0];
-            modulation[1] += tempModulation[1];
+            buffer[0] += tempModulation[0];
+            buffer[1] += tempModulation[1];
         }
-
-        return modulation;
     }
 
     public Key buildKey(double frequency) {
