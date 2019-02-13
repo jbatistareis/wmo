@@ -170,6 +170,11 @@ public class Key {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof Key) ? ((Key) obj).getFrequency() == this.frequency : false;
+    }
+
+    @Override
     public int hashCode() {
         return ((Double) frequency).hashCode();
     }

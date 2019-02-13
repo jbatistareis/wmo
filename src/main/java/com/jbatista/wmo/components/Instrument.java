@@ -1,20 +1,22 @@
 package com.jbatista.wmo.components;
 
 import com.jbatista.wmo.MathUtil;
-import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.WaveForm;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
 public class Instrument {
 
-    private final Map<Double, Key> keys = new HashMap<>();
+    private final Map<Double, Key> keys = new LinkedHashMap<>();
     private final LinkedList<Modulator> modulators = new LinkedList<>();
 
     private WaveForm waveForm = WaveForm.SINE;
+    // TODO
     private double sampleRate = 44100;
+    // TODO
+    private int bitsPerSample = 16;
 
     private double amplitude = 1;
     private double attack = 0;
@@ -49,6 +51,14 @@ public class Instrument {
 
     public void setSampleRate(double sampleRate) {
         this.sampleRate = sampleRate;
+    }
+
+    public int getBitsPerSample() {
+        return bitsPerSample;
+    }
+
+    public void setBitsPerSample(int bitsPerSample) {
+        this.bitsPerSample = bitsPerSample;
     }
 
     public double getAmplitude() {
@@ -165,15 +175,6 @@ public class Instrument {
         }
 
         return keys.get(frequency);
-    }
-
-    public Key buildKey(KeyboardNote keyboardNote) {
-        if (!keys.containsKey(keyboardNote.getFrequency())) {
-            final Key key = new Key(keyboardNote.getFrequency(), this);
-            keys.put(keyboardNote.getFrequency(), key);
-        }
-
-        return keys.get(keyboardNote.getFrequency());
     }
 
     public synchronized Modulator buildModulator() {
