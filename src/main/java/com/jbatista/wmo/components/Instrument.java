@@ -168,7 +168,7 @@ public class Instrument {
         }
     }
 
-    public Key buildKey(double frequency) {
+    public synchronized Key buildKey(double frequency) {
         if (!keys.containsKey(frequency)) {
             final Key key = new Key(frequency, this);
             keys.put(frequency, key);
