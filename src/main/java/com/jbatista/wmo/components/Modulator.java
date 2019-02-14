@@ -67,8 +67,8 @@ public class Modulator {
     // </editor-fold>
 
     protected double[] calculate(long time) {
-        frame[0] = strength * MathUtil.oscillator(waveForm, instrument.getSampleRate(), frequency, effectivePhaseL, 0, time);
-        frame[1] = strength * MathUtil.oscillator(waveForm, instrument.getSampleRate(), frequency, effectivePhaseR, 0, time);
+        frame[0] = strength * MathUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseL, 0, time);
+        frame[1] = strength * MathUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseR, 0, time);
 
         return frame;
     }

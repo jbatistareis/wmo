@@ -132,16 +132,18 @@ public class Key {
 
         instrument.getModulation(modulation, elapsed);
 
-        sample[0] = calculatedAmplitude * MathUtil.oscillator(
+        sample[0] = MathUtil.oscillator(
                 instrument.getWaveForm(),
+                calculatedAmplitude,
                 instrument.getSampleRate(),
                 frequency,
                 instrument.getEffectivePhaseL(),
                 modulation[0],
                 elapsed);
 
-        sample[1] = calculatedAmplitude * MathUtil.oscillator(
+        sample[1] = MathUtil.oscillator(
                 instrument.getWaveForm(),
+                calculatedAmplitude,
                 instrument.getSampleRate(),
                 frequency,
                 instrument.getEffectivePhaseR(),

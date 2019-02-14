@@ -9,25 +9,25 @@ public class MathUtil {
         return start + factor * (end - start);
     }
 
-    public static double oscillator(WaveForm waveForm, double sampleRate, double frequency, double phase, double modulation, long time) {
+    public static double oscillator(WaveForm waveForm, double amplitude, double sampleRate, double frequency, double phase, double modulation, long time) {
         switch (waveForm) {
             case SAWTOOTH:
-                return sawtoothWave(sampleRate / frequency, phase, modulation, time);
+                return oscillator(waveForm, amplitude, sampleRate / frequency, phase, modulation, time);
             default:
-                return oscillator(waveForm, frequency / sampleRate, phase, modulation, time);
+                return oscillator(waveForm, amplitude, frequency / sampleRate, phase, modulation, time);
         }
     }
 
-    public static double oscillator(WaveForm waveForm, double frequency, double phase, double modulation, long time) {
+    public static double oscillator(WaveForm waveForm, double amplitude, double frequency, double phase, double modulation, long time) {
         switch (waveForm) {
             case SINE:
-                return sineWave(frequency, phase, modulation, time);
+                return amplitude * sineWave(frequency, phase, modulation, time);
             case SQUARE:
-                return squareWave(frequency, phase, modulation, time);
+                return amplitude * squareWave(frequency, phase, modulation, time);
             case TRIANGLE:
-                return triangleWave(frequency, phase, modulation, time);
+                return amplitude * triangleWave(frequency, phase, modulation, time);
             case SAWTOOTH:
-                return sawtoothWave(frequency, phase, modulation, time);
+                return -(2 * amplitude / Math.PI) * sawtoothWave(frequency, phase, modulation, time);
             default:
                 throw new AssertionError(waveForm.name());
         }
@@ -45,9 +45,9 @@ public class MathUtil {
         return PId2 * Math.asin(sineWave(frequency, phase, modulation, time));
     }
 
-    // TODO set phase
+    // TODO modulation
     private static double sawtoothWave(double frequency, double phase, double modulation, long time) {
-        return ((time + frequency * 2) % frequency) / (frequency + modulation) - 0.5;
+        return Math.atan(1.0 / Math.tan((time * Math.PI / frequency) + phase));
     }
 
 }
