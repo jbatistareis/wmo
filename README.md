@@ -9,7 +9,7 @@
 _tl;dr instantiate an instrument, build its keys based on a frequency, add modulators as seen fit, press some keys, get the frame_  
 This library create audio frames at 16bit 44100Hz. To produce a constant sound, you need to perform multiple calls to it using a loop, or feeding an audio dataline:   
 ```
-final Instrument instrument = new Instrument(WaveForm.SINE, AudioFormat._44100Hz_16bit);;
+final Instrument instrument = new Instrument(WaveForm.SINE, AudioFormat._44100Hz_16bit);
 // creates a key that plays A4
 final Key key = instrument.buildKey(440);
 
