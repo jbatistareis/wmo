@@ -1,5 +1,6 @@
 package com.jbatista.wmo.components;
 
+import com.jbatista.wmo.AudioFormat;
 import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.WaveForm;
 import java.util.LinkedHashMap;
@@ -12,13 +13,12 @@ public class Instrument {
     private final Map<Double, Key> keys = new LinkedHashMap<>();
     private final LinkedList<Modulator> modulators = new LinkedList<>();
 
-    private WaveForm waveForm = WaveForm.SINE;
-    // TODO
-    private double sampleRate = 44100;
-    // TODO
-    private int bitsPerSample = 16;
+    private WaveForm waveForm;
+    private AudioFormat audioFormat;
+    private double sampleRate;
+    private int bitsPerSample;
 
-    private double amplitude = 1;
+    private double amplitude = 0.5;
     private double attack = 0;
     private double decay = 0;
     private double sustain = 1;
@@ -27,14 +27,31 @@ public class Instrument {
     private double phaseL = 0;
     private double phaseR = 0;
 
-    private double effectiveAmplitude = 16384;
+    private int pressedKeys = 0;
+    private double effectiveAmplitude = 0;
     private double effectivePhaseL = 0;
     private double effectivePhaseR = 0;
     private double[] tempModulation;
 
     private double[] tempFrameData;
     private final double[] frameData = new double[]{0, 0};
-    private final byte[] buffer = new byte[]{0, 0, 0, 0};
+
+    // 16 bits
+    private final byte[] byteBuffer = new byte[]{0, 0, 0, 0};
+    // 16 bits
+    private final short[] shortBuffer = new short[]{0, 0};
+    // 32 bits
+    private final float[] floatBuffer = new float[]{0, 0};
+
+    public Instrument(WaveForm waveForm, AudioFormat audioFormat) {
+        this.waveForm = waveForm;
+        this.audioFormat = audioFormat;
+
+        this.sampleRate = audioFormat.getSampleRate();
+        this.bitsPerSample = audioFormat.getBitsPerSample();
+
+        setEffectiveAmplitude();
+    }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public WaveForm getWaveForm() {
@@ -49,16 +66,17 @@ public class Instrument {
         return sampleRate;
     }
 
-    public void setSampleRate(double sampleRate) {
-        this.sampleRate = sampleRate;
-    }
-
     public int getBitsPerSample() {
         return bitsPerSample;
     }
 
-    public void setBitsPerSample(int bitsPerSample) {
-        this.bitsPerSample = bitsPerSample;
+    public AudioFormat getAudioFormat() {
+        return audioFormat;
+    }
+
+    public void setAudioFormat(AudioFormat audioFormat) {
+        this.audioFormat = audioFormat;
+        setEffectiveAmplitude();
     }
 
     public double getAmplitude() {
@@ -67,7 +85,15 @@ public class Instrument {
 
     public void setAmplitude(double amplitude) {
         this.amplitude = Math.max(0, Math.min(amplitude, 1));
-        effectiveAmplitude = MathUtil.lerp(0, 32768, this.amplitude);
+        setEffectiveAmplitude();
+    }
+
+    private void setEffectiveAmplitude() {
+        effectiveAmplitude = MathUtil.lerp(0, Math.pow(2, bitsPerSample) / 2, amplitude);
+    }
+
+    protected double getEffectiveAmplitude() {
+        return effectiveAmplitude / pressedKeys;
     }
 
     public double getAttack() {
@@ -120,10 +146,6 @@ public class Instrument {
         this.effectivePhaseR = MathUtil.lerp(0, MathUtil.PIx2, this.phaseR);
     }
 
-    protected double getEffectiveAmplitude() {
-        return effectiveAmplitude / keys.size();
-    }
-
     protected double getEffectivePhaseL() {
         return effectivePhaseL;
     }
@@ -131,29 +153,73 @@ public class Instrument {
     protected double getEffectivePhaseR() {
         return effectivePhaseR;
     }
+
+    protected void incrementKeyCount() {
+        pressedKeys++;
+    }
+
+    protected void decrementKeyCount() {
+        pressedKeys--;
+    }
     // </editor-fold>
 
-    public synchronized byte[] getFrame() {
+    private void fillFrame() {
         for (Entry<Double, Key> entry : keys.entrySet()) {
             tempFrameData = entry.getValue().getSample();
 
             frameData[0] += tempFrameData[0];
             frameData[1] += tempFrameData[1];
         }
+    }
+
+    public synchronized byte[] get16bitByteFrame() {
+        fillFrame();
 
         // TODO channel stuff
         // L
-        buffer[0] = (byte) ((int) frameData[0] >> 8);
-        buffer[1] = (byte) frameData[0];
+        byteBuffer[0] = (byte) ((int) frameData[0] >> 8);
+        byteBuffer[1] = (byte) frameData[0];
 
         // R
-        buffer[2] = (byte) ((int) frameData[1] >> 8);
-        buffer[3] = (byte) frameData[1];
+        byteBuffer[2] = (byte) ((int) frameData[1] >> 8);
+        byteBuffer[3] = (byte) frameData[1];
 
         frameData[0] = 0.0;
         frameData[1] = 0.0;
 
-        return buffer;
+        return byteBuffer;
+    }
+
+    public synchronized short[] get16bitShortFrame() {
+        fillFrame();
+
+        // TODO channel stuff
+        // L
+        shortBuffer[0] = (short) frameData[0];
+
+        // R
+        shortBuffer[1] = (short) frameData[1];
+
+        frameData[0] = 0.0;
+        frameData[1] = 0.0;
+
+        return shortBuffer;
+    }
+
+    public synchronized float[] get32bitFloatFrame() {
+        fillFrame();
+
+        // TODO channel stuff
+        // L
+        floatBuffer[0] = (float) frameData[0];
+
+        // R
+        floatBuffer[1] = (float) frameData[1];
+
+        frameData[0] = 0.0;
+        frameData[1] = 0.0;
+
+        return floatBuffer;
     }
 
     protected void getModulation(double[] buffer, long time) {

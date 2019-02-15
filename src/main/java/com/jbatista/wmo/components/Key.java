@@ -27,15 +27,16 @@ public class Key {
     private long elapsed = 0;
 
     private KeyState keyState = KeyState.IDLE;
-    private boolean wasActve = false;
-    private boolean wasAttackOrDecay = false;
+    private boolean wasActive = false;
+    private boolean initialRelease = true;
+    private double effectiveAmplitude;
 
     // L - R
     private final double[] sample = new double[2];
     private final double[] modulation = new double[2];
 
     protected static enum KeyState {
-        HIT, ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
+        ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
     }
 
     protected Key(double frequency, Instrument instrument) {
@@ -64,34 +65,11 @@ public class Key {
     // reacts to key press, apply envelope
     protected double[] getSample() {
         switch (keyState) {
-            // setup
-            case HIT:
-                elapsed = wasActve ? elapsed : 0;
-
-                sustainAmplitude = MathUtil.lerp(0, instrument.getEffectiveAmplitude(), instrument.getSustain());
-
-                attackFrames = instrument.getSampleRate() * Math.max(instrument.getAttack(), 0.01);
-                attackStep = (wasActve ? (instrument.getEffectiveAmplitude() - calculatedAmplitude) : instrument.getEffectiveAmplitude()) / attackFrames;
-                attackAmplitude = wasActve ? calculatedAmplitude : 0;
-
-                decayFrames = instrument.getSampleRate() * instrument.getDecay();
-                decayStep = (instrument.getEffectiveAmplitude() - sustainAmplitude) / decayFrames;
-                decayAmplitude = instrument.getEffectiveAmplitude();
-
-                calculateRelease(sustainAmplitude);
-
-                keyState = KeyState.ATTACK;
-                wasActve = false;
-                wasAttackOrDecay = false;
-
-                break;
-
             case ATTACK:
                 calculatedAmplitude = attackAmplitude += attackStep;
                 elapsed++;
 
                 keyState = (attackFrames-- > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
-                wasAttackOrDecay = true;
 
                 break;
 
@@ -100,26 +78,30 @@ public class Key {
                 elapsed++;
 
                 keyState = (decayFrames-- > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
-                wasAttackOrDecay = true;
 
                 break;
 
             case SUSTAIN:
                 elapsed++;
-                wasAttackOrDecay = false;
+                calculatedAmplitude = sustainAmplitude;
 
                 break;
 
             case RELEASE:
-                if (wasAttackOrDecay) {
+                if (initialRelease) {
                     calculateRelease(calculatedAmplitude);
-                    wasAttackOrDecay = false;
+                    initialRelease = false;
                 }
 
                 calculatedAmplitude = releaseAmplitude -= releaseStep;
                 elapsed++;
 
-                keyState = (releaseFrames-- > 0) ? KeyState.RELEASE : KeyState.IDLE;
+                if (releaseFrames-- > 0) {
+                    keyState = KeyState.RELEASE;
+                } else {
+                    keyState = KeyState.IDLE;
+                    instrument.decrementKeyCount();
+                }
 
                 break;
 
@@ -153,22 +135,42 @@ public class Key {
         return sample;
     }
 
-    private void calculateRelease(double baseAmplitude) {
-        releaseFrames = instrument.getSampleRate() * Math.max(instrument.getRelease(), 0.01);
-        releaseStep = baseAmplitude / releaseFrames;
-        releaseAmplitude = baseAmplitude;
-    }
-
     public void pressKey() {
-        if (!keyState.equals(KeyState.IDLE)) {
-            wasActve = true;
+        wasActive = !keyState.equals(KeyState.IDLE);
+        initialRelease = true;
+
+        if (!wasActive) {
+            instrument.incrementKeyCount();
+            elapsed = wasActive ? elapsed : 0;
         }
 
-        keyState = KeyState.HIT;
+        effectiveAmplitude = instrument.getEffectiveAmplitude();
+
+        sustainAmplitude = MathUtil.lerp(0, effectiveAmplitude, instrument.getSustain());
+
+        decayFrames = instrument.getSampleRate() * instrument.getDecay();
+        decayStep = (effectiveAmplitude - sustainAmplitude) / decayFrames;
+        decayAmplitude = effectiveAmplitude;
+
+        if (decayFrames == 0) {
+            effectiveAmplitude = sustainAmplitude;
+        }
+
+        attackFrames = instrument.getSampleRate() * Math.max(instrument.getAttack(), 0.01);
+        attackStep = (wasActive ? (effectiveAmplitude - calculatedAmplitude) : effectiveAmplitude) / attackFrames;
+        attackAmplitude = wasActive ? calculatedAmplitude : 0;
+
+        keyState = KeyState.ATTACK;
     }
 
     public void releaseKey() {
         keyState = KeyState.RELEASE;
+    }
+
+    private void calculateRelease(double baseAmplitude) {
+        releaseFrames = instrument.getSampleRate() * Math.max(instrument.getRelease(), 0.01);
+        releaseStep = baseAmplitude / releaseFrames;
+        releaseAmplitude = baseAmplitude;
     }
 
     @Override
