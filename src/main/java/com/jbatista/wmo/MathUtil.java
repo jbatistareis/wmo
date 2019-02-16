@@ -2,9 +2,6 @@ package com.jbatista.wmo;
 
 public class MathUtil {
 
-    public static final double PIx2 = 2 * Math.PI;
-    public static final double PId2 = 2 / Math.PI;
-
     public static double lerp(double start, double end, double factor) {
         return start + factor * (end - start);
     }
@@ -34,7 +31,7 @@ public class MathUtil {
     }
 
     private static double sineWave(double frequency, double phase, double modulation, long time) {
-        return Math.sin((PIx2 * frequency * time + phase) + modulation);
+        return Math.sin((2 * Math.PI * frequency * time + phase) + modulation);
     }
 
     private static double squareWave(double frequency, double phase, double modulation, long time) {
@@ -42,7 +39,7 @@ public class MathUtil {
     }
 
     private static double triangleWave(double frequency, double phase, double modulation, long time) {
-        return PId2 * Math.asin(sineWave(frequency, phase, modulation, time));
+        return 2 / Math.PI * Math.asin(sineWave(frequency, phase, modulation, time));
     }
 
     // TODO modulation

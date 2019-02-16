@@ -21,7 +21,7 @@ sourceDataLine.start();
 
 // the write method blocks the thread, so it can safely be used in this kind loop
 while (true) {
-  sourceDataLine.write(instrument.getFrame(), 0, 4);
+  sourceDataLine.write(instrument.get16bitByteFrame(), 0, 4);
 }
 ...
 

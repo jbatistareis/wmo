@@ -53,7 +53,7 @@ public class Modulator {
 
     public void setPhaseL(double phaseL) {
         this.phaseL = Math.max(0, Math.min(phaseL, 1));
-        this.effectivePhaseL = MathUtil.lerp(0, MathUtil.PIx2, this.phaseL);
+        this.effectivePhaseL = MathUtil.lerp(0, 2 / Math.PI, this.phaseL);
     }
 
     public double getPhaseR() {
@@ -62,7 +62,7 @@ public class Modulator {
 
     public void setPhaseR(double phaseR) {
         this.phaseR = Math.max(0, Math.min(phaseR, 1));
-        this.effectivePhaseR = MathUtil.lerp(0, MathUtil.PIx2, this.phaseR);
+        this.effectivePhaseR = MathUtil.lerp(0, 2 / Math.PI, this.phaseR);
     }
     // </editor-fold>
 
