@@ -164,10 +164,17 @@ public class Instrument {
     // </editor-fold>
 
     private void fillFrame() {
+        frameData[0] = 0.0;
+        frameData[1] = 0.0;
+
+        // TODO channel stuff
         for (Entry<Double, Key> entry : keys.entrySet()) {
             tempFrameData = entry.getValue().getSample();
 
+            // L
             frameData[0] += tempFrameData[0];
+
+            //R
             frameData[1] += tempFrameData[1];
         }
     }
@@ -175,17 +182,10 @@ public class Instrument {
     public synchronized byte[] get16bitByteFrame() {
         fillFrame();
 
-        // TODO channel stuff
-        // L
         byteBuffer[0] = (byte) ((int) frameData[0] >> 8);
         byteBuffer[1] = (byte) frameData[0];
-
-        // R
         byteBuffer[2] = (byte) ((int) frameData[1] >> 8);
         byteBuffer[3] = (byte) frameData[1];
-
-        frameData[0] = 0.0;
-        frameData[1] = 0.0;
 
         return byteBuffer;
     }
@@ -193,15 +193,8 @@ public class Instrument {
     public synchronized short[] get16bitShortFrame() {
         fillFrame();
 
-        // TODO channel stuff
-        // L
         shortBuffer[0] = (short) frameData[0];
-
-        // R
         shortBuffer[1] = (short) frameData[1];
-
-        frameData[0] = 0.0;
-        frameData[1] = 0.0;
 
         return shortBuffer;
     }
@@ -209,15 +202,8 @@ public class Instrument {
     public synchronized float[] get32bitFloatFrame() {
         fillFrame();
 
-        // TODO channel stuff
-        // L
         floatBuffer[0] = (float) frameData[0];
-
-        // R
         floatBuffer[1] = (float) frameData[1];
-
-        frameData[0] = 0.0;
-        frameData[1] = 0.0;
 
         return floatBuffer;
     }
