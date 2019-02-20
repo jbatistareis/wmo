@@ -37,10 +37,10 @@ public class Instrument {
     private final double[] frameData = new double[]{0, 0};
 
     // 16 bits
-    private final byte[] byteBuffer = new byte[]{0, 0, 0, 0};
-    // 16 bits
+    private final byte[] byte16Buffer = new byte[]{0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
     // 32 bits
+    private final byte[] byte32Buffer = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
     public Instrument(WaveForm waveForm, AudioFormat audioFormat) {
@@ -182,12 +182,12 @@ public class Instrument {
     public synchronized byte[] get16bitByteFrame() {
         fillFrame();
 
-        byteBuffer[0] = (byte) ((int) frameData[0] >> 8);
-        byteBuffer[1] = (byte) frameData[0];
-        byteBuffer[2] = (byte) ((int) frameData[1] >> 8);
-        byteBuffer[3] = (byte) frameData[1];
+        byte16Buffer[0] = (byte) ((int) frameData[0] >> 8);
+        byte16Buffer[1] = (byte) frameData[0];
+        byte16Buffer[2] = (byte) ((int) frameData[1] >> 8);
+        byte16Buffer[3] = (byte) frameData[1];
 
-        return byteBuffer;
+        return byte16Buffer;
     }
 
     public synchronized short[] get16bitShortFrame() {
@@ -197,6 +197,21 @@ public class Instrument {
         shortBuffer[1] = (short) frameData[1];
 
         return shortBuffer;
+    }
+
+    public synchronized byte[] get32bitByteFrame() {
+        fillFrame();
+
+        byte32Buffer[0] = (byte) ((int) frameData[0] >> 24);
+        byte32Buffer[1] = (byte) ((int) frameData[0] >> 16);
+        byte32Buffer[2] = (byte) ((int) frameData[0] >> 8);
+        byte32Buffer[3] = (byte) frameData[0];
+        byte32Buffer[4] = (byte) ((int) frameData[1] >> 24);
+        byte32Buffer[5] = (byte) ((int) frameData[1] >> 16);
+        byte32Buffer[6] = (byte) ((int) frameData[1] >> 8);
+        byte32Buffer[7] = (byte) frameData[1];
+
+        return byte32Buffer;
     }
 
     public synchronized float[] get32bitFloatFrame() {
