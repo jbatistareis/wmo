@@ -3,6 +3,7 @@ package com.jbatista.wmo.components;
 import com.jbatista.wmo.AudioFormat;
 import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.WaveForm;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -190,6 +191,7 @@ public class Instrument {
                 byte16Buffer[3] = (byte) frameData[1];
 
                 return byte16Buffer;
+
             case 32:
                 byte32Buffer[0] = (byte) ((int) frameData[0] >> 24);
                 byte32Buffer[1] = (byte) ((int) frameData[0] >> 16);
@@ -201,8 +203,9 @@ public class Instrument {
                 byte32Buffer[7] = (byte) frameData[1];
 
                 return byte32Buffer;
-                default:
-                    return new byte[]{};
+
+            default:
+                throw new RuntimeException("Only 16 or 32 bits per sample are supported");
         }
     }
 
