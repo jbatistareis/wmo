@@ -179,18 +179,34 @@ public class Instrument {
         }
     }
 
-    public synchronized byte[] get16bitByteFrame() {
+    public synchronized byte[] getByteFrame() {
         fillFrame();
 
-        byte16Buffer[0] = (byte) ((int) frameData[0] >> 8);
-        byte16Buffer[1] = (byte) frameData[0];
-        byte16Buffer[2] = (byte) ((int) frameData[1] >> 8);
-        byte16Buffer[3] = (byte) frameData[1];
+        switch (audioFormat.getBitsPerSample()){
+            case 16:
+                byte16Buffer[0] = (byte) ((int) frameData[0] >> 8);
+                byte16Buffer[1] = (byte) frameData[0];
+                byte16Buffer[2] = (byte) ((int) frameData[1] >> 8);
+                byte16Buffer[3] = (byte) frameData[1];
 
-        return byte16Buffer;
+                return byte16Buffer;
+            case 32:
+                byte32Buffer[0] = (byte) ((int) frameData[0] >> 24);
+                byte32Buffer[1] = (byte) ((int) frameData[0] >> 16);
+                byte32Buffer[2] = (byte) ((int) frameData[0] >> 8);
+                byte32Buffer[3] = (byte) frameData[0];
+                byte32Buffer[4] = (byte) ((int) frameData[1] >> 24);
+                byte32Buffer[5] = (byte) ((int) frameData[1] >> 16);
+                byte32Buffer[6] = (byte) ((int) frameData[1] >> 8);
+                byte32Buffer[7] = (byte) frameData[1];
+
+                return byte32Buffer;
+                default:
+                    return new byte[]{};
+        }
     }
 
-    public synchronized short[] get16bitShortFrame() {
+    public synchronized short[] getShortFrame() {
         fillFrame();
 
         shortBuffer[0] = (short) frameData[0];
@@ -199,22 +215,7 @@ public class Instrument {
         return shortBuffer;
     }
 
-    public synchronized byte[] get32bitByteFrame() {
-        fillFrame();
-
-        byte32Buffer[0] = (byte) ((int) frameData[0] >> 24);
-        byte32Buffer[1] = (byte) ((int) frameData[0] >> 16);
-        byte32Buffer[2] = (byte) ((int) frameData[0] >> 8);
-        byte32Buffer[3] = (byte) frameData[0];
-        byte32Buffer[4] = (byte) ((int) frameData[1] >> 24);
-        byte32Buffer[5] = (byte) ((int) frameData[1] >> 16);
-        byte32Buffer[6] = (byte) ((int) frameData[1] >> 8);
-        byte32Buffer[7] = (byte) frameData[1];
-
-        return byte32Buffer;
-    }
-
-    public synchronized float[] get32bitFloatFrame() {
+    public synchronized float[] getFloatFrame() {
         fillFrame();
 
         floatBuffer[0] = (float) frameData[0];
