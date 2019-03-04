@@ -180,32 +180,59 @@ public class Instrument {
         }
     }
 
-    public synchronized byte[] getByteFrame() {
+    public synchronized byte[] getByteFrame(boolean bigEndian) {
         fillFrame();
 
-        switch (audioFormat.getBitsPerSample()){
-            case 16:
-                byte16Buffer[0] = (byte) ((int) frameData[0] >> 8);
-                byte16Buffer[1] = (byte) frameData[0];
-                byte16Buffer[2] = (byte) ((int) frameData[1] >> 8);
-                byte16Buffer[3] = (byte) frameData[1];
+        if (bigEndian) {
+            switch (audioFormat.getBitsPerSample()) {
+                case 16:
+                    byte16Buffer[0] = (byte) ((int) frameData[0] >> 8);
+                    byte16Buffer[1] = (byte) frameData[0];
+                    byte16Buffer[2] = (byte) ((int) frameData[1] >> 8);
+                    byte16Buffer[3] = (byte) frameData[1];
 
-                return byte16Buffer;
+                    return byte16Buffer;
 
-            case 32:
-                byte32Buffer[0] = (byte) ((int) frameData[0] >> 24);
-                byte32Buffer[1] = (byte) ((int) frameData[0] >> 16);
-                byte32Buffer[2] = (byte) ((int) frameData[0] >> 8);
-                byte32Buffer[3] = (byte) frameData[0];
-                byte32Buffer[4] = (byte) ((int) frameData[1] >> 24);
-                byte32Buffer[5] = (byte) ((int) frameData[1] >> 16);
-                byte32Buffer[6] = (byte) ((int) frameData[1] >> 8);
-                byte32Buffer[7] = (byte) frameData[1];
+                case 32:
+                    byte32Buffer[0] = (byte) ((int) frameData[0] >> 24);
+                    byte32Buffer[1] = (byte) ((int) frameData[0] >> 16);
+                    byte32Buffer[2] = (byte) ((int) frameData[0] >> 8);
+                    byte32Buffer[3] = (byte) frameData[0];
+                    byte32Buffer[4] = (byte) ((int) frameData[1] >> 24);
+                    byte32Buffer[5] = (byte) ((int) frameData[1] >> 16);
+                    byte32Buffer[6] = (byte) ((int) frameData[1] >> 8);
+                    byte32Buffer[7] = (byte) frameData[1];
 
-                return byte32Buffer;
+                    return byte32Buffer;
 
-            default:
-                throw new RuntimeException("Only 16 or 32 bits per sample are supported");
+                default:
+                    throw new RuntimeException("Only 16 or 32 bits per sample are supported");
+            }
+        } else {
+            switch (audioFormat.getBitsPerSample()) {
+                case 16:
+                    byte16Buffer[1] = (byte) ((int) frameData[0] >> 8);
+                    byte16Buffer[0] = (byte) frameData[0];
+                    byte16Buffer[3] = (byte) ((int) frameData[1] >> 8);
+                    byte16Buffer[2] = (byte) frameData[1];
+
+                    return byte16Buffer;
+
+                case 32:
+                    byte32Buffer[3] = (byte) ((int) frameData[0] >> 24);
+                    byte32Buffer[2] = (byte) ((int) frameData[0] >> 16);
+                    byte32Buffer[1] = (byte) ((int) frameData[0] >> 8);
+                    byte32Buffer[0] = (byte) frameData[0];
+                    byte32Buffer[7] = (byte) ((int) frameData[1] >> 24);
+                    byte32Buffer[6] = (byte) ((int) frameData[1] >> 16);
+                    byte32Buffer[5] = (byte) ((int) frameData[1] >> 8);
+                    byte32Buffer[4] = (byte) frameData[1];
+
+                    return byte32Buffer;
+
+                default:
+                    throw new RuntimeException("Only 16 or 32 bits per sample are supported");
+            }
         }
     }
 
