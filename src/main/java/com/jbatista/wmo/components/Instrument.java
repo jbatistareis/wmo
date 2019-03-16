@@ -175,7 +175,7 @@ public class Instrument {
             // L
             frameData[0] += tempFrameData[0];
 
-            //R
+            // R
             frameData[1] += tempFrameData[1];
         }
     }
@@ -186,18 +186,24 @@ public class Instrument {
         if (bigEndian) {
             switch (audioFormat.getBitsPerSample()) {
                 case 16:
+                    // L
                     byte16Buffer[0] = (byte) ((int) frameData[0] >> 8);
                     byte16Buffer[1] = (byte) frameData[0];
+
+                    // R
                     byte16Buffer[2] = (byte) ((int) frameData[1] >> 8);
                     byte16Buffer[3] = (byte) frameData[1];
 
                     return byte16Buffer;
 
                 case 32:
+                    // L
                     byte32Buffer[0] = (byte) ((int) frameData[0] >> 24);
                     byte32Buffer[1] = (byte) ((int) frameData[0] >> 16);
                     byte32Buffer[2] = (byte) ((int) frameData[0] >> 8);
                     byte32Buffer[3] = (byte) frameData[0];
+
+                    // R
                     byte32Buffer[4] = (byte) ((int) frameData[1] >> 24);
                     byte32Buffer[5] = (byte) ((int) frameData[1] >> 16);
                     byte32Buffer[6] = (byte) ((int) frameData[1] >> 8);
@@ -211,22 +217,28 @@ public class Instrument {
         } else {
             switch (audioFormat.getBitsPerSample()) {
                 case 16:
-                    byte16Buffer[1] = (byte) ((int) frameData[0] >> 8);
+                    // L
                     byte16Buffer[0] = (byte) frameData[0];
-                    byte16Buffer[3] = (byte) ((int) frameData[1] >> 8);
+                    byte16Buffer[1] = (byte) ((int) frameData[0] >> 8);
+
+                    // R
                     byte16Buffer[2] = (byte) frameData[1];
+                    byte16Buffer[3] = (byte) ((int) frameData[1] >> 8);
 
                     return byte16Buffer;
 
                 case 32:
-                    byte32Buffer[3] = (byte) ((int) frameData[0] >> 24);
-                    byte32Buffer[2] = (byte) ((int) frameData[0] >> 16);
-                    byte32Buffer[1] = (byte) ((int) frameData[0] >> 8);
+                    // L
                     byte32Buffer[0] = (byte) frameData[0];
-                    byte32Buffer[7] = (byte) ((int) frameData[1] >> 24);
-                    byte32Buffer[6] = (byte) ((int) frameData[1] >> 16);
-                    byte32Buffer[5] = (byte) ((int) frameData[1] >> 8);
+                    byte32Buffer[1] = (byte) ((int) frameData[0] >> 8);
+                    byte32Buffer[2] = (byte) ((int) frameData[0] >> 16);
+                    byte32Buffer[3] = (byte) ((int) frameData[0] >> 24);
+
+                    // R
                     byte32Buffer[4] = (byte) frameData[1];
+                    byte32Buffer[5] = (byte) ((int) frameData[1] >> 8);
+                    byte32Buffer[6] = (byte) ((int) frameData[1] >> 16);
+                    byte32Buffer[7] = (byte) ((int) frameData[1] >> 24);
 
                     return byte32Buffer;
 
@@ -239,7 +251,10 @@ public class Instrument {
     public synchronized short[] getShortFrame() {
         fillFrame();
 
+        // L
         shortBuffer[0] = (short) frameData[0];
+
+        // R
         shortBuffer[1] = (short) frameData[1];
 
         return shortBuffer;
@@ -248,7 +263,10 @@ public class Instrument {
     public synchronized float[] getFloatFrame() {
         fillFrame();
 
+        // L
         floatBuffer[0] = (float) frameData[0];
+
+        // R
         floatBuffer[1] = (float) frameData[1];
 
         return floatBuffer;
