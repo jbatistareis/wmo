@@ -135,7 +135,7 @@ public class Key {
         return sample;
     }
 
-    public void pressKey() {
+    public void press() {
         wasActive = !keyState.equals(KeyState.IDLE);
         initialRelease = true;
 
@@ -163,7 +163,7 @@ public class Key {
         keyState = KeyState.ATTACK;
     }
 
-    public void releaseKey() {
+    public void release() {
         keyState = KeyState.RELEASE;
     }
 

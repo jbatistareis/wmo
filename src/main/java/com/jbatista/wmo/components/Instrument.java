@@ -147,6 +147,18 @@ public class Instrument {
         this.effectivePhaseR = MathUtil.lerp(0, Math.PI * 2, this.phaseR);
     }
 
+    public void pressKey(double frequency) {
+        keys.get(frequency).press();
+    }
+
+    public void releaseKey(double frequency) {
+        keys.get(frequency).press();
+    }
+
+    public Key getKey(double frequency) {
+        return keys.get(frequency);
+    }
+
     protected double getEffectivePhaseL() {
         return effectivePhaseL;
     }
