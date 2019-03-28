@@ -1,4 +1,4 @@
-package com.jbatista.wmo.components;
+package com.jbatista.wmo.components.play;
 
 import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.WaveForm;
