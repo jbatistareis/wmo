@@ -272,12 +272,12 @@ public class Instrument {
         return floatBuffer;
     }
 
-    protected void getModulation(double[] buffer, long time) {
+    protected void getModulation(double[] buffer, long time, double frequency) {
         buffer[0] = 0;
         buffer[1] = 0;
 
         for (Modulator modulator : modulators) {
-            tempModulation = modulator.calculate(time);
+            tempModulation = modulator.calculate(time, frequency);
 
             buffer[0] += tempModulation[0];
             buffer[1] += tempModulation[1];

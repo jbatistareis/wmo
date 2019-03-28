@@ -9,12 +9,13 @@ public class Modulator {
 
     private WaveForm waveForm = WaveForm.SINE;
     private double strength = 1.0;
-    private double frequency = 440;
+    private double frequencyVariation = 1.0;
     private double phaseL = 0;
     private double phaseR = 0;
 
     private double effectivePhaseL = 0;
     private double effectivePhaseR = 0;
+    private double effectiveFrequency = 0;
 
     private final double[] frame = new double[2];
 
@@ -39,12 +40,12 @@ public class Modulator {
         this.strength = strength;
     }
 
-    public double getFrequency() {
-        return frequency;
+    public double getFrequencyVariation() {
+        return frequencyVariation;
     }
 
-    public void setFrequency(double frequency) {
-        this.frequency = frequency;
+    public void setFrequencyVariation(double frequencyVariation) {
+        this.frequencyVariation = frequencyVariation;
     }
 
     public double getPhaseL() {
@@ -66,7 +67,9 @@ public class Modulator {
     }
     // </editor-fold>
 
-    protected double[] calculate(long time) {
+    protected double[] calculate(long time, double frequency) {
+        effectiveFrequency = frequency * frequencyVariation;
+
         frame[0] = strength * MathUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseL, 0, time);
         frame[1] = strength * MathUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseR, 0, time);
 

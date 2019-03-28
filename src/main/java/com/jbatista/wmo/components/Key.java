@@ -112,7 +112,7 @@ public class Key {
                 return sample;
         }
 
-        instrument.getModulation(modulation, elapsed);
+        instrument.getModulation(modulation, elapsed, frequency);
 
         sample[0] = MathUtil.oscillator(
                 instrument.getWaveForm(),
