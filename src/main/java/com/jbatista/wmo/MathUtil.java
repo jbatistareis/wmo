@@ -6,6 +6,10 @@ public class MathUtil {
         return start + factor * (end - start);
     }
 
+    public static double frequenceByPosition(int position) {
+        return 69.297 * Math.pow(2, (position - 49) / 12d);
+    }
+
     public static double oscillator(WaveForm waveForm, double amplitude, double sampleRate, double frequency, double phase, double modulation, long time) {
         switch (waveForm) {
             case SAWTOOTH:
