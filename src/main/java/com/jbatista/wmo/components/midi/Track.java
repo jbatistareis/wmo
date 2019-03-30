@@ -1,39 +1,67 @@
 package com.jbatista.wmo.components.midi;
 
-import com.jbatista.wmo.AudioFormat;
-import com.jbatista.wmo.WaveForm;
-import com.jbatista.wmo.components.play.Instrument;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Track {
 
-    private Instrument instrument;
     private Sequencer sequencer;
-    private javax.sound.midi.Track midiTrack;
+    private Map<Long, Event> events = new HashMap<>();
+    private Event event;
 
-    private int currentMessage = 0;
-
-    protected Track(Sequencer sequencer, javax.sound.midi.Track midiTrack, AudioFormat audioFormat) {
+    protected Track(Sequencer sequencer, javax.sound.midi.Track midiTrack) {
         this.sequencer = sequencer;
-        this.midiTrack = midiTrack;
 
-        // TODO presets
-        this.instrument = new Instrument(WaveForm.SINE, audioFormat);
-    }
+        byte[] data;
+        for (int i = 0; i < midiTrack.size(); i++) {
+            data = midiTrack.get(i).getMessage().getMessage();
 
-    public byte[] getFrame() {
-        return instrument.getByteFrame(true);
+            if (((data[0] & 0xFF) == 0xFF) && ((data[1] & 0xFF) == 0x51) && ((data[2] & 0xFF) == 0x03)) {
+                events.put(
+                        midiTrack.get(i).getTick(),
+                        new Event(
+                                Event.Type.SET_BPM,
+                                60000000 / (((data[3] & 0xFF) << 16) + ((data[4] & 0xFF) << 8) + (data[5] & 0xFF)),
+                                0,
+                                0));
+            } else if ((data[0] & 0xF0) == 0x90) {
+                events.put(
+                        midiTrack.get(i).getTick(),
+                        new Event(
+                                Event.Type.KEY_PRESS,
+                                data[1] & 0xFF,
+                                data[2] & 0xFF,
+                                data[0] & 0x0F));
+            } else if ((data[0] & 0xF0) == 0x80) {
+                events.put(
+                        midiTrack.get(i).getTick(),
+                        new Event(
+                                Event.Type.KEY_RELEASE,
+                                data[1] & 0xFF,
+                                data[2] & 0xFF,
+                                data[0] & 0x0F));
+            }
+        }
     }
 
     protected void readMidiMessage(long tick) {
-        if (midiTrack.get(currentMessage).getTick() == tick) {
-            System.out.print(currentMessage + ": ");
-            // TODO decode
-            for (byte data : midiTrack.get(currentMessage).getMessage().getMessage()) {
-                System.out.print(Integer.toHexString(data & 0xFF) + ' ');
+        event = events.get(tick);
+        if (event != null) {
+            switch (event.getType()) {
+                case SET_BPM:
+                    sequencer.setBpm(event.getValue1());
+                    break;
+                case SET_INSTRUMENT:
+                    break;
+                case KEY_PRESS:
+                    sequencer.pressKey(event.getChannel(), event.getValue1(), event.getValue2());
+                    break;
+                case KEY_RELEASE:
+                    sequencer.releaseKey(event.getChannel(), event.getValue1(), event.getValue2());
+                    break;
+                default:
+                    break;
             }
-            System.out.println();
-
-            currentMessage++;
         }
     }
 
