@@ -1,5 +1,6 @@
 package com.jbatista.wmo.components.play;
 
+import com.jbatista.wmo.DspUtil;
 import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.WaveForm;
 
@@ -70,8 +71,8 @@ public class Modulator {
     protected double[] calculate(long time, double frequency) {
         effectiveFrequency = frequency * frequencyVariation;
 
-        frame[0] = strength * MathUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseL, 0, time);
-        frame[1] = strength * MathUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseR, 0, time);
+        frame[0] = strength * DspUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseL, 0, time);
+        frame[1] = strength * DspUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseR, 0, time);
 
         return frame;
     }

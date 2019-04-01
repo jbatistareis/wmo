@@ -57,15 +57,15 @@ public class Sequencer {
     }
 
     protected void setChannelInstrument(byte channel, byte instrumentCode) {
-
+        System.out.println("Change to " + Integer.toHexString(instrumentCode));
     }
 
     protected void pressKey(int channel, int key, int speed) {
-        System.out.println("P");
+        System.out.println("Press");
     }
 
     protected void releaseKey(int channel, int key, int speed) {
-        System.out.println("R");
+        System.out.println("Release");
     }
 
 }

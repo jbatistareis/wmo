@@ -1,5 +1,6 @@
 package com.jbatista.wmo.components.play;
 
+import com.jbatista.wmo.DspUtil;
 import com.jbatista.wmo.MathUtil;
 
 public class Key {
@@ -114,7 +115,7 @@ public class Key {
 
         instrument.getModulation(modulation, elapsed, frequency);
 
-        sample[0] = MathUtil.oscillator(
+        sample[0] = DspUtil.oscillator(
                 instrument.getWaveForm(),
                 calculatedAmplitude,
                 instrument.getSampleRate(),
@@ -123,7 +124,7 @@ public class Key {
                 modulation[0],
                 elapsed);
 
-        sample[1] = MathUtil.oscillator(
+        sample[1] = DspUtil.oscillator(
                 instrument.getWaveForm(),
                 calculatedAmplitude,
                 instrument.getSampleRate(),

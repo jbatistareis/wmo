@@ -1,5 +1,7 @@
 package com.jbatista.wmo.components.midi;
 
+import com.jbatista.wmo.MathUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,31 +18,42 @@ public class Track {
         for (int i = 0; i < midiTrack.size(); i++) {
             data = midiTrack.get(i).getMessage().getMessage();
 
-            if (((data[0] & 0xFF) == 0xFF) && ((data[1] & 0xFF) == 0x51) && ((data[2] & 0xFF) == 0x03)) {
-                events.put(
-                        midiTrack.get(i).getTick(),
-                        new Event(
-                                Event.Type.SET_BPM,
-                                60000000 / (((data[3] & 0xFF) << 16) + ((data[4] & 0xFF) << 8) + (data[5] & 0xFF)),
-                                0,
-                                0));
-            } else if ((data[0] & 0xF0) == 0x90) {
-                events.put(
-                        midiTrack.get(i).getTick(),
-                        new Event(
-                                Event.Type.KEY_PRESS,
-                                data[1] & 0xFF,
-                                data[2] & 0xFF,
-                                data[0] & 0x0F));
-            } else if ((data[0] & 0xF0) == 0x80) {
-                events.put(
-                        midiTrack.get(i).getTick(),
-                        new Event(
-                                Event.Type.KEY_RELEASE,
-                                data[1] & 0xFF,
-                                data[2] & 0xFF,
-                                data[0] & 0x0F));
+            // parse events
+            switch (data.length) {
+                case 3:
+                    if ((data[0] & 0xF0) == 0x90) {
+                        events.put(
+                                midiTrack.get(i).getTick(),
+                                new Event(
+                                        Event.Type.KEY_PRESS,
+                                        data[1] & 0xFF,
+                                        data[2] & 0xFF,
+                                        data[0] & 0x0F));
+                    } else if ((data[0] & 0xF0) == 0x80) {
+                        events.put(
+                                midiTrack.get(i).getTick(),
+                                new Event(
+                                        Event.Type.KEY_RELEASE,
+                                        data[1] & 0xFF,
+                                        data[2] & 0xFF,
+                                        data[0] & 0x0F));
+                    }
+
+                    break;
+                case 6:
+                    if (MathUtil.valueIn24bit(data[0], data[1], data[2]) == 0xFF5103) {
+                        events.put(
+                                midiTrack.get(i).getTick(),
+                                new Event(
+                                        Event.Type.SET_BPM,
+                                        60000000 / MathUtil.valueIn24bit(data[3], data[4], data[5]),
+                                        0,
+                                        0));
+                    }
+
+                    break;
             }
+
         }
     }
 
