@@ -33,16 +33,28 @@ public class Key {
     private double effectiveAmplitude;
 
     // L - R
+    private final double[] wave;
     private final double[] sample = new double[2];
     private final double[] modulation = new double[2];
 
-    protected static enum KeyState {
+    protected enum KeyState {
         ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
     }
 
     protected Key(double frequency, Instrument instrument) {
+        this.wave = new double[(int) (instrument.getSampleRate() / frequency)];
         this.frequency = frequency;
         this.instrument = instrument;
+
+        for (int i = 0; i < wave.length; i++) {
+            wave[i] = DspUtil.oscillator(
+                    instrument.getWaveForm(),
+                    instrument.getSampleRate(),
+                    frequency,
+                    0,
+                    0,
+                    i);
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -113,25 +125,13 @@ public class Key {
                 return sample;
         }
 
-        instrument.getModulation(modulation, elapsed, frequency);
+        instrument.getModulation(modulation, elapsed);
 
-        sample[0] = DspUtil.oscillator(
-                instrument.getWaveForm(),
-                calculatedAmplitude,
-                instrument.getSampleRate(),
-                frequency,
-                instrument.getEffectivePhaseL(),
-                modulation[0],
-                elapsed);
+        sample[0] = calculatedAmplitude
+                * (wave[(int) ((elapsed + MathUtil.PI_T2 * instrument.getPhaseL() * instrument.getSampleRate()) % wave.length)] + modulation[0]);
 
-        sample[1] = DspUtil.oscillator(
-                instrument.getWaveForm(),
-                calculatedAmplitude,
-                instrument.getSampleRate(),
-                frequency,
-                instrument.getEffectivePhaseR(),
-                modulation[1],
-                elapsed);
+        sample[1] = calculatedAmplitude
+                * (wave[(int) ((elapsed + MathUtil.PI_T2 * instrument.getPhaseR() * instrument.getSampleRate()) % wave.length)] + modulation[1]);
 
         return sample;
     }
@@ -145,7 +145,7 @@ public class Key {
             elapsed = wasActive ? elapsed : 0;
         }
 
-        effectiveAmplitude = instrument.getEffectiveAmplitude();
+        effectiveAmplitude = 1;
 
         sustainAmplitude = MathUtil.lerp(0, effectiveAmplitude, instrument.getSustain());
 

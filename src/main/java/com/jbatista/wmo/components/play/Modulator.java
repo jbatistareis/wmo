@@ -10,18 +10,16 @@ public class Modulator {
 
     private WaveForm waveForm = WaveForm.SINE;
     private double strength = 1.0;
-    private double frequencyVariation = 1.0;
+    private double frequency = 440;
     private double phaseL = 0;
     private double phaseR = 0;
 
-    private double effectivePhaseL = 0;
-    private double effectivePhaseR = 0;
-    private double effectiveFrequency = 0;
-
-    private final double[] frame = new double[2];
+    private final double[] sample = new double[2];
+    private double[] wave;
 
     protected Modulator(Instrument instrument) {
         this.instrument = instrument;
+        setSample();
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -30,6 +28,7 @@ public class Modulator {
     }
 
     public void setWaveForm(WaveForm waveForm) {
+        setSample();
         this.waveForm = waveForm;
     }
 
@@ -41,12 +40,13 @@ public class Modulator {
         this.strength = strength;
     }
 
-    public double getFrequencyVariation() {
-        return frequencyVariation;
+    public double getFrequency() {
+        return frequency;
     }
 
-    public void setFrequencyVariation(double frequencyVariation) {
-        this.frequencyVariation = frequencyVariation;
+    public void setFrequency(double frequency) {
+        setSample();
+        this.frequency = frequency;
     }
 
     public double getPhaseL() {
@@ -55,7 +55,6 @@ public class Modulator {
 
     public void setPhaseL(double phaseL) {
         this.phaseL = Math.max(0, Math.min(phaseL, 1));
-        this.effectivePhaseL = MathUtil.lerp(0, 2 / Math.PI, this.phaseL);
     }
 
     public double getPhaseR() {
@@ -64,17 +63,27 @@ public class Modulator {
 
     public void setPhaseR(double phaseR) {
         this.phaseR = Math.max(0, Math.min(phaseR, 1));
-        this.effectivePhaseR = MathUtil.lerp(0, 2 / Math.PI, this.phaseR);
     }
     // </editor-fold>
 
-    protected double[] calculate(long time, double frequency) {
-        effectiveFrequency = frequency * frequencyVariation;
+    protected double[] calculate(long time) {
+        sample[0] = strength * (wave[(int) ((time + MathUtil.PI_T2 * instrument.getPhaseL() * instrument.getSampleRate()) % wave.length)]);
+        sample[1] = strength * (wave[(int) ((time + MathUtil.PI_T2 * instrument.getPhaseR() * instrument.getSampleRate()) % wave.length)]);
 
-        frame[0] = strength * DspUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseL, 0, time);
-        frame[1] = strength * DspUtil.oscillator(waveForm, 1.0, instrument.getSampleRate(), frequency, effectivePhaseR, 0, time);
+        return sample;
+    }
 
-        return frame;
+    private void setSample() {
+        this.wave = new double[(int) (instrument.getSampleRate() / frequency)];
+        for (int i = 0; i < wave.length; i++) {
+            wave[i] = DspUtil.oscillator(
+                    waveForm,
+                    instrument.getSampleRate(),
+                    frequency,
+                    0,
+                    0,
+                    i);
+        }
     }
 
 }
