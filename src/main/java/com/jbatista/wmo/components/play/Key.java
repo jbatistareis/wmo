@@ -2,6 +2,7 @@ package com.jbatista.wmo.components.play;
 
 import com.jbatista.wmo.DspUtil;
 import com.jbatista.wmo.MathUtil;
+import com.jbatista.wmo.WaveForm;
 
 public class Key {
 
@@ -31,9 +32,10 @@ public class Key {
     private boolean wasActive = false;
     private boolean initialRelease = true;
     private double effectiveAmplitude;
+    private WaveForm currentWaveForm;
 
     // L - R
-    private final double[] wave;
+    private double[] wave;
     private final double[] sample = new double[2];
     private final double[] modulation = new double[2];
 
@@ -42,19 +44,10 @@ public class Key {
     }
 
     protected Key(double frequency, Instrument instrument) {
-        this.wave = new double[(int) (instrument.getSampleRate() / frequency)];
         this.frequency = frequency;
         this.instrument = instrument;
 
-        for (int i = 0; i < wave.length; i++) {
-            wave[i] = DspUtil.oscillator(
-                    instrument.getWaveForm(),
-                    instrument.getSampleRate(),
-                    frequency,
-                    0,
-                    0,
-                    i);
-        }
+        setWave();
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -137,6 +130,10 @@ public class Key {
     }
 
     public void press() {
+        if (currentWaveForm != instrument.getWaveForm()) {
+            setWave();
+        }
+
         wasActive = !keyState.equals(KeyState.IDLE);
         initialRelease = true;
 
@@ -172,6 +169,21 @@ public class Key {
         releaseFrames = instrument.getSampleRate() * Math.max(instrument.getRelease(), 0.01);
         releaseStep = baseAmplitude / releaseFrames;
         releaseAmplitude = baseAmplitude;
+    }
+
+    private void setWave() {
+        currentWaveForm = instrument.getWaveForm();
+
+        wave = new double[(int) (instrument.getSampleRate() / frequency)];
+        for (int i = 0; i < wave.length; i++) {
+            wave[i] = DspUtil.oscillator(
+                    instrument.getWaveForm(),
+                    instrument.getSampleRate(),
+                    frequency,
+                    0,
+                    0,
+                    i);
+        }
     }
 
     @Override
