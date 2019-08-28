@@ -28,8 +28,8 @@ public class Modulator {
     }
 
     public void setWaveForm(WaveForm waveForm) {
-        setSample();
         this.waveForm = waveForm;
+        setSample();
     }
 
     public double getStrength() {
@@ -45,8 +45,8 @@ public class Modulator {
     }
 
     public void setFrequency(double frequency) {
-        setSample();
         this.frequency = frequency;
+        setSample();
     }
 
     public double getPhaseL() {
