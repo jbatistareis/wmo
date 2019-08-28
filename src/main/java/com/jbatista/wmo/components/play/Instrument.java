@@ -19,7 +19,7 @@ public class Instrument {
     private double sampleRate;
     private int bitsPerSample;
 
-    private double amplitude = 0.5;
+    private double amplitude = 0.1;
     private double attack = 0;
     private double decay = 0;
     private double sustain = 1;
@@ -30,8 +30,6 @@ public class Instrument {
 
     private int pressedKeys = 0;
     private double effectiveAmplitude = 0;
-    private double effectivePhaseL = 0;
-    private double effectivePhaseR = 0;
     private double[] tempModulation;
 
     private double[] tempFrameData;
@@ -85,16 +83,12 @@ public class Instrument {
     }
 
     public void setAmplitude(double amplitude) {
-        this.amplitude = Math.max(0, Math.min(amplitude, 1));
+        this.amplitude = Math.max(0.1, Math.min(amplitude, 1));
         setEffectiveAmplitude();
     }
 
     private void setEffectiveAmplitude() {
         effectiveAmplitude = MathUtil.lerp(0, Math.pow(2, bitsPerSample) / 2, amplitude);
-    }
-
-    protected double getEffectiveAmplitude() {
-        return effectiveAmplitude / pressedKeys;
     }
 
     public double getAttack() {
@@ -135,7 +129,6 @@ public class Instrument {
 
     public void setPhaseL(double phaseL) {
         this.phaseL = Math.max(0, Math.min(phaseL, 1));
-        this.effectivePhaseL = MathUtil.lerp(0, Math.PI * 2, this.phaseL);
     }
 
     public double getPhaseR() {
@@ -144,7 +137,6 @@ public class Instrument {
 
     public void setPhaseR(double phaseR) {
         this.phaseR = Math.max(0, Math.min(phaseR, 1));
-        this.effectivePhaseR = MathUtil.lerp(0, Math.PI * 2, this.phaseR);
     }
 
     public void pressKey(double frequency) {
@@ -152,19 +144,11 @@ public class Instrument {
     }
 
     public void releaseKey(double frequency) {
-        keys.get(frequency).press();
+        keys.get(frequency).release();
     }
 
     public Key getKey(double frequency) {
         return keys.get(frequency);
-    }
-
-    protected double getEffectivePhaseL() {
-        return effectivePhaseL;
-    }
-
-    protected double getEffectivePhaseR() {
-        return effectivePhaseR;
     }
 
     protected void incrementKeyCount() {
@@ -182,14 +166,19 @@ public class Instrument {
 
         // TODO channel stuff
         for (Entry<Double, Key> entry : keys.entrySet()) {
-            tempFrameData = entry.getValue().getSample();
+            if (!entry.getValue().getKeyState().equals(Key.KeyState.IDLE)) {
+                tempFrameData = entry.getValue().getSample();
 
-            // L
-            frameData[0] += tempFrameData[0];
+                // L
+                frameData[0] += tempFrameData[0];
 
-            // R
-            frameData[1] += tempFrameData[1];
+                // R
+                frameData[1] += tempFrameData[1];
+            }
         }
+
+        frameData[0] = effectiveAmplitude * frameData[0];
+        frameData[1] = effectiveAmplitude * frameData[1];
     }
 
     public synchronized byte[] getByteFrame(boolean bigEndian) {
@@ -284,22 +273,21 @@ public class Instrument {
         return floatBuffer;
     }
 
-    protected void getModulation(double[] buffer, long time, double frequency) {
+    protected void getModulation(double[] buffer, long time) {
         buffer[0] = 0;
         buffer[1] = 0;
 
         for (Modulator modulator : modulators) {
-            tempModulation = modulator.calculate(time, frequency);
+            tempModulation = modulator.calculate(time);
 
-            buffer[0] += tempModulation[0];
-            buffer[1] += tempModulation[1];
+            buffer[0] += tempModulation[0] / modulators.size();
+            buffer[1] += tempModulation[1] / modulators.size();
         }
     }
 
     public synchronized Key buildKey(double frequency) {
         if (!keys.containsKey(frequency)) {
-            final Key key = new Key(frequency, this);
-            keys.put(frequency, key);
+            keys.put(frequency, new Key(frequency, this));
         }
 
         return keys.get(frequency);
@@ -313,17 +301,6 @@ public class Instrument {
 
     public synchronized void removeModulator(Modulator modulator) {
         modulators.remove(modulator);
-    }
-
-    public synchronized void shiftModulators(Modulator modulator1, Modulator modulator2) {
-        final int index1 = modulators.indexOf(modulator1);
-        final int index2 = modulators.indexOf(modulator2);
-
-        removeModulator(modulator1);
-        removeModulator(modulator2);
-
-        modulators.add(index2, modulator1);
-        modulators.add(index1, modulator2);
     }
 
 }
