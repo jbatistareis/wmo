@@ -2,19 +2,25 @@ package com.jbatista.wmo;
 
 public class MathUtil {
 
-    public static final double PI_T2 = Math.PI * 2;
+    public static final double TAU = Math.PI * 2;
     public static final double PI_D2 = Math.PI / 2;
 
-    public static int valueIn16bit(byte b1, byte b2) {
-        return ((b1 & 0xFF) << 8) + (b2 & 0xFF);
+    public static int valueFrom16bit(boolean bigEndian, byte b1, byte b2) {
+        return bigEndian
+                ? ((b1 & 0xFF) << 8) + (b2 & 0xFF)
+                : (b2 & 0xFF) + ((b1 & 0xFF) << 8);
     }
 
-    public static int valueIn24bit(byte b1, byte b2, byte b3) {
-        return ((b1 & 0xFF) << 16) + ((b2 & 0xFF) << 8) + (b3 & 0xFF);
+    public static int valueFrom24bit(boolean bigEndian, byte b1, byte b2, byte b3) {
+        return bigEndian
+                ? ((b1 & 0xFF) << 16) + ((b2 & 0xFF) << 8) + (b3 & 0xFF)
+                : (b3 & 0xFF) + ((b2 & 0xFF) << 8) + ((b1 & 0xFF) << 16);
     }
 
-    public static int valueIn32bit(byte b1, byte b2, byte b3, byte b4) {
-        return ((b1 & 0xFF) << 24) + ((b2 & 0xFF) << 16) + ((b3 & 0xFF) << 8) + (b4 & 0xFF);
+    public static int valueFrom32bit(boolean bigEndian, byte b1, byte b2, byte b3, byte b4) {
+        return bigEndian
+                ? ((b1 & 0xFF) << 24) + ((b2 & 0xFF) << 16) + ((b3 & 0xFF) << 8) + (b4 & 0xFF)
+                : (b4 & 0xFF) + ((b3 & 0xFF) << 8) + ((b2 & 0xFF) << 16) + ((b1 & 0xFF) << 24);
     }
 
     public static double lerp(double start, double end, double factor) {
