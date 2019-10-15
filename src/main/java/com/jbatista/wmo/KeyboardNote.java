@@ -15,7 +15,7 @@ public enum KeyboardNote {
     private String name;
     private double frequency;
 
-    private KeyboardNote(String name, double frequency) {
+    KeyboardNote(String name, double frequency) {
         this.name = name;
         this.frequency = frequency;
     }
