@@ -19,7 +19,7 @@ public enum AudioFormat {
     private double sampleRate;
     private int bitsPerSample;
 
-    private AudioFormat(double sampleRate, int bitsPerSample) {
+    AudioFormat(double sampleRate, int bitsPerSample) {
         this.sampleRate = sampleRate;
         this.bitsPerSample = bitsPerSample;
     }
