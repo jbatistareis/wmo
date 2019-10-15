@@ -28,10 +28,11 @@ public class Instrument {
     private double phaseL = 0;
     private double phaseR = 0;
 
-    private int pressedKeys = 0;
     private double effectiveAmplitude = 0;
     private double[] tempModulation;
 
+    private double frameData0;
+    private double frameData1;
     private double[] tempFrameData;
     private final double[] frameData = new double[]{0, 0};
 
@@ -75,6 +76,9 @@ public class Instrument {
 
     public void setAudioFormat(AudioFormat audioFormat) {
         this.audioFormat = audioFormat;
+        this.sampleRate = audioFormat.getSampleRate();
+        this.bitsPerSample = audioFormat.getBitsPerSample();
+
         setEffectiveAmplitude();
     }
 
@@ -88,7 +92,7 @@ public class Instrument {
     }
 
     private void setEffectiveAmplitude() {
-        effectiveAmplitude = MathUtil.lerp(0, Math.pow(2, bitsPerSample) / 2, amplitude);
+        effectiveAmplitude = MathUtil.lerp(0, Math.pow(2, bitsPerSample - 1), amplitude);
     }
 
     public double getAttack() {
@@ -150,19 +154,11 @@ public class Instrument {
     public Key getKey(double frequency) {
         return keys.get(frequency);
     }
-
-    protected void incrementKeyCount() {
-        pressedKeys++;
-    }
-
-    protected void decrementKeyCount() {
-        pressedKeys--;
-    }
     // </editor-fold>
 
     private void fillFrame() {
-        frameData[0] = 0.0;
-        frameData[1] = 0.0;
+        frameData0 = 0.0;
+        frameData1 = 0.0;
 
         // TODO channel stuff
         for (Entry<Double, Key> entry : keys.entrySet()) {
@@ -170,15 +166,15 @@ public class Instrument {
                 tempFrameData = entry.getValue().getSample();
 
                 // L
-                frameData[0] += tempFrameData[0];
+                frameData0 += tempFrameData[0];
 
                 // R
-                frameData[1] += tempFrameData[1];
+                frameData1 += tempFrameData[1];
             }
         }
 
-        frameData[0] = effectiveAmplitude * frameData[0];
-        frameData[1] = effectiveAmplitude * frameData[1];
+        frameData[0] = effectiveAmplitude * frameData0;
+        frameData[1] = effectiveAmplitude * frameData1;
     }
 
     public synchronized byte[] getByteFrame(boolean bigEndian) {

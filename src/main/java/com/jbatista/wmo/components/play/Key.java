@@ -106,7 +106,6 @@ public class Key {
                     keyState = KeyState.RELEASE;
                 } else {
                     keyState = KeyState.IDLE;
-                    instrument.decrementKeyCount();
                 }
 
                 break;
@@ -136,7 +135,6 @@ public class Key {
         initialRelease = true;
 
         if (!wasActive) {
-            instrument.incrementKeyCount();
             elapsed = wasActive ? elapsed : 0;
         }
 

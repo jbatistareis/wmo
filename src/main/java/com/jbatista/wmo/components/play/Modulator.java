@@ -67,8 +67,8 @@ public class Modulator {
     // </editor-fold>
 
     protected double[] calculate(long time) {
-        sample[0] = strength * (wave[(int) ((time + MathUtil.PI_T2 * instrument.getPhaseL() * instrument.getSampleRate()) % wave.length)]);
-        sample[1] = strength * (wave[(int) ((time + MathUtil.PI_T2 * instrument.getPhaseR() * instrument.getSampleRate()) % wave.length)]);
+        sample[0] = strength * (wave[(int) ((time + MathUtil.TAU * instrument.getPhaseL() * instrument.getSampleRate()) % wave.length)]);
+        sample[1] = strength * (wave[(int) ((time + MathUtil.TAU * instrument.getPhaseR() * instrument.getSampleRate()) % wave.length)]);
 
         return sample;
     }
