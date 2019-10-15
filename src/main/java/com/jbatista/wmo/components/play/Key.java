@@ -120,11 +120,9 @@ public class Key {
 
         instrument.getModulation(modulation, elapsed);
 
-        sample[0] = calculatedAmplitude
-                * (wave[(int) ((elapsed + MathUtil.PI_T2 * instrument.getPhaseL() * instrument.getSampleRate()) % wave.length)] + modulation[0]);
+        sample[0] = calculatedAmplitude * (wave[(int) ((elapsed + MathUtil.TAU * instrument.getPhaseL() * instrument.getSampleRate()) % wave.length)] + modulation[0]);
 
-        sample[1] = calculatedAmplitude
-                * (wave[(int) ((elapsed + MathUtil.PI_T2 * instrument.getPhaseR() * instrument.getSampleRate()) % wave.length)] + modulation[1]);
+        sample[1] = calculatedAmplitude * (wave[(int) ((elapsed + MathUtil.TAU * instrument.getPhaseR() * instrument.getSampleRate()) % wave.length)] + modulation[1]);
 
         return sample;
     }
@@ -174,9 +172,9 @@ public class Key {
     private void setWave() {
         currentWaveForm = instrument.getWaveForm();
 
-        wave = new double[(int) (instrument.getSampleRate() / frequency)];
-        for (int i = 0; i < wave.length; i++) {
-            wave[i] = DspUtil.oscillator(
+        final double[] tempWave = new double[(int) (instrument.getSampleRate() / frequency)];
+        for (int i = 0; i < tempWave.length; i++) {
+            tempWave[i] = DspUtil.oscillator(
                     instrument.getWaveForm(),
                     instrument.getSampleRate(),
                     frequency,
@@ -184,11 +182,13 @@ public class Key {
                     0,
                     i);
         }
+
+        wave = tempWave;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof Key) ? ((Key) obj).getFrequency() == this.frequency : false;
+        return (obj instanceof Key) && ((Key) obj).getFrequency() == this.frequency;
     }
 
     @Override
