@@ -1,4 +1,4 @@
-package com.jbatista.wmo.components.play;
+package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.AudioFormat;
 import com.jbatista.wmo.MathUtil;

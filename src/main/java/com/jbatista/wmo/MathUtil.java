@@ -1,9 +1,12 @@
 package com.jbatista.wmo;
 
+import java.util.Random;
+
 public class MathUtil {
 
     public static final double TAU = Math.PI * 2;
     public static final double PI_D2 = Math.PI / 2;
+    public static final Random RANDOM = new Random();
 
     public static int valueFrom16bit(boolean bigEndian, byte b1, byte b2) {
         return bigEndian

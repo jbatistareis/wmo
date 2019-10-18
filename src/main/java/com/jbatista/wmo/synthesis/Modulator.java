@@ -1,4 +1,4 @@
-package com.jbatista.wmo.components.play;
+package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.DspUtil;
 import com.jbatista.wmo.MathUtil;
@@ -80,7 +80,6 @@ public class Modulator {
                     waveForm,
                     instrument.getSampleRate(),
                     frequency,
-                    0,
                     0,
                     i);
         }

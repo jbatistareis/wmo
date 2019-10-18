@@ -1,4 +1,4 @@
-package com.jbatista.wmo.components.midi;
+package com.jbatista.wmo.midi;
 
 public class Event {
 

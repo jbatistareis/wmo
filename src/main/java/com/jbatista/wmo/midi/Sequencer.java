@@ -1,6 +1,6 @@
-package com.jbatista.wmo.components.midi;
+package com.jbatista.wmo.midi;
 
-import com.jbatista.wmo.components.play.Instrument;
+import com.jbatista.wmo.synthesis.Instrument;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
