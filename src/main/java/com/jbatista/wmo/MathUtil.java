@@ -10,28 +10,28 @@ public class MathUtil {
 
     private static final int SIGNED_24BIT_MAX = 8388607;
 
-    public static int valueFrom16bit(boolean bigEndian, boolean signed, byte b1, byte b2) {
+    public static int primitiveFrom16bit(boolean bigEndian, boolean signed, byte b1, byte b2) {
         return (bigEndian
                 ? ((b1 & 0xFF) << 8) + (b2 & 0xFF)
                 : (b2 & 0xFF) + ((b1 & 0xFF) << 8))
                 - (signed ? Short.MAX_VALUE : 0);
     }
 
-    public static long valueFrom24bit(boolean bigEndian, boolean signed, byte b1, byte b2, byte b3) {
+    public static long primitiveFrom24bit(boolean bigEndian, boolean signed, byte b1, byte b2, byte b3) {
         return (bigEndian
                 ? ((b1 & 0xFF) << 16) + ((b2 & 0xFF) << 8) + (b3 & 0xFF)
                 : (b3 & 0xFF) + ((b2 & 0xFF) << 8) + ((b1 & 0xFF) << 16))
                 - (signed ? SIGNED_24BIT_MAX : 0);
     }
 
-    public static long valueFrom32bit(boolean bigEndian, boolean signed, byte b1, byte b2, byte b3, byte b4) {
+    public static long primitiveFrom32bit(boolean bigEndian, boolean signed, byte b1, byte b2, byte b3, byte b4) {
         return bigEndian
                 ? ((b1 & 0xFF) << 24) + ((b2 & 0xFF) << 16) + ((b3 & 0xFF) << 8) + (b4 & 0xFF)
                 : (b4 & 0xFF) + ((b3 & 0xFF) << 8) + ((b2 & 0xFF) << 16) + ((b1 & 0xFF) << 24)
                 - (signed ? Integer.MAX_VALUE : 0);
     }
 
-    public static void valueTo16bit(boolean bigEndian, byte[] buffer, int bufferIndex, int value) {
+    public static void primitiveTo16bit(boolean bigEndian, byte[] buffer, int bufferIndex, int value) {
         if (buffer.length < 2) {
             throw new IllegalArgumentException("Buffer size must be of at least 2");
         }
@@ -45,7 +45,7 @@ public class MathUtil {
         }
     }
 
-    public static void valueTo24bit(boolean bigEndian, byte[] buffer, int bufferIndex, long value) {
+    public static void primitiveTo24bit(boolean bigEndian, byte[] buffer, int bufferIndex, long value) {
         if (buffer.length < 3) {
             throw new IllegalArgumentException("Buffer size must be of at least 3");
         }
@@ -61,7 +61,7 @@ public class MathUtil {
         }
     }
 
-    public static void valueTo32bit(boolean bigEndian, byte[] buffer, int bufferIndex, long value) {
+    public static void primitiveTo32bit(boolean bigEndian, byte[] buffer, int bufferIndex, long value) {
         if (buffer.length < 4) {
             throw new IllegalArgumentException("Buffer size must be of at least 4");
         }
