@@ -27,6 +27,7 @@ public class Key {
     private double releaseAmplitude;
 
     private long elapsed = 0;
+    private double samplePositionFactor = 0;
 
     private KeyState keyState = KeyState.IDLE;
     private boolean wasActive = false;
@@ -37,7 +38,6 @@ public class Key {
     // L - R
     private double[] wave;
     private final double[] sample = new double[2];
-    private final double[] modulation = new double[2];
 
     protected enum KeyState {
         ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
@@ -73,7 +73,6 @@ public class Key {
         switch (keyState) {
             case ATTACK:
                 calculatedAmplitude = attackAmplitude += attackStep;
-                elapsed++;
 
                 keyState = (attackFrames-- > 0) ? KeyState.ATTACK : (decayFrames > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
 
@@ -81,14 +80,12 @@ public class Key {
 
             case DECAY:
                 calculatedAmplitude = decayAmplitude -= decayStep;
-                elapsed++;
 
                 keyState = (decayFrames-- > 0) ? KeyState.DECAY : KeyState.SUSTAIN;
 
                 break;
 
             case SUSTAIN:
-                elapsed++;
                 calculatedAmplitude = sustainAmplitude;
 
                 break;
@@ -100,7 +97,6 @@ public class Key {
                 }
 
                 calculatedAmplitude = releaseAmplitude -= releaseStep;
-                elapsed++;
 
                 if (releaseFrames-- > 0) {
                     keyState = KeyState.RELEASE;
@@ -117,11 +113,9 @@ public class Key {
                 return sample;
         }
 
-        instrument.getModulation(modulation, elapsed);
-
-        sample[0] = calculatedAmplitude * (wave[(int) ((elapsed + MathUtil.TAU * instrument.getPhaseL() * instrument.getSampleRate()) % wave.length)] + modulation[0]);
-
-        sample[1] = calculatedAmplitude * (wave[(int) ((elapsed + MathUtil.TAU * instrument.getPhaseR() * instrument.getSampleRate()) % wave.length)] + modulation[1]);
+        elapsed++;
+        sample[0] = calculatedAmplitude * (wave[(int) ((elapsed + instrument.getPhaseL() * samplePositionFactor) % wave.length)]);
+        sample[1] = calculatedAmplitude * (wave[(int) ((elapsed + instrument.getPhaseR() * samplePositionFactor) % wave.length)]);
 
         return sample;
     }
@@ -150,7 +144,7 @@ public class Key {
             effectiveAmplitude = sustainAmplitude;
         }
 
-        attackFrames = instrument.getSampleRate() * Math.max(instrument.getAttack(), 0.01);
+        attackFrames = instrument.getSampleRate() * instrument.getAttack();
         attackStep = (wasActive ? (effectiveAmplitude - calculatedAmplitude) : effectiveAmplitude) / attackFrames;
         attackAmplitude = wasActive ? calculatedAmplitude : 0;
 
@@ -162,13 +156,14 @@ public class Key {
     }
 
     private void calculateRelease(double baseAmplitude) {
-        releaseFrames = instrument.getSampleRate() * Math.max(instrument.getRelease(), 0.01);
+        releaseFrames = instrument.getSampleRate() * instrument.getRelease();
         releaseStep = baseAmplitude / releaseFrames;
         releaseAmplitude = baseAmplitude;
     }
 
     private void setWave() {
         currentWaveForm = instrument.getWaveForm();
+        samplePositionFactor = MathUtil.TAU * instrument.getSampleRate();
 
         final double[] tempWave = new double[(int) (instrument.getSampleRate() / frequency)];
         for (int i = 0; i < tempWave.length; i++) {
