@@ -183,19 +183,19 @@ public class Instrument {
         switch (audioFormat.getBitsPerSample()) {
             case 16:
                 // L
-                MathUtil.valueTo16bit(bigEndian, byte16Buffer, 0, (int) frameData[0]);
+                MathUtil.primitiveTo16bit(bigEndian, byte16Buffer, 0, (int) frameData[0]);
 
                 // R
-                MathUtil.valueTo16bit(bigEndian, byte16Buffer, 2, (int) frameData[1]);
+                MathUtil.primitiveTo16bit(bigEndian, byte16Buffer, 2, (int) frameData[1]);
 
                 return byte16Buffer;
 
             case 32:
                 // L
-                MathUtil.valueTo32bit(bigEndian, byte32Buffer, 0, (long) frameData[0]);
+                MathUtil.primitiveTo32bit(bigEndian, byte32Buffer, 0, (long) frameData[0]);
 
                 // R
-                MathUtil.valueTo32bit(bigEndian, byte32Buffer, 4, (long) frameData[1]);
+                MathUtil.primitiveTo32bit(bigEndian, byte32Buffer, 4, (long) frameData[1]);
 
                 return byte32Buffer;
 
