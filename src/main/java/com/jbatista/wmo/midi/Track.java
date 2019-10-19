@@ -41,12 +41,12 @@ public class Track {
 
                     break;
                 case 6:
-                    if (MathUtil.valueFrom24bit(true, data[0], data[1], data[2]) == 0xFF5103) {
+                    if (MathUtil.valueFrom24bit(true, false, data[0], data[1], data[2]) == 0xFF5103) {
                         events.put(
                                 midiTrack.get(i).getTick(),
                                 new Event(
                                         Event.Type.SET_BPM,
-                                        60000000 / MathUtil.valueFrom24bit(true, data[3], data[4], data[5]),
+                                        60000000 / (int) MathUtil.valueFrom24bit(true, false, data[3], data[4], data[5]),
                                         0,
                                         0));
                     }
