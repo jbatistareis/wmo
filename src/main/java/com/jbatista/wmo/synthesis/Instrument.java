@@ -1,18 +1,22 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.AudioFormat;
+import com.jbatista.wmo.DspUtil.WaveForm;
 import com.jbatista.wmo.MathUtil;
-import com.jbatista.wmo.WaveForm;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Instrument {
 
     private final Map<Double, Key> keys = new LinkedHashMap<>();
+    private final Queue<Key> keysQueue = new ConcurrentLinkedQueue<>();
     private final LinkedList<Modulator> modulators = new LinkedList<>();
+    private short keyIndex;
+    private Key tempKey;
 
     private WaveForm waveForm;
     private AudioFormat audioFormat;
@@ -20,27 +24,25 @@ public class Instrument {
     private int bitsPerSample;
 
     private double amplitude = 0.1;
-    private double attack = 0;
-    private double decay = 0;
+    private double attack = 0.01;
+    private double decay = 0.01;
     private double sustain = 1;
-    private double release = 0;
+    private double release = 0.01;
 
     private double phaseL = 0;
     private double phaseR = 0;
 
     private double effectiveAmplitude = 0;
-    private double[] tempModulation;
 
-    private double frameData0;
-    private double frameData1;
-    private double[] tempFrameData;
-    private final double[] frameData = new double[]{0, 0};
+    private double[] tempWaveSample;
+    private final double[] waveSample = new double[]{0, 0};
+    private final double[] finalWaveSample = new double[]{0, 0};
 
     // 16 bits
-    private final byte[] byte16Buffer = new byte[]{0, 0, 0, 0};
+    private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
     // 32 bits
-    private final byte[] byte32Buffer = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
+    private final byte[] buffer32bit = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
     public Instrument(WaveForm waveForm, AudioFormat audioFormat) {
@@ -54,6 +56,14 @@ public class Instrument {
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
+    Queue<Key> getKeysQueue() {
+        return keysQueue;
+    }
+
+    LinkedList<Modulator> getModulators() {
+        return modulators;
+    }
+
     public WaveForm getWaveForm() {
         return waveForm;
     }
@@ -87,7 +97,7 @@ public class Instrument {
     }
 
     public void setAmplitude(double amplitude) {
-        this.amplitude = Math.max(0.1, Math.min(amplitude, 1));
+        this.amplitude = Math.max(0.01, Math.min(amplitude, 1));
         setEffectiveAmplitude();
     }
 
@@ -100,7 +110,8 @@ public class Instrument {
     }
 
     public void setAttack(double attack) {
-        this.attack = Math.max(0, attack);
+        this.attack = Math.max(0.01, Math.min(attack, 1));
+        ;
     }
 
     public double getDecay() {
@@ -108,7 +119,8 @@ public class Instrument {
     }
 
     public void setDecay(double decay) {
-        this.decay = Math.max(0, decay);
+        this.decay = Math.max(0.01, Math.min(decay, 1));
+        ;
     }
 
     public double getSustain() {
@@ -116,7 +128,8 @@ public class Instrument {
     }
 
     public void setSustain(double sustain) {
-        this.sustain = Math.max(0, sustain);
+        this.sustain = Math.max(0.01, Math.min(sustain, 1));
+        ;
     }
 
     public double getRelease() {
@@ -124,7 +137,8 @@ public class Instrument {
     }
 
     public void setRelease(double release) {
-        this.release = Math.max(0, release);
+        this.release = Math.max(0.01, Math.min(release, 1));
+        ;
     }
 
     public double getPhaseL() {
@@ -157,24 +171,27 @@ public class Instrument {
     // </editor-fold>
 
     private void fillFrame() {
-        frameData0 = 0.0;
-        frameData1 = 0.0;
+        waveSample[0] = 0.0;
+        waveSample[1] = 0.0;
 
         // TODO channel stuff
-        for (Entry<Double, Key> entry : keys.entrySet()) {
-            if (!entry.getValue().getKeyState().equals(Key.KeyState.IDLE)) {
-                tempFrameData = entry.getValue().getSample();
+        for (keyIndex = 0; keyIndex < keysQueue.size(); keyIndex++) {
+            tempKey = keysQueue.poll();
+            tempWaveSample = tempKey.getSample();
 
-                // L
-                frameData0 += tempFrameData[0];
+            // L
+            waveSample[0] += tempWaveSample[0];
 
-                // R
-                frameData1 += tempFrameData[1];
+            // R
+            waveSample[1] += tempWaveSample[1];
+
+            if (!tempKey.getKeyState().equals(Key.KeyState.IDLE)) {
+                keysQueue.offer(tempKey);
             }
         }
 
-        frameData[0] = effectiveAmplitude * frameData0;
-        frameData[1] = effectiveAmplitude * frameData1;
+        finalWaveSample[0] = effectiveAmplitude * waveSample[0];
+        finalWaveSample[1] = effectiveAmplitude * waveSample[1];
     }
 
     public synchronized byte[] getByteFrame(boolean bigEndian) {
@@ -183,24 +200,24 @@ public class Instrument {
         switch (audioFormat.getBitsPerSample()) {
             case 16:
                 // L
-                MathUtil.primitiveTo16bit(bigEndian, byte16Buffer, 0, (int) frameData[0]);
+                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) finalWaveSample[0]);
 
                 // R
-                MathUtil.primitiveTo16bit(bigEndian, byte16Buffer, 2, (int) frameData[1]);
+                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) finalWaveSample[1]);
 
-                return byte16Buffer;
+                return buffer16bit;
 
             case 32:
                 // L
-                MathUtil.primitiveTo32bit(bigEndian, byte32Buffer, 0, (long) frameData[0]);
+                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) finalWaveSample[0]);
 
                 // R
-                MathUtil.primitiveTo32bit(bigEndian, byte32Buffer, 4, (long) frameData[1]);
+                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 4, (long) finalWaveSample[1]);
 
-                return byte32Buffer;
+                return buffer32bit;
 
             default:
-                throw new RuntimeException("Only 16 or 32 bits per sample are supported");
+                throw new RuntimeException("Only 16 or 32 bits per waveSample are supported");
         }
     }
 
@@ -208,10 +225,10 @@ public class Instrument {
         fillFrame();
 
         // L
-        shortBuffer[0] = (short) frameData[0];
+        shortBuffer[0] = (short) finalWaveSample[0];
 
         // R
-        shortBuffer[1] = (short) frameData[1];
+        shortBuffer[1] = (short) finalWaveSample[1];
 
         return shortBuffer;
     }
@@ -220,24 +237,12 @@ public class Instrument {
         fillFrame();
 
         // L
-        floatBuffer[0] = (float) frameData[0];
+        floatBuffer[0] = (float) finalWaveSample[0];
 
         // R
-        floatBuffer[1] = (float) frameData[1];
+        floatBuffer[1] = (float) finalWaveSample[1];
 
         return floatBuffer;
-    }
-
-    protected void getModulation(double[] buffer, long time) {
-        buffer[0] = 0;
-        buffer[1] = 0;
-
-        for (Modulator modulator : modulators) {
-            tempModulation = modulator.calculate(time);
-
-            buffer[0] += tempModulation[0] / modulators.size();
-            buffer[1] += tempModulation[1] / modulators.size();
-        }
     }
 
     public synchronized Key buildKey(double frequency) {

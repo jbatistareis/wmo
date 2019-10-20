@@ -2,7 +2,6 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.DspUtil;
 import com.jbatista.wmo.MathUtil;
-import com.jbatista.wmo.WaveForm;
 
 public class Key {
 
@@ -33,28 +32,19 @@ public class Key {
     private boolean wasActive = false;
     private boolean initialRelease = true;
     private double effectiveAmplitude;
-    private WaveForm currentWaveForm;
 
     // L - R
-    private double[] wave;
     private final double[] sample = new double[2];
+    private double modulationSample = 0;
 
-    protected enum KeyState {
-        ATTACK, DECAY, SUSTAIN, RELEASE, IDLE
-    }
+    protected enum KeyState {ATTACK, DECAY, SUSTAIN, RELEASE, IDLE}
 
     protected Key(double frequency, Instrument instrument) {
         this.frequency = frequency;
         this.instrument = instrument;
-
-        setWave();
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    public Instrument getInstrument() {
-        return instrument;
-    }
-
     public double getFrequency() {
         return frequency;
     }
@@ -114,22 +104,27 @@ public class Key {
         }
 
         elapsed++;
-        sample[0] = calculatedAmplitude * (wave[(int) ((elapsed + instrument.getPhaseL() * samplePositionFactor) % wave.length)]);
-        sample[1] = calculatedAmplitude * (wave[(int) ((elapsed + instrument.getPhaseR() * samplePositionFactor) % wave.length)]);
+
+        if (!instrument.getModulators().isEmpty()) {
+            modulationSample = 0;
+            for (Modulator modulator : instrument.getModulators()) {
+                modulationSample += modulator.getSample(frequency, elapsed);
+            }
+            modulationSample /= instrument.getModulators().size();
+        }
+
+        sample[0] = calculatedAmplitude * produceSample(modulationSample, instrument.getPhaseL(), elapsed);
+        sample[1] = calculatedAmplitude * produceSample(modulationSample, instrument.getPhaseR(), elapsed);
 
         return sample;
     }
 
     public void press() {
-        if (currentWaveForm != instrument.getWaveForm()) {
-            setWave();
-        }
-
         wasActive = !keyState.equals(KeyState.IDLE);
         initialRelease = true;
 
         if (!wasActive) {
-            elapsed = wasActive ? elapsed : 0;
+            elapsed = 0;
         }
 
         effectiveAmplitude = 1;
@@ -149,6 +144,10 @@ public class Key {
         attackAmplitude = wasActive ? calculatedAmplitude : 0;
 
         keyState = KeyState.ATTACK;
+
+        if (!instrument.getKeysQueue().contains(this)) {
+            instrument.getKeysQueue().offer(this);
+        }
     }
 
     public void release() {
@@ -161,21 +160,14 @@ public class Key {
         releaseAmplitude = baseAmplitude;
     }
 
-    private void setWave() {
-        currentWaveForm = instrument.getWaveForm();
-        samplePositionFactor = MathUtil.TAU * instrument.getSampleRate();
-
-        final double[] tempWave = new double[(int) (instrument.getSampleRate() / frequency)];
-        for (int i = 0; i < tempWave.length; i++) {
-            tempWave[i] = DspUtil.oscillator(
-                    instrument.getWaveForm(),
-                    instrument.getSampleRate(),
-                    frequency,
-                    0,
-                    i);
-        }
-
-        wave = tempWave;
+    private double produceSample(double modulation, double phase, long time) {
+        return DspUtil.oscillator(
+                instrument.getWaveForm(),
+                instrument.getSampleRate(),
+                frequency,
+                modulation,
+                phase,
+                time);
     }
 
     @Override
