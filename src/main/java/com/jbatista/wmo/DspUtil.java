@@ -21,23 +21,6 @@ public class DspUtil {
         }
     }
 
-    public static double modulator(WaveForm waveForm, double sampleRate, double frequency, double frequencyRatio, double strength, long time) {
-        switch (waveForm) {
-            case SINE:
-                return strength * sineWave(sampleRate, frequency / frequencyRatio, 0, 0, time);
-            case SQUARE:
-                return strength * squareWave(sampleRate, frequency / frequencyRatio, 0, 0, time);
-            case TRIANGLE:
-                return strength * triangleWave(sampleRate, frequency / frequencyRatio, 0, 0, time);
-            case SAWTOOTH:
-                return strength * sawtoothWave(sampleRate, frequency / frequencyRatio, 0, 0, time);
-            case WHITE_NOISE:
-                return strength * whiteNoise();
-            default:
-                throw new AssertionError(waveForm.name());
-        }
-    }
-
     private static double sineWave(double sampleRate, double frequency, double modulation, double phase, long time) {
         return Math.sin((MathUtil.TAU * frequency * time) / sampleRate + modulation + phase);
     }
@@ -51,7 +34,7 @@ public class DspUtil {
     }
 
     private static double sawtoothWave(double sampleRate, double frequency, double modulation, double phase, long time) {
-        return -MathUtil.PI_D2 * Math.atan(1 / Math.tan(((Math.PI * time * (frequency + modulation)) / sampleRate)));
+        return -MathUtil.PI_D2 * Math.atan(1 / Math.tan((Math.PI * time * frequency) / sampleRate + modulation + phase));
     }
 
     private static double whiteNoise() {

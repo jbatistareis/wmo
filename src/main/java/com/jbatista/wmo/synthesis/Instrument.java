@@ -1,27 +1,25 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.AudioFormat;
-import com.jbatista.wmo.DspUtil.WaveForm;
 import com.jbatista.wmo.MathUtil;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Instrument {
 
+    private Algorithm algorithm = new Algorithm();
+
     private final Map<Double, Key> keys = new LinkedHashMap<>();
     private final Queue<Key> keysQueue = new ConcurrentLinkedQueue<>();
-    private final LinkedList<Modulator> modulators = new LinkedList<>();
     private short keyIndex;
     private Key tempKey;
 
-    private WaveForm waveForm;
-    private AudioFormat audioFormat;
-    private double sampleRate;
-    private int bitsPerSample;
+    private static AudioFormat audioFormat;
+    private static double sampleRate;
+    private static int bitsPerSample;
 
     private double amplitude = 0.1;
     private double attack = 0.01;
@@ -45,8 +43,7 @@ public class Instrument {
     private final byte[] buffer32bit = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    public Instrument(WaveForm waveForm, AudioFormat audioFormat) {
-        this.waveForm = waveForm;
+    public Instrument(AudioFormat audioFormat) {
         this.audioFormat = audioFormat;
 
         this.sampleRate = audioFormat.getSampleRate();
@@ -60,27 +57,23 @@ public class Instrument {
         return keysQueue;
     }
 
-    LinkedList<Modulator> getModulators() {
-        return modulators;
+    public Algorithm getAlgorithm() {
+        return algorithm;
     }
 
-    public WaveForm getWaveForm() {
-        return waveForm;
+    public void setAlgorithm(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 
-    public void setWaveForm(WaveForm waveForm) {
-        this.waveForm = waveForm;
-    }
-
-    public double getSampleRate() {
+    public static double getSampleRate() {
         return sampleRate;
     }
 
-    public int getBitsPerSample() {
+    public static int getBitsPerSample() {
         return bitsPerSample;
     }
 
-    public AudioFormat getAudioFormat() {
+    public static AudioFormat getAudioFormat() {
         return audioFormat;
     }
 
@@ -185,13 +178,13 @@ public class Instrument {
             // R
             waveSample[1] += tempWaveSample[1];
 
-            if (!tempKey.getKeyState().equals(Key.KeyState.IDLE)) {
+            if (tempKey.activeOscillators()) {
                 keysQueue.offer(tempKey);
             }
         }
 
-        finalWaveSample[0] = effectiveAmplitude * waveSample[0];
-        finalWaveSample[1] = effectiveAmplitude * waveSample[1];
+        finalWaveSample[0] = waveSample[0] *= effectiveAmplitude;
+        finalWaveSample[1] = waveSample[1] *= effectiveAmplitude;
     }
 
     public synchronized byte[] getByteFrame(boolean bigEndian) {
@@ -217,7 +210,7 @@ public class Instrument {
                 return buffer32bit;
 
             default:
-                throw new RuntimeException("Only 16 or 32 bits per waveSample are supported");
+                throw new RuntimeException("Only 16 or 32 bits are supported");
         }
     }
 
@@ -251,16 +244,6 @@ public class Instrument {
         }
 
         return keys.get(frequency);
-    }
-
-    public synchronized Modulator buildModulator() {
-        modulators.add(new Modulator(this));
-
-        return modulators.peekLast();
-    }
-
-    public synchronized void removeModulator(Modulator modulator) {
-        modulators.remove(modulator);
     }
 
 }

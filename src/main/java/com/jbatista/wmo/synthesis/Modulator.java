@@ -7,12 +7,15 @@ public class Modulator {
 
     private final Instrument instrument;
 
-    private WaveForm waveForm = WaveForm.SINE;
-    private double frequencyRatio = 1;
-    private double strength = 1;
+    private WaveForm waveForm;
+    private double frequencyRatio;
+    private double strength;
 
-    protected Modulator(Instrument instrument) {
+    protected Modulator(Instrument instrument, WaveForm waveForm, double frequencyRatio, double strength) {
         this.instrument = instrument;
+        this.waveForm = waveForm;
+        this.frequencyRatio = frequencyRatio;
+        this.strength = strength;
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -42,7 +45,7 @@ public class Modulator {
     // </editor-fold>
 
     protected double getSample(double frequency, long time) {
-        return DspUtil.modulator(
+        return DspUtil.oscillator(
                 waveForm,
                 instrument.getSampleRate(),
                 frequency,
