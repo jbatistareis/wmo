@@ -10,7 +10,7 @@ public class Algorithm {
         return oscillators;
     }
 
-    public void fillFrame(Key key, double[] sample, double[] tempSample, long time) {
+    void fillFrame(Key key, double[] sample, double[] tempSample, long time) {
         tempSample[0] = 0;
         tempSample[1] = 0;
 

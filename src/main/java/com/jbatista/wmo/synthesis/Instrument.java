@@ -10,6 +10,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Instrument {
 
+    // parameters
+    private static AudioFormat audioFormat;
+    private double gain = 0.5;
     private Algorithm algorithm = new Algorithm();
 
     private final Map<Double, Key> keys = new LinkedHashMap<>();
@@ -17,44 +20,42 @@ public class Instrument {
     private short keyIndex;
     private Key tempKey;
 
-    private static AudioFormat audioFormat;
-    private static double sampleRate;
-    private static int bitsPerSample;
-
-    private double amplitude = 0.1;
-    private double attack = 0.01;
-    private double decay = 0.01;
-    private double sustain = 1;
-    private double release = 0.01;
-
-    private double phaseL = 0;
-    private double phaseR = 0;
-
-    private double effectiveAmplitude = 0;
-
-    private double[] tempWaveSample;
-    private final double[] waveSample = new double[]{0, 0};
-    private final double[] finalWaveSample = new double[]{0, 0};
-
-    // 16 bits
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
-    // 32 bits
     private final byte[] buffer32bit = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
+    private final double[] waveSample = new double[]{0, 0};
+    private final double[] finalWaveSample = new double[]{0, 0};
+    private double[] tempWaveSample;
+
     public Instrument(AudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
-
-        this.sampleRate = audioFormat.getSampleRate();
-        this.bitsPerSample = audioFormat.getBitsPerSample();
-
-        setEffectiveAmplitude();
+        Instrument.audioFormat = audioFormat;
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    Queue<Key> getKeysQueue() {
-        return keysQueue;
+    public static AudioFormat getAudioFormat() {
+        return audioFormat;
+    }
+
+    public static void setAudioFormat(AudioFormat _audioFormat) {
+        audioFormat = _audioFormat;
+    }
+
+    public static double getSampleRate() {
+        return audioFormat.getSampleRate();
+    }
+
+    public static int getBitsPerSample() {
+        return audioFormat.getBitsPerSample();
+    }
+
+    public double getGain() {
+        return gain;
+    }
+
+    public void setGain(double gain) {
+        this.gain = Math.max(0, Math.min(gain, 2));
     }
 
     public Algorithm getAlgorithm() {
@@ -63,91 +64,6 @@ public class Instrument {
 
     public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
-    }
-
-    public static double getSampleRate() {
-        return sampleRate;
-    }
-
-    public static int getBitsPerSample() {
-        return bitsPerSample;
-    }
-
-    public static AudioFormat getAudioFormat() {
-        return audioFormat;
-    }
-
-    public void setAudioFormat(AudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
-        this.sampleRate = audioFormat.getSampleRate();
-        this.bitsPerSample = audioFormat.getBitsPerSample();
-
-        setEffectiveAmplitude();
-    }
-
-    public double getAmplitude() {
-        return amplitude;
-    }
-
-    public void setAmplitude(double amplitude) {
-        this.amplitude = Math.max(0.01, Math.min(amplitude, 1));
-        setEffectiveAmplitude();
-    }
-
-    private void setEffectiveAmplitude() {
-        effectiveAmplitude = MathUtil.lerp(0, Math.pow(2, bitsPerSample - 1), amplitude);
-    }
-
-    public double getAttack() {
-        return attack;
-    }
-
-    public void setAttack(double attack) {
-        this.attack = Math.max(0.01, Math.min(attack, 1));
-        ;
-    }
-
-    public double getDecay() {
-        return decay;
-    }
-
-    public void setDecay(double decay) {
-        this.decay = Math.max(0.01, Math.min(decay, 1));
-        ;
-    }
-
-    public double getSustain() {
-        return sustain;
-    }
-
-    public void setSustain(double sustain) {
-        this.sustain = Math.max(0.01, Math.min(sustain, 1));
-        ;
-    }
-
-    public double getRelease() {
-        return release;
-    }
-
-    public void setRelease(double release) {
-        this.release = Math.max(0.01, Math.min(release, 1));
-        ;
-    }
-
-    public double getPhaseL() {
-        return phaseL;
-    }
-
-    public void setPhaseL(double phaseL) {
-        this.phaseL = Math.max(0, Math.min(phaseL, 1));
-    }
-
-    public double getPhaseR() {
-        return phaseR;
-    }
-
-    public void setPhaseR(double phaseR) {
-        this.phaseR = Math.max(0, Math.min(phaseR, 1));
     }
 
     public void pressKey(double frequency) {
@@ -160,6 +76,10 @@ public class Instrument {
 
     public Key getKey(double frequency) {
         return keys.get(frequency);
+    }
+
+    Queue<Key> getKeysQueue() {
+        return keysQueue;
     }
     // </editor-fold>
 
@@ -178,16 +98,16 @@ public class Instrument {
             // R
             waveSample[1] += tempWaveSample[1];
 
-            if (tempKey.activeOscillators()) {
+            if (tempKey.hasActiveOscillators()) {
                 keysQueue.offer(tempKey);
             }
         }
 
-        finalWaveSample[0] = waveSample[0] *= effectiveAmplitude;
-        finalWaveSample[1] = waveSample[1] *= effectiveAmplitude;
+        finalWaveSample[0] = waveSample[0] *= gain;
+        finalWaveSample[1] = waveSample[1] *= gain;
     }
 
-    public synchronized byte[] getByteFrame(boolean bigEndian) {
+    public byte[] getByteFrame(boolean bigEndian) {
         fillFrame();
 
         switch (audioFormat.getBitsPerSample()) {
@@ -214,7 +134,7 @@ public class Instrument {
         }
     }
 
-    public synchronized short[] getShortFrame() {
+    public short[] getShortFrame() {
         fillFrame();
 
         // L
@@ -226,7 +146,7 @@ public class Instrument {
         return shortBuffer;
     }
 
-    public synchronized float[] getFloatFrame() {
+    public float[] getFloatFrame() {
         fillFrame();
 
         // L
@@ -238,7 +158,7 @@ public class Instrument {
         return floatBuffer;
     }
 
-    public synchronized Key buildKey(double frequency) {
+    public Key buildKey(double frequency) {
         if (!keys.containsKey(frequency)) {
             keys.put(frequency, new Key(frequency, this));
         }

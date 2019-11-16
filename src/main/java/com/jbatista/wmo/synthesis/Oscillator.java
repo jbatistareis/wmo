@@ -15,19 +15,19 @@ public class Oscillator {
     private final Map<Integer, Double> effectiveFrequency = new HashMap<>();
 
     // I/O
-    private DspUtil.WaveForm waveForm = DspUtil.WaveForm.SINE;
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
     private Oscillator feedback = null;
 
     // parameters
-    private double gain = 1;
+    private DspUtil.WaveForm waveForm = DspUtil.WaveForm.SINE;
 
+    private double gain = 1;
     private double frequencyRatio = 1;
 
-    private double attackAmplitude;
-    private double decayAmplitude;
-    private double sustainAmplitude;
-    private double releaseAmplitude;
+    private double attackAmplitude = 0;
+    private double decayAmplitude = 0;
+    private double sustainAmplitude = 1;
+    private double releaseAmplitude = 0;
 
     private double attackDuration;
     private double decayDuration;
@@ -37,7 +37,7 @@ public class Oscillator {
     private double phaseL = 0;
     private double phaseR = 0;
 
-    // envelope
+    // envelope data
     private double attackFrames;
     private double decayFrames;
     private double sustainFrames;
@@ -61,11 +61,6 @@ public class Oscillator {
 
     public Oscillator() {
         this.id = this.hashCode();
-
-        setAttackAmplitude(0);
-        setDecayAmplitude(0);
-        setSustainAmplitude(1);
-        setReleaseAmplitude(0);
 
         setAttackDuration(0);
         setDecayDuration(0);
@@ -215,7 +210,7 @@ public class Oscillator {
     }
     // </editor-fold>
 
-    public void fillFrame(Key key, double[] sample, long time) {
+    void fillFrame(Key key, double[] sample, long time) {
         switch (envelopeState.get(key.hashCode())) {
             case ATTACK:
                 if (!attackStep.containsKey(key.hashCode())) {
@@ -281,7 +276,7 @@ public class Oscillator {
 
             case IDLE:
                 envelopeAmplitude.put(key.hashCode(), 0.0);
-                key.setOscillatorActive(id, false);
+                key.setActiveOscillator(id, false);
 
                 break;
         }
@@ -332,7 +327,7 @@ public class Oscillator {
         }
 
         effectiveFrequency.put(key.hashCode(), key.getFrequency() * frequencyRatio);
-        key.setOscillatorActive(id, !envelopeState.getOrDefault(key.hashCode(), EnvelopeState.IDLE).equals(EnvelopeState.IDLE));
+        key.setActiveOscillator(id, !envelopeState.getOrDefault(key.hashCode(), EnvelopeState.IDLE).equals(EnvelopeState.IDLE));
 
         attackStep.remove(key.hashCode());
         decayStep.remove(key.hashCode());
@@ -343,7 +338,7 @@ public class Oscillator {
             envelopeAmplitude.put(key.hashCode(), 0.0);
         }
 
-        key.setOscillatorActive(id, true);
+        key.setActiveOscillator(id, true);
         keyReleased.put(key.hashCode(), false);
         envelopeState.put(key.hashCode(), EnvelopeState.ATTACK);
     }
