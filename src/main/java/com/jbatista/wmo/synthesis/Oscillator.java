@@ -77,10 +77,6 @@ public class Oscillator {
         this.waveForm = waveForm;
     }
 
-    public LinkedHashSet<Oscillator> getModulators() {
-        return modulators;
-    }
-
     public void setFeedback(Oscillator feedback) {
         this.feedback = feedback;
     }
@@ -98,7 +94,7 @@ public class Oscillator {
     }
 
     public void setFrequencyRatio(double frequencyRatio) {
-        this.frequencyRatio = Math.max(0, Math.min(frequencyRatio, 5));
+        this.frequencyRatio = Math.max(0, Math.min(frequencyRatio, 32));
     }
 
     public double getAttackAmplitude() {
@@ -139,7 +135,7 @@ public class Oscillator {
 
     public void setAttackDuration(double attackDuration) {
         this.attackDuration = Math.max(0.01, Math.min(attackDuration, 1));
-        this.attackFrames = Instrument.getSampleRate() * this.attackDuration;
+        this.attackFrames = Instrument.getSampleRate() / 2 * this.attackDuration;
     }
 
     public double getDecayDuration() {
@@ -148,7 +144,7 @@ public class Oscillator {
 
     public void setDecayDuration(double decayDuration) {
         this.decayDuration = Math.max(0.01, Math.min(decayDuration, 1));
-        this.decayFrames = Instrument.getSampleRate() * this.decayDuration;
+        this.decayFrames = Instrument.getSampleRate() / 2 * this.decayDuration;
     }
 
     public double getSustainDuration() {
@@ -157,7 +153,7 @@ public class Oscillator {
 
     public void setSustainDuration(double sustainDuration) {
         this.sustainDuration = Math.max(0.01, Math.min(sustainDuration, 1));
-        this.sustainFrames = Instrument.getSampleRate() * this.sustainDuration;
+        this.sustainFrames = Instrument.getSampleRate() / 2 * this.sustainDuration;
     }
 
     public double getReleaseDuration() {
@@ -166,7 +162,7 @@ public class Oscillator {
 
     public void setReleaseDuration(double releaseDuration) {
         this.releaseDuration = Math.max(0.01, Math.min(releaseDuration, 1));
-        this.releaseFrames = Instrument.getSampleRate() * this.releaseDuration;
+        this.releaseFrames = Instrument.getSampleRate() / 2 * this.releaseDuration;
     }
 
     private double[] getSampleFrame(int keyHash) {
@@ -210,6 +206,22 @@ public class Oscillator {
     }
     // </editor-fold>
 
+    public boolean addModulator(Oscillator modulator) {
+        return modulators.add(modulator);
+    }
+
+    public boolean removeModulator(Oscillator modulator) {
+        return modulators.remove(modulator);
+    }
+
+    public void clearModulators() {
+        modulators.clear();
+    }
+
+    public Oscillator[] getModulators() {
+        return modulators.toArray(new Oscillator[0]);
+    }
+
     void fillFrame(Key key, double[] sample, long time) {
         switch (envelopeState.get(key.hashCode())) {
             case ATTACK:
@@ -219,9 +231,9 @@ public class Oscillator {
                 }
 
                 envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + attackStep.get(key.hashCode()));
-
                 envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
-                if (envelopePosition.get(key.hashCode()) > attackFrames) {
+
+                if (envelopePosition.get(key.hashCode()) >= attackFrames) {
                     envelopeState.put(key.hashCode(), EnvelopeState.DECAY);
                 }
 
@@ -234,9 +246,9 @@ public class Oscillator {
                 }
 
                 envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + decayStep.get(key.hashCode()));
-
                 envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
-                if (envelopePosition.get(key.hashCode()) > decayFrames) {
+
+                if (envelopePosition.get(key.hashCode()) >= decayFrames) {
                     envelopeState.put(key.hashCode(), EnvelopeState.SUSTAIN);
                 }
 
@@ -248,13 +260,13 @@ public class Oscillator {
                     sustainStep.put(key.hashCode(), (sustainAmplitude - envelopeAmplitude.get(key.hashCode())) / sustainFrames);
                 }
 
-                if (envelopePosition.get(key.hashCode()) < sustainFrames) {
+                if (envelopePosition.get(key.hashCode()) <= sustainFrames) {
                     envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + sustainStep.get(key.hashCode()));
                     envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
-                } else {
-                    if (keyReleased.get(key.hashCode())) {
-                        envelopeState.put(key.hashCode(), EnvelopeState.RELEASE);
-                    }
+                }
+
+                if (keyReleased.get(key.hashCode())) {
+                    envelopeState.put(key.hashCode(), EnvelopeState.RELEASE);
                 }
 
                 break;
@@ -268,7 +280,7 @@ public class Oscillator {
                 envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + releaseStep.get(key.hashCode()));
 
                 envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
-                if (envelopePosition.get(key.hashCode()) > releaseFrames) {
+                if (envelopePosition.get(key.hashCode()) >= releaseFrames) {
                     envelopeState.put(key.hashCode(), EnvelopeState.IDLE);
                 }
 
@@ -334,9 +346,9 @@ public class Oscillator {
         sustainStep.remove(key.hashCode());
         releaseStep.remove(key.hashCode());
 
-        if (!key.isOscillatorActive(id)) {
-            envelopeAmplitude.put(key.hashCode(), 0.0);
-        }
+        //if (!key.isOscillatorActive(id)) {
+        envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.getOrDefault(key.hashCode(), 0.0));
+        //}
 
         key.setActiveOscillator(id, true);
         keyReleased.put(key.hashCode(), false);
