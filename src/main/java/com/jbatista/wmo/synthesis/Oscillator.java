@@ -3,7 +3,7 @@ package com.jbatista.wmo.synthesis;
 import com.jbatista.wmo.DspUtil;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 public class Oscillator {
@@ -15,7 +15,7 @@ public class Oscillator {
     private final Map<Integer, Double> effectiveFrequency = new HashMap<>();
 
     // I/O
-    private final LinkedList<Oscillator> modulators = new LinkedList<>();
+    private final LinkedHashSet<Oscillator> modulators = new LinkedHashSet<>();
     private Oscillator feedback = null;
 
     // parameters
@@ -77,7 +77,7 @@ public class Oscillator {
         this.waveForm = waveForm;
     }
 
-    public LinkedList<Oscillator> getModulators() {
+    public LinkedHashSet<Oscillator> getModulators() {
         return modulators;
     }
 

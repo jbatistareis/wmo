@@ -1,12 +1,12 @@
 package com.jbatista.wmo.synthesis;
 
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 
 public class Algorithm {
 
-    private final LinkedList<Oscillator> oscillators = new LinkedList<>();
+    private final LinkedHashSet<Oscillator> oscillators = new LinkedHashSet<>();
 
-    public LinkedList<Oscillator> getOscillators() {
+    public LinkedHashSet<Oscillator> getOscillators() {
         return oscillators;
     }
 
