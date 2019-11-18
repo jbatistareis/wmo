@@ -1,5 +1,6 @@
 package com.jbatista.wmo.filters;
 
+import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.synthesis.Instrument;
 
 public class LowPass extends Filter {
@@ -11,9 +12,7 @@ public class LowPass extends Filter {
 
     public void setCutoffFrequency(double cutoffFrequency) {
         this.frequency = cutoffFrequency;
-
         calculateCoefficients();
-        normalize();
     }
 
     public double getCutoffFrequency() {
@@ -22,9 +21,7 @@ public class LowPass extends Filter {
 
     public void setResonance(double resonance) {
         this.q = resonance;
-
         calculateCoefficients();
-        normalize();
     }
 
     public double getResonance() {
@@ -33,7 +30,7 @@ public class LowPass extends Filter {
 
     @Override
     protected void calculateCoefficients() {
-        omega = (2 * Math.PI * frequency) / Instrument.getSampleRate();
+        omega = (MathUtil.TAU * frequency) / Instrument.getSampleRate();
         sin = Math.sin(omega);
         cos = Math.cos(omega);
         alpha = sin / (2 * q);
@@ -44,6 +41,8 @@ public class LowPass extends Filter {
         cA[0] = 1 + alpha;
         cA[1] = -2 * cos;
         cA[2] = 1 - alpha;
+
+        normalize();
     }
 
 }
