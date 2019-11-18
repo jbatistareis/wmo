@@ -102,7 +102,7 @@ public class Oscillator {
     }
 
     public void setAttackAmplitude(double attackAmplitude) {
-        this.attackAmplitude = Math.max(0.01, Math.min(attackAmplitude, 1));
+        this.attackAmplitude = Math.max(0, Math.min(attackAmplitude, 1));
     }
 
     public double getDecayAmplitude() {
@@ -110,7 +110,7 @@ public class Oscillator {
     }
 
     public void setDecayAmplitude(double decayAmplitude) {
-        this.decayAmplitude = Math.max(0.01, Math.min(decayAmplitude, 1));
+        this.decayAmplitude = Math.max(0, Math.min(decayAmplitude, 1));
     }
 
     public double getSustainAmplitude() {
@@ -118,7 +118,7 @@ public class Oscillator {
     }
 
     public void setSustainAmplitude(double sustainAmplitude) {
-        this.sustainAmplitude = Math.max(0.01, Math.min(sustainAmplitude, 1));
+        this.sustainAmplitude = Math.max(0, Math.min(sustainAmplitude, 1));
     }
 
     public double getReleaseAmplitude() {
@@ -126,7 +126,7 @@ public class Oscillator {
     }
 
     public void setReleaseAmplitude(double releaseAmplitude) {
-        this.releaseAmplitude = Math.max(0.01, Math.min(releaseAmplitude, 1));
+        this.releaseAmplitude = Math.max(0, Math.min(releaseAmplitude, 1));
     }
 
     public double getAttackDuration() {
@@ -134,8 +134,8 @@ public class Oscillator {
     }
 
     public void setAttackDuration(double attackDuration) {
-        this.attackDuration = Math.max(0.01, Math.min(attackDuration, 1));
-        this.attackFrames = Instrument.getSampleRate() / 2 * this.attackDuration;
+        this.attackDuration = Math.max(0, Math.min(attackDuration, 1));
+        this.attackFrames = Instrument.getSampleRate() * ((this.attackDuration > 0) ? this.attackDuration : 0.005);
     }
 
     public double getDecayDuration() {
@@ -143,8 +143,8 @@ public class Oscillator {
     }
 
     public void setDecayDuration(double decayDuration) {
-        this.decayDuration = Math.max(0.01, Math.min(decayDuration, 1));
-        this.decayFrames = Instrument.getSampleRate() / 2 * this.decayDuration;
+        this.decayDuration = Math.max(0, Math.min(decayDuration, 1));
+        this.decayFrames = Instrument.getSampleRate() * ((this.decayDuration > 0) ? this.decayDuration : 0.005);
     }
 
     public double getSustainDuration() {
@@ -152,8 +152,8 @@ public class Oscillator {
     }
 
     public void setSustainDuration(double sustainDuration) {
-        this.sustainDuration = Math.max(0.01, Math.min(sustainDuration, 1));
-        this.sustainFrames = Instrument.getSampleRate() / 2 * this.sustainDuration;
+        this.sustainDuration = Math.max(0, Math.min(sustainDuration, 1));
+        this.sustainFrames = Instrument.getSampleRate() * ((this.sustainDuration > 0) ? this.sustainDuration : 0.005);
     }
 
     public double getReleaseDuration() {
@@ -161,8 +161,8 @@ public class Oscillator {
     }
 
     public void setReleaseDuration(double releaseDuration) {
-        this.releaseDuration = Math.max(0.01, Math.min(releaseDuration, 1));
-        this.releaseFrames = Instrument.getSampleRate() / 2 * this.releaseDuration;
+        this.releaseDuration = Math.max(0, Math.min(releaseDuration, 1));
+        this.releaseFrames = Instrument.getSampleRate() * ((this.releaseDuration > 0) ? this.releaseDuration : 0.005);
     }
 
     private double[] getSampleFrame(int keyHash) {
@@ -265,10 +265,6 @@ public class Oscillator {
                     envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
                 }
 
-                if (keyReleased.get(key.hashCode())) {
-                    envelopeState.put(key.hashCode(), EnvelopeState.RELEASE);
-                }
-
                 break;
 
             case RELEASE:
@@ -360,7 +356,7 @@ public class Oscillator {
             oscillator.stop(key);
         }
 
-        keyReleased.put(key.hashCode(), true);
+        envelopeState.put(key.hashCode(), EnvelopeState.RELEASE);
     }
 
 }

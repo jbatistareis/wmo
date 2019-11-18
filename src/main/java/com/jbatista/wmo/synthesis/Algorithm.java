@@ -6,8 +6,20 @@ public class Algorithm {
 
     private final LinkedHashSet<Oscillator> oscillators = new LinkedHashSet<>();
 
-    public LinkedHashSet<Oscillator> getOscillators() {
-        return oscillators;
+    public boolean addOscillator(Oscillator oscillator) {
+        return oscillators.add(oscillator);
+    }
+
+    public boolean removeOscillator(Oscillator oscillator) {
+        return oscillators.remove(oscillator);
+    }
+
+    public void clearOscillators() {
+        oscillators.clear();
+    }
+
+    public Oscillator[] getOscillators() {
+        return oscillators.toArray(new Oscillator[0]);
     }
 
     void fillFrame(Key key, double[] sample, double[] tempSample, long time) {
