@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Instrument {
 
+    private int keyId = 0;
+
     // parameters
     private static AudioFormat audioFormat;
     private double gain = 0.5;
@@ -92,8 +94,8 @@ public class Instrument {
     Queue<Key> getKeysQueue() {
         return keysQueue;
     }
-
     // </editor-fold>
+
     private void fillFrame() {
         waveSample[0] = 0.0;
         waveSample[1] = 0.0;
@@ -173,7 +175,7 @@ public class Instrument {
 
     public Key buildKey(double frequency) {
         if (!keys.containsKey(frequency)) {
-            keys.put(frequency, new Key(frequency, this));
+            keys.put(frequency, new Key(keyId++, frequency, this));
         }
 
         return keys.get(frequency);

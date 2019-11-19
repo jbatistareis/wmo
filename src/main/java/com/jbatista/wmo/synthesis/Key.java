@@ -1,15 +1,13 @@
 package com.jbatista.wmo.synthesis;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Key {
 
+    private final int id;
     private final int hash;
 
     private final Instrument instrument;
     private final double frequency;
-    private final Map<Integer, Boolean> activeOscillators = new HashMap<>();
+    private final boolean[] activeOscillators = new boolean[36];
 
     // L - R
     private final double[] sample = new double[2];
@@ -18,10 +16,16 @@ public class Key {
     private long elapsed = 0;
     private boolean pressed = false;
 
-    Key(double frequency, Instrument instrument) {
+    Key(int id, double frequency, Instrument instrument) {
         this.frequency = frequency;
         this.instrument = instrument;
+
+        this.id = id;
         this.hash = ((Double) this.frequency).hashCode();
+    }
+
+    int getId() {
+        return id;
     }
 
     public double getFrequency() {
@@ -57,7 +61,7 @@ public class Key {
     }
 
     public boolean hasActiveOscillators() {
-        for (boolean value : activeOscillators.values()) {
+        for (boolean value : activeOscillators) {
             if (value) {
                 return true;
             }
@@ -67,11 +71,11 @@ public class Key {
     }
 
     boolean isOscillatorActive(int id) {
-        return activeOscillators.getOrDefault(id, false);
+        return activeOscillators[id];
     }
 
-    void setActiveOscillator(int oscillatorId, boolean value) {
-        activeOscillators.put(oscillatorId, value);
+    void setActiveOscillator(int id, boolean value) {
+        activeOscillators[id] = value;
     }
 
     @Override

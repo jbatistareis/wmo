@@ -2,9 +2,7 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.DspUtil;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 
 public class Oscillator {
 
@@ -12,7 +10,7 @@ public class Oscillator {
 
     private final int id;
 
-    private final Map<Integer, Double> effectiveFrequency = new HashMap<>();
+    private final double[] effectiveFrequency = new double[144];
 
     // I/O
     private final LinkedHashSet<Oscillator> modulators = new LinkedHashSet<>();
@@ -38,23 +36,23 @@ public class Oscillator {
     private double phaseR = 0;
 
     // envelope data
-    private final Map<Integer, Double> attackStep = new HashMap<>();
-    private final Map<Integer, Double> decayStep = new HashMap<>();
-    private final Map<Integer, Double> sustainStep = new HashMap<>();
-    private final Map<Integer, Double> releaseStep = new HashMap<>();
+    private final double[] attackStep = new double[144];
+    private final double[] decayStep = new double[144];
+    private final double[] sustainStep = new double[144];
+    private final double[] releaseStep = new double[144];
 
-    private final Map<Integer, EnvelopeState> envelopeState = new HashMap<>();
-    private final Map<Integer, Double> envelopeAmplitude = new HashMap<>();
+    private final EnvelopeState[] envelopeState = new EnvelopeState[144];
+    private final double[] envelopeAmplitude = new double[144];
 
-    private final Map<Integer, Boolean> keyReleased = new HashMap<>();
+    private final boolean[] keyReleased = new boolean[144];
 
-    private final Map<Integer, double[]> sampleFrame = new HashMap<>();
-    private final Map<Integer, double[]> modulatorFrame = new HashMap<>();
+    private final double[][] sampleFrame = new double[144][2];
+    private final double[][] modulatorFrame = new double[144][2];
 
-    private final Map<Integer, double[]> feedbackMemory = new HashMap<>();
+    private final double[][] feedbackMemory = new double[144][4];
 
-    public Oscillator() {
-        this.id = this.hashCode();
+    Oscillator(int id) {
+        this.id = id;
 
         setAttackDuration(0);
         setDecayDuration(0);
@@ -155,28 +153,8 @@ public class Oscillator {
         this.releaseDuration = Math.max(0, Math.min(releaseDuration, 1));
     }
 
-    private double[] getSampleFrame(int keyHash) {
-        if (!sampleFrame.containsKey(keyHash)) {
-            sampleFrame.put(keyHash, new double[]{0, 0});
-        }
-
-        return sampleFrame.get(keyHash);
-    }
-
-    private double[] getModulatorFrame(int keyHash) {
-        if (!modulatorFrame.containsKey(keyHash)) {
-            modulatorFrame.put(keyHash, new double[]{0, 0});
-        }
-
-        return modulatorFrame.get(keyHash);
-    }
-
-    double[] getFeedbackMemory(int keyHash) {
-        if (!feedbackMemory.containsKey(keyHash)) {
-            feedbackMemory.put(keyHash, new double[]{0, 0, 0, 0});
-        }
-
-        return feedbackMemory.get(keyHash);
+    private double[] sampleFrame(int keyId) {
+        return sampleFrame[keyId];
     }
 
     public double getPhaseL() {
@@ -194,7 +172,6 @@ public class Oscillator {
     public void setPhaseR(double phaseR) {
         this.phaseR = Math.max(0, Math.min(phaseR, 1));
     }
-    // </editor-fold>
 
     public boolean addModulator(Oscillator modulator) {
         return modulators.add(modulator);
@@ -212,135 +189,131 @@ public class Oscillator {
         return modulators.toArray(new Oscillator[0]);
     }
 
+    // </editor-fold>
+
+
     void fillFrame(Key key, double[] sample, long time) {
-        switch (envelopeState.get(key.hashCode())) {
+        switch (envelopeState[key.getId()]) {
             case ATTACK:
-                if (!attackStep.containsKey(key.hashCode())) {
-                    attackStep.put(
-                            key.hashCode(),
-                            (attackAmplitude - envelopeAmplitude.get(key.hashCode())) / (((attackDuration == 0) ? 0.001 : attackDuration) * Instrument.getSampleRate()));
+                if (attackStep[key.getId()] == -1) {
+                    attackStep[key.getId()] = (attackAmplitude - envelopeAmplitude[key.getId()]) / (((attackDuration == 0) ? 0.001 : attackDuration) * Instrument.getSampleRate());
                 }
 
-                envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + attackStep.get(key.hashCode()));
+                envelopeAmplitude[key.getId()] = envelopeAmplitude[key.getId()] + attackStep[key.getId()];
 
-                if (envelopeAmplitude.get(key.hashCode()) >= attackAmplitude) {
-                    envelopeState.put(key.hashCode(), EnvelopeState.DECAY);
+                if (envelopeAmplitude[key.getId()] >= attackAmplitude) {
+                    envelopeState[key.getId()] = EnvelopeState.DECAY;
                 }
 
                 break;
 
             case DECAY:
-                if (!decayStep.containsKey(key.hashCode())) {
-                    decayStep.put(
-                            key.hashCode(),
-                            (decayAmplitude - attackAmplitude) / (((decayDuration == 0) ? 0.001 : decayDuration) * Instrument.getSampleRate()));
+                if (decayStep[key.getId()] == -1) {
+                    decayStep[key.getId()] = (decayAmplitude - attackAmplitude) / (((decayDuration == 0) ? 0.001 : decayDuration) * Instrument.getSampleRate());
                 }
 
-                envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + decayStep.get(key.hashCode()));
+                envelopeAmplitude[key.getId()] = envelopeAmplitude[key.getId()] + decayStep[key.getId()];
 
                 if (attackAmplitude >= decayAmplitude) {
-                    if (envelopeAmplitude.get(key.hashCode()) <= decayAmplitude) {
-                        envelopeState.put(key.hashCode(), EnvelopeState.SUSTAIN);
+                    if (envelopeAmplitude[key.getId()] <= decayAmplitude) {
+                        envelopeState[key.getId()] = EnvelopeState.SUSTAIN;
                     }
                 } else {
-                    if (envelopeAmplitude.get(key.hashCode()) >= decayAmplitude) {
-                        envelopeState.put(key.hashCode(), EnvelopeState.SUSTAIN);
+                    if (envelopeAmplitude[key.getId()] >= decayAmplitude) {
+                        envelopeState[key.getId()] = EnvelopeState.SUSTAIN;
                     }
                 }
 
                 break;
 
             case SUSTAIN:
-                if (!sustainStep.containsKey(key.hashCode())) {
-                    sustainStep.put(
-                            key.hashCode(),
-                            (sustainAmplitude - decayAmplitude) / (((sustainDuration == 0) ? 0.001 : sustainDuration) * Instrument.getSampleRate()));
+                if (sustainStep[key.getId()] == -1) {
+                    sustainStep[key.getId()] = (sustainAmplitude - decayAmplitude) / (((sustainDuration == 0) ? 0.001 : sustainDuration) * Instrument.getSampleRate());
                 }
 
-                envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + sustainStep.get(key.hashCode()));
+                envelopeAmplitude[key.getId()] = envelopeAmplitude[key.getId()] + sustainStep[key.getId()];
 
                 if (decayAmplitude >= sustainAmplitude) {
-                    if (envelopeAmplitude.get(key.hashCode()) <= sustainAmplitude) {
-                        envelopeState.put(key.hashCode(), EnvelopeState.HOLD);
+                    if (envelopeAmplitude[key.getId()] <= sustainAmplitude) {
+                        envelopeState[key.getId()] = EnvelopeState.HOLD;
                     }
                 } else {
-                    if (envelopeAmplitude.get(key.hashCode()) >= sustainAmplitude) {
-                        envelopeState.put(key.hashCode(), EnvelopeState.HOLD);
+                    if (envelopeAmplitude[key.getId()] >= sustainAmplitude) {
+                        envelopeState[key.getId()] = EnvelopeState.HOLD;
                     }
                 }
 
                 break;
 
             case HOLD:
+                // do noting
                 break;
 
             case RELEASE:
-                if (!releaseStep.containsKey(key.hashCode())) {
-                    releaseStep.put(
-                            key.hashCode(),
-                            (releaseAmplitude - envelopeAmplitude.get(key.hashCode())) / (((decayDuration == 0) ? 0.001 : releaseDuration) * Instrument.getSampleRate()));
+                if (releaseStep[key.getId()] == -1) {
+                    releaseStep[key.getId()] = (releaseAmplitude - envelopeAmplitude[key.getId()]) / (((decayDuration == 0) ? 0.001 : releaseDuration) * Instrument.getSampleRate());
                 }
 
-                envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + releaseStep.get(key.hashCode()));
+                envelopeAmplitude[key.getId()] = envelopeAmplitude[key.getId()] + releaseStep[key.getId()];
 
                 if (sustainAmplitude >= releaseAmplitude) {
-                    if (envelopeAmplitude.get(key.hashCode()) <= releaseAmplitude) {
-                        envelopeState.put(key.hashCode(), EnvelopeState.IDLE);
+                    if (envelopeAmplitude[key.getId()] <= releaseAmplitude) {
+                        envelopeState[key.getId()] = EnvelopeState.IDLE;
                     }
                 } else {
-                    if (envelopeAmplitude.get(key.hashCode()) >= releaseAmplitude) {
-                        envelopeState.put(key.hashCode(), EnvelopeState.IDLE);
+                    if (envelopeAmplitude[key.getId()] >= releaseAmplitude) {
+                        envelopeState[key.getId()] = EnvelopeState.IDLE;
                     }
                 }
 
                 break;
 
             case IDLE:
-                if (envelopeAmplitude.get(key.hashCode()) > 0) {
-                    envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) - 0.05);
+                if (envelopeAmplitude[key.getId()] > 0) {
+                    envelopeAmplitude[key.getId()] = envelopeAmplitude[key.getId()] - 0.05;
                 } else {
-                    envelopeAmplitude.put(key.hashCode(), 0.0);
+                    envelopeAmplitude[key.getId()] = 0.0;
                     key.setActiveOscillator(id, false);
                 }
 
                 break;
         }
 
-        getModulatorFrame(key.hashCode())[0] = 0.0;
-        getModulatorFrame(key.hashCode())[1] = 0.0;
+        modulatorFrame[key.getId()][0] = 0.0;
+        modulatorFrame[key.getId()][1] = 0.0;
 
-        getFeedbackMemory(key.hashCode())[2] = getFeedbackMemory(key.hashCode())[0];
-        getFeedbackMemory(key.hashCode())[3] = getFeedbackMemory(key.hashCode())[1];
+        feedbackMemory[key.getId()][2] = feedbackMemory[key.getId()][0];
+        feedbackMemory[key.getId()][3] = feedbackMemory[key.getId()][1];
 
         if (!modulators.isEmpty()) {
             for (Oscillator oscillator : modulators) {
-                oscillator.fillFrame(key, getModulatorFrame(key.hashCode()), time);
+                oscillator.fillFrame(key, modulatorFrame[key.getId()], time);
             }
 
-            getModulatorFrame(key.hashCode())[0] /= modulators.size();
-            getModulatorFrame(key.hashCode())[1] /= modulators.size();
+            modulatorFrame[key.getId()][0] /= modulators.size();
+            modulatorFrame[key.getId()][1] /= modulators.size();
         }
 
         if (feedback != null) {
-            getModulatorFrame(key.hashCode())[0] = (feedback.getFeedbackMemory(key.hashCode())[0] - feedback.getFeedbackMemory(key.hashCode())[2]) / 2;
-            getModulatorFrame(key.hashCode())[1] = (feedback.getFeedbackMemory(key.hashCode())[1] - feedback.getFeedbackMemory(key.hashCode())[3]) / 2;
+            modulatorFrame[key.getId()][0] = (feedback.feedbackMemory[key.getId()][0] - feedback.feedbackMemory[key.getId()][2]) / 2;
+            modulatorFrame[key.getId()][1] = (feedback.feedbackMemory[key.getId()][1] - feedback.feedbackMemory[key.getId()][3]) / 2;
         }
 
-        getSampleFrame(key.hashCode())[0] = gain * envelopeAmplitude.get(key.hashCode()) * produceSample(key, phaseL, getModulatorFrame(key.hashCode())[0], time);
-        getSampleFrame(key.hashCode())[1] = gain * envelopeAmplitude.get(key.hashCode()) * produceSample(key, phaseR, getModulatorFrame(key.hashCode())[1], time);
+        sampleFrame[key.getId()][0] = gain * envelopeAmplitude[key.getId()] * produceSample(key, phaseL, modulatorFrame[key.getId()][0], time);
+        sampleFrame[key.getId()][1] = gain * envelopeAmplitude[key.getId()] * produceSample(key, phaseR, modulatorFrame[key.getId()][1], time);
 
-        getFeedbackMemory(key.hashCode())[0] = getSampleFrame(key.hashCode())[0];
-        getFeedbackMemory(key.hashCode())[1] = getSampleFrame(key.hashCode())[1];
+        feedbackMemory[key.getId()][0] = sampleFrame[key.getId()][0];
+        feedbackMemory[key.getId()][1] = sampleFrame[key.getId()][1];
 
-        sample[0] += getSampleFrame(key.hashCode())[0];
-        sample[1] += getSampleFrame(key.hashCode())[1];
+        sample[0] += sampleFrame[key.getId()][0];
+        sample[1] += sampleFrame[key.getId()][1];
     }
 
     private double produceSample(Key key, double phase, double modulation, long time) {
         return DspUtil.oscillator(
                 waveForm,
                 Instrument.getSampleRate(),
-                effectiveFrequency.get(key.hashCode()),
+                effectiveFrequency[key.getId()],
                 modulation,
                 phase,
                 time);
@@ -351,21 +324,27 @@ public class Oscillator {
             oscillator.start(key);
         }
 
-        effectiveFrequency.put(key.hashCode(), key.getFrequency() * frequencyRatio);
-        key.setActiveOscillator(id, !envelopeState.getOrDefault(key.hashCode(), EnvelopeState.IDLE).equals(EnvelopeState.IDLE));
+        effectiveFrequency[key.getId()] = key.getFrequency() * frequencyRatio;
 
-        attackStep.remove(key.hashCode());
-        decayStep.remove(key.hashCode());
-        sustainStep.remove(key.hashCode());
-        releaseStep.remove(key.hashCode());
+        if (envelopeState[key.getId()] == null) {
+            key.setActiveOscillator(id, false);
+        } else {
+            key.setActiveOscillator(id, !envelopeState[key.getId()].equals(EnvelopeState.IDLE));
+        }
+
+
+        attackStep[key.getId()] = -1;
+        decayStep[key.getId()] = -1;
+        sustainStep[key.getId()] = -1;
+        releaseStep[key.getId()] = -1;
 
         //if (!key.isOscillatorActive(id)) {
-        envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.getOrDefault(key.hashCode(), 0.0));
+        // envelopeAmplitude[key.getId()] = envelopeAmplitude.getOrDefault(key.hashCode(), 0.0));
         //}
 
         key.setActiveOscillator(id, true);
-        keyReleased.put(key.hashCode(), false);
-        envelopeState.put(key.hashCode(), EnvelopeState.ATTACK);
+        keyReleased[key.getId()] = false;
+        envelopeState[key.getId()] = EnvelopeState.ATTACK;
     }
 
     void stop(Key key) {
@@ -373,7 +352,7 @@ public class Oscillator {
             oscillator.stop(key);
         }
 
-        envelopeState.put(key.hashCode(), EnvelopeState.RELEASE);
+        envelopeState[key.getId()] = EnvelopeState.RELEASE;
     }
 
 }

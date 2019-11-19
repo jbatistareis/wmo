@@ -4,21 +4,23 @@ import java.util.LinkedHashSet;
 
 public class Algorithm {
 
+    private int oscillatorId = 0;
+
     private final LinkedHashSet<Oscillator> oscillators = new LinkedHashSet<>();
 
-    public boolean addOscillator(Oscillator oscillator) {
-        return oscillators.add(oscillator);
+    public boolean addCarrier(Oscillator carrier) {
+        return oscillators.add(carrier);
     }
 
-    public boolean removeOscillator(Oscillator oscillator) {
-        return oscillators.remove(oscillator);
+    public boolean removeCarrier(Oscillator carrier) {
+        return oscillators.remove(carrier);
     }
 
-    public void clearOscillators() {
+    public void clearCarriers() {
         oscillators.clear();
     }
 
-    public Oscillator[] getOscillators() {
+    public Oscillator[] getCarriers() {
         return oscillators.toArray(new Oscillator[0]);
     }
 
@@ -44,6 +46,10 @@ public class Algorithm {
         for (Oscillator oscillator : oscillators) {
             oscillator.stop(key);
         }
+    }
+
+    public Oscillator buildOscillator() {
+        return new Oscillator(oscillatorId++);
     }
 
 }
