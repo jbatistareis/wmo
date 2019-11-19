@@ -2,8 +2,10 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.AudioFormat;
 import com.jbatista.wmo.MathUtil;
+import com.jbatista.wmo.filters.Filter;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -14,6 +16,7 @@ public class Instrument {
     private static AudioFormat audioFormat;
     private double gain = 0.5;
     private Algorithm algorithm = new Algorithm();
+    private final LinkedList<Filter> filterChain = new LinkedList<>();
 
     private final Map<Double, Key> keys = new LinkedHashMap<>();
     private final Queue<Key> keysQueue = new ConcurrentLinkedQueue<>();
@@ -38,10 +41,6 @@ public class Instrument {
         return audioFormat;
     }
 
-    public static void setAudioFormat(AudioFormat _audioFormat) {
-        audioFormat = _audioFormat;
-    }
-
     public static double getSampleRate() {
         return audioFormat.getSampleRate();
     }
@@ -60,6 +59,18 @@ public class Instrument {
 
     public Algorithm getAlgorithm() {
         return algorithm;
+    }
+
+    public boolean addFilter(Filter filter) {
+        return filterChain.add(filter);
+    }
+
+    public boolean removeFilter(Filter filter) {
+        return filterChain.remove(filter);
+    }
+
+    public void clearFilters() {
+        filterChain.clear();
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -81,8 +92,8 @@ public class Instrument {
     Queue<Key> getKeysQueue() {
         return keysQueue;
     }
-    // </editor-fold>
 
+    // </editor-fold>
     private void fillFrame() {
         waveSample[0] = 0.0;
         waveSample[1] = 0.0;
@@ -102,6 +113,8 @@ public class Instrument {
                 keysQueue.offer(tempKey);
             }
         }
+
+        filterChain.forEach(filter -> filter.apply(waveSample));
 
         finalWaveSample[0] = waveSample[0] *= gain;
         finalWaveSample[1] = waveSample[1] *= gain;

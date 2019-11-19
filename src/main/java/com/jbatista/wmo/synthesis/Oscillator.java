@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class Oscillator {
 
-    enum EnvelopeState {ATTACK, DECAY, SUSTAIN, RELEASE, IDLE}
+    enum EnvelopeState {ATTACK, DECAY, SUSTAIN, HOLD, RELEASE, IDLE}
 
     private final int id;
 
@@ -38,17 +38,11 @@ public class Oscillator {
     private double phaseR = 0;
 
     // envelope data
-    private double attackFrames;
-    private double decayFrames;
-    private double sustainFrames;
-    private double releaseFrames;
-
     private final Map<Integer, Double> attackStep = new HashMap<>();
     private final Map<Integer, Double> decayStep = new HashMap<>();
     private final Map<Integer, Double> sustainStep = new HashMap<>();
     private final Map<Integer, Double> releaseStep = new HashMap<>();
 
-    private final Map<Integer, Integer> envelopePosition = new HashMap<>();
     private final Map<Integer, EnvelopeState> envelopeState = new HashMap<>();
     private final Map<Integer, Double> envelopeAmplitude = new HashMap<>();
 
@@ -135,7 +129,6 @@ public class Oscillator {
 
     public void setAttackDuration(double attackDuration) {
         this.attackDuration = Math.max(0, Math.min(attackDuration, 1));
-        this.attackFrames = Instrument.getSampleRate() * ((this.attackDuration > 0) ? this.attackDuration : 0.005);
     }
 
     public double getDecayDuration() {
@@ -144,7 +137,6 @@ public class Oscillator {
 
     public void setDecayDuration(double decayDuration) {
         this.decayDuration = Math.max(0, Math.min(decayDuration, 1));
-        this.decayFrames = Instrument.getSampleRate() * ((this.decayDuration > 0) ? this.decayDuration : 0.005);
     }
 
     public double getSustainDuration() {
@@ -153,7 +145,6 @@ public class Oscillator {
 
     public void setSustainDuration(double sustainDuration) {
         this.sustainDuration = Math.max(0, Math.min(sustainDuration, 1));
-        this.sustainFrames = Instrument.getSampleRate() * ((this.sustainDuration > 0) ? this.sustainDuration : 0.005);
     }
 
     public double getReleaseDuration() {
@@ -162,7 +153,6 @@ public class Oscillator {
 
     public void setReleaseDuration(double releaseDuration) {
         this.releaseDuration = Math.max(0, Math.min(releaseDuration, 1));
-        this.releaseFrames = Instrument.getSampleRate() * ((this.releaseDuration > 0) ? this.releaseDuration : 0.005);
     }
 
     private double[] getSampleFrame(int keyHash) {
@@ -226,14 +216,14 @@ public class Oscillator {
         switch (envelopeState.get(key.hashCode())) {
             case ATTACK:
                 if (!attackStep.containsKey(key.hashCode())) {
-                    envelopePosition.put(key.hashCode(), 0);
-                    attackStep.put(key.hashCode(), (attackAmplitude - envelopeAmplitude.get(key.hashCode())) / attackFrames);
+                    attackStep.put(
+                            key.hashCode(),
+                            (attackAmplitude - envelopeAmplitude.get(key.hashCode())) / (((attackDuration == 0) ? 0.001 : attackDuration) * Instrument.getSampleRate()));
                 }
 
                 envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + attackStep.get(key.hashCode()));
-                envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
 
-                if (envelopePosition.get(key.hashCode()) >= attackFrames) {
+                if (envelopeAmplitude.get(key.hashCode()) >= attackAmplitude) {
                     envelopeState.put(key.hashCode(), EnvelopeState.DECAY);
                 }
 
@@ -241,50 +231,77 @@ public class Oscillator {
 
             case DECAY:
                 if (!decayStep.containsKey(key.hashCode())) {
-                    envelopePosition.put(key.hashCode(), 0);
-                    decayStep.put(key.hashCode(), (decayAmplitude - envelopeAmplitude.get(key.hashCode())) / decayFrames);
+                    decayStep.put(
+                            key.hashCode(),
+                            (decayAmplitude - attackAmplitude) / (((decayDuration == 0) ? 0.001 : decayDuration) * Instrument.getSampleRate()));
                 }
 
                 envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + decayStep.get(key.hashCode()));
-                envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
 
-                if (envelopePosition.get(key.hashCode()) >= decayFrames) {
-                    envelopeState.put(key.hashCode(), EnvelopeState.SUSTAIN);
+                if (attackAmplitude >= decayAmplitude) {
+                    if (envelopeAmplitude.get(key.hashCode()) <= decayAmplitude) {
+                        envelopeState.put(key.hashCode(), EnvelopeState.SUSTAIN);
+                    }
+                } else {
+                    if (envelopeAmplitude.get(key.hashCode()) >= decayAmplitude) {
+                        envelopeState.put(key.hashCode(), EnvelopeState.SUSTAIN);
+                    }
                 }
 
                 break;
 
             case SUSTAIN:
                 if (!sustainStep.containsKey(key.hashCode())) {
-                    envelopePosition.put(key.hashCode(), 0);
-                    sustainStep.put(key.hashCode(), (sustainAmplitude - envelopeAmplitude.get(key.hashCode())) / sustainFrames);
+                    sustainStep.put(
+                            key.hashCode(),
+                            (sustainAmplitude - decayAmplitude) / (((sustainDuration == 0) ? 0.001 : sustainDuration) * Instrument.getSampleRate()));
                 }
 
-                if (envelopePosition.get(key.hashCode()) <= sustainFrames) {
-                    envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + sustainStep.get(key.hashCode()));
-                    envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
+                envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + sustainStep.get(key.hashCode()));
+
+                if (decayAmplitude >= sustainAmplitude) {
+                    if (envelopeAmplitude.get(key.hashCode()) <= sustainAmplitude) {
+                        envelopeState.put(key.hashCode(), EnvelopeState.HOLD);
+                    }
+                } else {
+                    if (envelopeAmplitude.get(key.hashCode()) >= sustainAmplitude) {
+                        envelopeState.put(key.hashCode(), EnvelopeState.HOLD);
+                    }
                 }
 
                 break;
 
+            case HOLD:
+                break;
+
             case RELEASE:
                 if (!releaseStep.containsKey(key.hashCode())) {
-                    envelopePosition.put(key.hashCode(), 0);
-                    releaseStep.put(key.hashCode(), (releaseAmplitude - envelopeAmplitude.get(key.hashCode())) / releaseFrames);
+                    releaseStep.put(
+                            key.hashCode(),
+                            (releaseAmplitude - envelopeAmplitude.get(key.hashCode())) / (((decayDuration == 0) ? 0.001 : releaseDuration) * Instrument.getSampleRate()));
                 }
 
                 envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) + releaseStep.get(key.hashCode()));
 
-                envelopePosition.put(key.hashCode(), envelopePosition.get(key.hashCode()) + 1);
-                if (envelopePosition.get(key.hashCode()) >= releaseFrames) {
-                    envelopeState.put(key.hashCode(), EnvelopeState.IDLE);
+                if (sustainAmplitude >= releaseAmplitude) {
+                    if (envelopeAmplitude.get(key.hashCode()) <= releaseAmplitude) {
+                        envelopeState.put(key.hashCode(), EnvelopeState.IDLE);
+                    }
+                } else {
+                    if (envelopeAmplitude.get(key.hashCode()) >= releaseAmplitude) {
+                        envelopeState.put(key.hashCode(), EnvelopeState.IDLE);
+                    }
                 }
 
                 break;
 
             case IDLE:
-                envelopeAmplitude.put(key.hashCode(), 0.0);
-                key.setActiveOscillator(id, false);
+                if (envelopeAmplitude.get(key.hashCode()) > 0) {
+                    envelopeAmplitude.put(key.hashCode(), envelopeAmplitude.get(key.hashCode()) - 0.05);
+                } else {
+                    envelopeAmplitude.put(key.hashCode(), 0.0);
+                    key.setActiveOscillator(id, false);
+                }
 
                 break;
         }

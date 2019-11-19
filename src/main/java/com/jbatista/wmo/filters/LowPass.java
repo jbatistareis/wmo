@@ -7,7 +7,7 @@ public class LowPass extends Filter {
 
     public LowPass() {
         setCutoffFrequency(440);
-        setResonance(0);
+        setResonance(1);
     }
 
     public void setCutoffFrequency(double cutoffFrequency) {
