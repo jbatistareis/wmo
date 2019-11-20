@@ -1,14 +1,18 @@
 package com.jbatista.wmo.synthesis;
 
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 public class Algorithm {
 
     private int oscillatorId = 0;
 
-    private final LinkedHashSet<Oscillator> oscillators = new LinkedHashSet<>();
+    private final LinkedList<Oscillator> oscillators = new LinkedList<>();
 
     public boolean addCarrier(Oscillator carrier) {
+        if (oscillators.contains(carrier)) {
+            return false;
+        }
+
         return oscillators.add(carrier);
     }
 
