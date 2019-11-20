@@ -21,12 +21,10 @@ public class Instrument {
 
     private final Map<Double, Key> keys = new LinkedHashMap<>();
     private final CopyOnWriteArrayList<Key> keysQueue = new CopyOnWriteArrayList<>();
-    private short keyIndex;
-    private Key tempKey;
 
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
-    private final short[] shortBuffer = new short[]{0, 0};
     private final byte[] buffer32bit = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
+    private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
     private final double[] waveSample = new double[]{0, 0};
