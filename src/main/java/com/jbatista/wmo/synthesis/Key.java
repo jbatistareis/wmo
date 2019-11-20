@@ -50,9 +50,7 @@ public class Key {
         pressed = true;
         instrument.getAlgorithm().start(this);
 
-        if (!instrument.getKeysQueue().contains(this)) {
-            instrument.getKeysQueue().offer(this);
-        }
+        instrument.addToQueue(this);
     }
 
     public void release() {

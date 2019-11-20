@@ -7,8 +7,7 @@ import com.jbatista.wmo.filters.Filter;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Instrument {
 
@@ -21,7 +20,7 @@ public class Instrument {
     private final LinkedList<Filter> filterChain = new LinkedList<>();
 
     private final Map<Double, Key> keys = new LinkedHashMap<>();
-    private final Queue<Key> keysQueue = new ConcurrentLinkedQueue<>();
+    private final CopyOnWriteArrayList<Key> keysQueue = new CopyOnWriteArrayList<>();
     private short keyIndex;
     private Key tempKey;
 
@@ -91,8 +90,10 @@ public class Instrument {
         return keys.get(frequency);
     }
 
-    Queue<Key> getKeysQueue() {
-        return keysQueue;
+    void addToQueue(Key key) {
+        if (!keysQueue.contains(key)) {
+            keysQueue.add(key);
+        }
     }
     // </editor-fold>
 
@@ -101,9 +102,8 @@ public class Instrument {
         waveSample[1] = 0.0;
 
         // TODO channel stuff
-        for (keyIndex = 0; keyIndex < keysQueue.size(); keyIndex++) {
-            tempKey = keysQueue.poll();
-            tempWaveSample = tempKey.getSample();
+        for (Key key : keysQueue) {
+            tempWaveSample = key.getSample();
 
             // L
             waveSample[0] += tempWaveSample[0];
@@ -111,8 +111,8 @@ public class Instrument {
             // R
             waveSample[1] += tempWaveSample[1];
 
-            if (tempKey.hasActiveOscillators()) {
-                keysQueue.offer(tempKey);
+            if (!key.hasActiveOscillators()) {
+                keysQueue.remove(key);
             }
         }
 
