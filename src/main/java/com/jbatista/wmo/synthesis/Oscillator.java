@@ -21,6 +21,7 @@ public class Oscillator {
     private DspUtil.WaveForm waveForm = DspUtil.WaveForm.SINE;
 
     private double gain = 1;
+    private double feedbackLevel = 1;
     private double frequencyRatio = 1;
 
     private double attackAmplitude = 0;
@@ -80,6 +81,14 @@ public class Oscillator {
 
     public void setGain(double gain) {
         this.gain = Math.max(0, Math.min(gain, 2));
+    }
+
+    public double getFeedbackLevel() {
+        return feedbackLevel;
+    }
+
+    public void setFeedbackLevel(double feedbackLevel) {
+        this.feedbackLevel = Math.max(0, Math.min(feedbackLevel, 9));
     }
 
     public double getFrequencyRatio() {
@@ -187,7 +196,7 @@ public class Oscillator {
 
             modulatorSample[keyId][0] /= modulators.size();
         } else if (feedback != null) {
-            modulatorSample[keyId][0] = (feedback.feedbackMemory[keyId][1] - feedback.feedbackMemory[keyId][2]) / 2;
+            modulatorSample[keyId][0] = ((feedback.feedbackMemory[keyId][1] - feedback.feedbackMemory[keyId][2]) / 2) * feedbackLevel ;
         }
 
         sample[0] += gain * envelopeAmplitude[keyId] * produceSample(keyId, modulatorSample[keyId][0], time);
