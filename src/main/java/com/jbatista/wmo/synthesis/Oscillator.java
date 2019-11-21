@@ -33,9 +33,6 @@ public class Oscillator {
     private double sustainDuration;
     private double releaseDuration;
 
-    private double phaseL = 0;
-    private double phaseR = 0;
-
     // envelope data
     private final double[] attackStep = new double[144];
     private final double[] decayStep = new double[144];
@@ -47,10 +44,8 @@ public class Oscillator {
 
     private final boolean[] keyReleased = new boolean[144];
 
-    private final double[][] sampleFrame = new double[144][2];
-    private final double[][] modulatorFrame = new double[144][2];
-
-    private final double[][] feedbackMemory = new double[144][4];
+    private final double[][] modulatorSample = new double[144][1];
+    private final double[][] feedbackMemory = new double[144][3];
 
     Oscillator(int id) {
         this.id = id;
@@ -63,6 +58,10 @@ public class Oscillator {
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
+    int getId() {
+        return id;
+    }
+
     public DspUtil.WaveForm getWaveForm() {
         return waveForm;
     }
@@ -155,26 +154,6 @@ public class Oscillator {
         this.releaseDuration = Math.max(0, Math.min(releaseDuration, 1));
     }
 
-    private double[] sampleFrame(int keyId) {
-        return sampleFrame[keyId];
-    }
-
-    public double getPhaseL() {
-        return phaseL;
-    }
-
-    public void setPhaseL(double phaseL) {
-        this.phaseL = Math.max(0, Math.min(phaseL, 1));
-    }
-
-    public double getPhaseR() {
-        return phaseR;
-    }
-
-    public void setPhaseR(double phaseR) {
-        this.phaseR = Math.max(0, Math.min(phaseR, 1));
-    }
-
     public boolean addModulator(Oscillator modulator) {
         if (modulators.contains(modulator)) {
             return false;
@@ -196,41 +175,28 @@ public class Oscillator {
     }
     // </editor-fold>
 
-    void fillFrame(Key key, double[] sample, long time) {
-        createEnvelope(key.getId());
+    boolean fillFrame(int keyId, double[] sample, long time) {
+        createEnvelope(keyId);
 
-        if (envelopeState[key.getId()] == EnvelopeState.IDLE) {
-            key.setActiveOscillator(id, false);
-        }
+        modulatorSample[keyId][0] = 0.0;
 
-        modulatorFrame[key.getId()][0] = 0.0;
-        modulatorFrame[key.getId()][1] = 0.0;
-
-        feedbackMemory[key.getId()][2] = feedbackMemory[key.getId()][0];
-        feedbackMemory[key.getId()][3] = feedbackMemory[key.getId()][1];
-
-        if (!modulators.isEmpty()) {
+        if (!modulators.isEmpty() && (feedback == null)) {
             for (Oscillator oscillator : modulators) {
-                oscillator.fillFrame(key, modulatorFrame[key.getId()], time);
+                oscillator.fillFrame(keyId, modulatorSample[keyId], time);
             }
 
-            modulatorFrame[key.getId()][0] /= modulators.size();
-            modulatorFrame[key.getId()][1] /= modulators.size();
+            modulatorSample[keyId][0] /= modulators.size();
+        } else if (feedback != null) {
+            modulatorSample[keyId][0] = (feedback.feedbackMemory[keyId][1] - feedback.feedbackMemory[keyId][2]) / 2;
         }
 
-        if (feedback != null) {
-            modulatorFrame[key.getId()][0] = (feedback.feedbackMemory[key.getId()][0] - feedback.feedbackMemory[key.getId()][2]) / 2;
-            modulatorFrame[key.getId()][1] = (feedback.feedbackMemory[key.getId()][1] - feedback.feedbackMemory[key.getId()][3]) / 2;
-        }
+        sample[0] += gain * envelopeAmplitude[keyId] * produceSample(keyId, modulatorSample[keyId][0], time);
 
-        sampleFrame[key.getId()][0] = gain * envelopeAmplitude[key.getId()] * produceSample(key.getId(), phaseL, modulatorFrame[key.getId()][0], time);
-        sampleFrame[key.getId()][1] = gain * envelopeAmplitude[key.getId()] * produceSample(key.getId(), phaseR, modulatorFrame[key.getId()][1], time);
+        feedbackMemory[keyId][2] = feedbackMemory[keyId][1];
+        feedbackMemory[keyId][1] = feedbackMemory[keyId][0];
+        feedbackMemory[keyId][0] = sample[0];
 
-        feedbackMemory[key.getId()][0] = sampleFrame[key.getId()][0];
-        feedbackMemory[key.getId()][1] = sampleFrame[key.getId()][1];
-
-        sample[0] += sampleFrame[key.getId()][0];
-        sample[1] += sampleFrame[key.getId()][1];
+        return envelopeState[keyId] != EnvelopeState.IDLE;
     }
 
     private void createEnvelope(int keyId) {
@@ -311,7 +277,7 @@ public class Oscillator {
 
             case RELEASE_END:
                 if (envelopeAmplitude[keyId] > 0) {
-                    envelopeAmplitude[keyId] = envelopeAmplitude[keyId] - 0.05;
+                    envelopeAmplitude[keyId] = envelopeAmplitude[keyId] - 0.005;
                 } else {
                     envelopeAmplitude[keyId] = 0.0;
                     envelopeState[keyId] = EnvelopeState.IDLE;
@@ -325,46 +291,38 @@ public class Oscillator {
         }
     }
 
-    private double produceSample(int keyId, double phase, double modulation, long time) {
+    private double produceSample(int keyId, double modulation, long time) {
         return DspUtil.oscillator(
                 waveForm,
                 Instrument.getSampleRate(),
                 effectiveFrequency[keyId],
                 modulation,
-                phase,
+                0,
                 time);
     }
 
-    void start(Key key) {
+    void start(int keyId, double frequency) {
         for (Oscillator oscillator : modulators) {
-            oscillator.start(key);
+            oscillator.start(keyId, frequency);
         }
 
-        effectiveFrequency[key.getId()] = key.getFrequency() * frequencyRatio;
+        effectiveFrequency[keyId] = frequency * frequencyRatio;
 
-        if (envelopeState[key.getId()] == null) {
-            key.setActiveOscillator(id, false);
-        } else {
-            key.setActiveOscillator(id, !envelopeState[key.getId()].equals(EnvelopeState.IDLE));
-        }
+        attackStep[keyId] = -1;
+        decayStep[keyId] = -1;
+        sustainStep[keyId] = -1;
+        releaseStep[keyId] = -1;
 
-
-        attackStep[key.getId()] = -1;
-        decayStep[key.getId()] = -1;
-        sustainStep[key.getId()] = -1;
-        releaseStep[key.getId()] = -1;
-
-        key.setActiveOscillator(id, true);
-        keyReleased[key.getId()] = false;
-        envelopeState[key.getId()] = EnvelopeState.ATTACK;
+        keyReleased[keyId] = false;
+        envelopeState[keyId] = EnvelopeState.ATTACK;
     }
 
-    void stop(Key key) {
+    void stop(int keyId) {
         for (Oscillator oscillator : modulators) {
-            oscillator.stop(key);
+            oscillator.stop(keyId);
         }
 
-        envelopeState[key.getId()] = EnvelopeState.RELEASE;
+        envelopeState[keyId] = EnvelopeState.RELEASE;
     }
 
     @Override

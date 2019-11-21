@@ -7,11 +7,9 @@ public class Key {
 
     private final Instrument instrument;
     private final double frequency;
-    private final boolean[] activeOscillators = new boolean[36];
+    private final boolean[] activeCarriers = new boolean[36];
 
-    // L - R
-    private final double[] sample = new double[2];
-    private final double[] tempSample = new double[2];
+    private final double[] sample = new double[1];
 
     private long elapsed = 0;
     private boolean pressed = false;
@@ -36,30 +34,30 @@ public class Key {
         return pressed;
     }
 
-    double[] getSample() {
-        instrument.getAlgorithm().fillFrame(this, sample, tempSample, elapsed++);
+    double getSample() {
+        instrument.getAlgorithm().fillFrame(this, sample, elapsed++);
 
-        return sample;
+        return sample[0];
     }
 
     public void press() {
-        if (!hasActiveOscillators()) {
+        if (!hasActiveCarriers()) {
             elapsed = 0;
         }
 
         pressed = true;
-        instrument.getAlgorithm().start(this);
+        instrument.getAlgorithm().start(id, frequency);
 
         instrument.addToQueue(this);
     }
 
     public void release() {
         pressed = false;
-        instrument.getAlgorithm().stop(this);
+        instrument.getAlgorithm().stop(id);
     }
 
-    public boolean hasActiveOscillators() {
-        for (boolean value : activeOscillators) {
+    public boolean hasActiveCarriers() {
+        for (boolean value : activeCarriers) {
             if (value) {
                 return true;
             }
@@ -68,12 +66,8 @@ public class Key {
         return false;
     }
 
-    boolean isOscillatorActive(int id) {
-        return activeOscillators[id];
-    }
-
-    void setActiveOscillator(int id, boolean value) {
-        activeOscillators[id] = value;
+    void setActiveCarrier(int id, boolean value) {
+        activeCarriers[id] = value;
     }
 
     @Override

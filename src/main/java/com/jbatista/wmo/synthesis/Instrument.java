@@ -27,9 +27,8 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    private final double[] waveSample = new double[]{0, 0};
-    private final double[] finalWaveSample = new double[]{0, 0};
-    private double[] tempWaveSample;
+    private double[] sample = new double[1];
+    private double finalSample = 0;
 
     public Instrument(AudioFormat audioFormat) {
         Instrument.audioFormat = audioFormat;
@@ -96,28 +95,20 @@ public class Instrument {
     // </editor-fold>
 
     private void fillFrame() {
-        waveSample[0] = 0.0;
-        waveSample[1] = 0.0;
+        sample[0] = 0;
 
         // TODO channel stuff
         for (Key key : keysQueue) {
-            tempWaveSample = key.getSample();
+            sample[0] += key.getSample();
 
-            // L
-            waveSample[0] += tempWaveSample[0];
-
-            // R
-            waveSample[1] += tempWaveSample[1];
-
-            if (!key.hasActiveOscillators()) {
+            if (!key.hasActiveCarriers()) {
                 keysQueue.remove(key);
             }
         }
 
-        filterChain.forEach(filter -> filter.apply(waveSample));
+        filterChain.forEach(filter -> filter.apply(sample));
 
-        finalWaveSample[0] = waveSample[0] *= gain;
-        finalWaveSample[1] = waveSample[1] *= gain;
+        finalSample = sample[0] *= gain;
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
@@ -125,20 +116,17 @@ public class Instrument {
 
         switch (audioFormat.getBitsPerSample()) {
             case 16:
-                // L
-                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) finalWaveSample[0]);
-
-                // R
-                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) finalWaveSample[1]);
+                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) finalSample);
+                buffer16bit[2] = buffer16bit[0];
+                buffer16bit[3] = buffer16bit[1];
 
                 return buffer16bit;
 
             case 32:
-                // L
-                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) finalWaveSample[0]);
-
-                // R
-                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 4, (long) finalWaveSample[1]);
+                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) finalSample);
+                buffer16bit[3] = buffer16bit[0];
+                buffer16bit[4] = buffer16bit[1];
+                buffer16bit[5] = buffer16bit[2];
 
                 return buffer32bit;
 
@@ -151,10 +139,10 @@ public class Instrument {
         fillFrame();
 
         // L
-        shortBuffer[0] = (short) finalWaveSample[0];
+        shortBuffer[0] = (short) finalSample;
 
         // R
-        shortBuffer[1] = (short) finalWaveSample[1];
+        shortBuffer[1] = shortBuffer[0];
 
         return shortBuffer;
     }
@@ -163,10 +151,10 @@ public class Instrument {
         fillFrame();
 
         // L
-        floatBuffer[0] = (float) finalWaveSample[0];
+        floatBuffer[0] = (float) finalSample;
 
         // R
-        floatBuffer[1] = (float) finalWaveSample[1];
+        floatBuffer[1] = floatBuffer[0];
 
         return floatBuffer;
     }

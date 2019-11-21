@@ -6,49 +6,47 @@ public class Algorithm {
 
     private int oscillatorId = 0;
 
-    private final LinkedList<Oscillator> oscillators = new LinkedList<>();
+    private final LinkedList<Oscillator> carriers = new LinkedList<>();
 
     public boolean addCarrier(Oscillator carrier) {
-        if (oscillators.contains(carrier)) {
+        if (carriers.contains(carrier)) {
             return false;
         }
 
-        return oscillators.add(carrier);
+        return carriers.add(carrier);
     }
 
     public boolean removeCarrier(Oscillator carrier) {
-        return oscillators.remove(carrier);
+        return carriers.remove(carrier);
     }
 
     public void clearCarriers() {
-        oscillators.clear();
+        carriers.clear();
     }
 
     public Oscillator[] getCarriers() {
-        return oscillators.toArray(new Oscillator[0]);
+        return carriers.toArray(new Oscillator[0]);
     }
 
-    void fillFrame(Key key, double[] sample, double[] tempSample, long time) {
-        tempSample[0] = 0;
-        tempSample[1] = 0;
+    void fillFrame(Key key, double[] sample, long time) {
+        sample[0] = 0;
 
-        for (Oscillator oscillator : oscillators) {
-            oscillator.fillFrame(key, tempSample, time);
+        for (Oscillator oscillator : carriers) {
+            key.setActiveCarrier(oscillator.getId(), oscillator.fillFrame(key.getId(), sample, time));
         }
 
-        sample[0] = tempSample[0] / oscillators.size();
-        sample[1] = tempSample[1] / oscillators.size();
+        sample[0] /= carriers.size();
     }
 
-    void start(Key key) {
-        for (Oscillator oscillator : oscillators) {
-            oscillator.start(key);
+    void start(int keyId, double frequency) {
+        for (Oscillator oscillator : carriers) {
+            oscillator.start(keyId, frequency);
         }
     }
 
-    void stop(Key key) {
-        for (Oscillator oscillator : oscillators) {
-            oscillator.stop(key);
+    void stop(int keyId) {
+        for (Oscillator oscillator : carriers) {
+            oscillator.stop(keyId);
         }
     }
 

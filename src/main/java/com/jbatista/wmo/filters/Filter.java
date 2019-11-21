@@ -25,8 +25,7 @@ public abstract class Filter {
     protected final double[] cA = new double[]{0, 0, 0};
     protected final double[] cB = new double[]{0, 0, 0};
 
-    private double yL;
-    private double yR;
+    private double y;
 
     private double b0a0;
     private double b1a0;
@@ -34,11 +33,8 @@ public abstract class Filter {
     private double a1a0;
     private double a2a0;
 
-    private final double[] inL = new double[]{0, 0, 0};
-    private final double[] outL = new double[]{0, 0};
-
-    private final double[] inR = new double[]{0, 0, 0};
-    private final double[] outR = new double[]{0, 0};
+    private final double[] in = new double[]{0, 0, 0};
+    private final double[] out = new double[]{0, 0};
 
     protected Filter() {
     }
@@ -58,12 +54,7 @@ public abstract class Filter {
     }
 
     public void apply(double[] sample) {
-        sample[0] = process(sample[0], inL, outL, yL);
-        sample[1] = process(sample[1], inR, outR, yR);
-    }
-
-    private double process(double value, double[] in, double[] out, double y) {
-        in[0] = value;
+        in[0] = sample[0];
 
         y = b0a0 * in[0] + b1a0 * in[1] + b2a0 * in[2] - a1a0 * out[0] - a2a0 * out[1];
 
@@ -72,7 +63,7 @@ public abstract class Filter {
         out[1] = out[0];
         out[0] = y;
 
-        return y;
+        sample[0] = y;
     }
 
     protected abstract void calculateCoefficients();
