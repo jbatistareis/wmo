@@ -2,6 +2,10 @@ package com.jbatista.wmo;
 
 import java.util.Random;
 
+/*
+    Interpolation algorithms based on Lewis Van Winkle's 2009 blog post "Simple Interpolation" [https://codeplea.com/simple-interpolation]
+*/
+
 public class MathUtil {
 
     public static final double TAU = Math.PI * 2;
@@ -80,8 +84,20 @@ public class MathUtil {
     }
 
 
-    public static double lerp(double start, double end, double factor) {
-        return (1 - factor) * start + factor * end;
+    public static double linearInterpolation(double start, double end, double factor) {
+        return start + factor * (end - start);
+    }
+
+    public static double smoothInterpolation(double start, double end, double factor) {
+        return linearInterpolation(start, end, Math.pow(factor, 2) * (3 - 2 * factor));
+    }
+
+    public static double accelerationInterpolation(double start, double end, double factor) {
+        return linearInterpolation(start, end, Math.pow(factor, 3));
+    }
+
+    public static double decelerationInterpolation(double start, double end, double factor) {
+        return linearInterpolation(start, end, 1 - Math.pow(1 - factor, 3));
     }
 
     public static double frequencyByKeyPosition(boolean midi, int position) {
