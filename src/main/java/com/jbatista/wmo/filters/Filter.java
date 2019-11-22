@@ -10,6 +10,7 @@ public abstract class Filter {
     public enum FilterType {LOW_PASS, HIGH_PASS, BAND_PASS_CONSTANT_SKIRT_GAIN, BAND_PASS_CONSTANT_0_DB_PEAK_GAIN, NOTCH, ALL_PASS, PEAKING_EQ, LOW_SHELF, HIGH_SHELF}
 
     protected double frequency = 0;
+    protected double sampleRate = 0;
     protected double dbGain = 0;
     protected double bandwidth = 0;
     protected double q = 0;

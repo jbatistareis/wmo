@@ -1,6 +1,7 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.DspUtil;
+import com.jbatista.wmo.MathUtil;
 
 import java.util.LinkedList;
 
@@ -8,10 +9,13 @@ public class Oscillator {
 
     enum EnvelopeState {ATTACK, DECAY, SUSTAIN, HOLD, RELEASE, RELEASE_END, IDLE}
 
+    public enum EnvelopeCurve {LINEAR, SMOOTH, ACCELERATION, DECELERATION}
+
     private final int id;
     private final int hash;
 
     private final double[] effectiveFrequency = new double[144];
+    private final double sampleRate;
 
     // I/O
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
@@ -34,22 +38,23 @@ public class Oscillator {
     private double sustainDuration;
     private double releaseDuration;
 
-    // envelope data
-    private final double[] attackStep = new double[144];
-    private final double[] decayStep = new double[144];
-    private final double[] sustainStep = new double[144];
-    private final double[] releaseStep = new double[144];
+    private final EnvelopeCurve[] envelopeCurves = new EnvelopeCurve[]{EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR};
 
+    // envelope data
     private final EnvelopeState[] envelopeState = new EnvelopeState[144];
     private final double[] envelopeAmplitude = new double[144];
+    // attack -> decay -> sustain -> release
+    private double[][] envelopes = new double[4][0];
+    private final int[] envelopePosition = new int[144];
 
     private final boolean[] keyReleased = new boolean[144];
 
     private final double[][] modulatorSample = new double[144][1];
     private final double[][] feedbackMemory = new double[144][3];
 
-    Oscillator(int id) {
+    Oscillator(int id, double sampleRate) {
         this.id = id;
+        this.sampleRate = sampleRate;
         this.hash = ((Integer) this.id).hashCode();
 
         setAttackDuration(0);
@@ -113,6 +118,7 @@ public class Oscillator {
 
     public void setDecayAmplitude(double decayAmplitude) {
         this.decayAmplitude = Math.max(0, Math.min(decayAmplitude, 1));
+        calculateEnvelope(1, this.decayDuration, this.attackAmplitude, this.decayAmplitude);
     }
 
     public double getSustainAmplitude() {
@@ -121,6 +127,7 @@ public class Oscillator {
 
     public void setSustainAmplitude(double sustainAmplitude) {
         this.sustainAmplitude = Math.max(0, Math.min(sustainAmplitude, 1));
+        calculateEnvelope(2, this.sustainDuration, this.decayAmplitude, this.sustainAmplitude);
     }
 
     public double getReleaseAmplitude() {
@@ -145,6 +152,7 @@ public class Oscillator {
 
     public void setDecayDuration(double decayDuration) {
         this.decayDuration = Math.max(0, Math.min(decayDuration, 1));
+        calculateEnvelope(1, this.decayDuration, this.attackAmplitude, this.decayAmplitude);
     }
 
     public double getSustainDuration() {
@@ -153,6 +161,7 @@ public class Oscillator {
 
     public void setSustainDuration(double sustainDuration) {
         this.sustainDuration = Math.max(0, Math.min(sustainDuration, 1));
+        calculateEnvelope(2, this.sustainDuration, this.decayAmplitude, this.sustainAmplitude);
     }
 
     public double getReleaseDuration() {
@@ -161,6 +170,38 @@ public class Oscillator {
 
     public void setReleaseDuration(double releaseDuration) {
         this.releaseDuration = Math.max(0, Math.min(releaseDuration, 1));
+    }
+
+    public EnvelopeCurve getAttackCurve() {
+        return envelopeCurves[0];
+    }
+
+    public void setAttackCurve(EnvelopeCurve envelopeCurve) {
+        envelopeCurves[0] = envelopeCurve;
+    }
+
+    public EnvelopeCurve getDecayCurve() {
+        return envelopeCurves[1];
+    }
+
+    public void setDecayCurve(EnvelopeCurve envelopeCurve) {
+        envelopeCurves[1] = envelopeCurve;
+    }
+
+    public EnvelopeCurve getSustainCurve() {
+        return envelopeCurves[2];
+    }
+
+    public void setSustainCurve(EnvelopeCurve envelopeCurve) {
+        envelopeCurves[2] = envelopeCurve;
+    }
+
+    public EnvelopeCurve getReleaseCurve() {
+        return envelopeCurves[3];
+    }
+
+    public void setReleaseCurve(EnvelopeCurve envelopeCurve) {
+        envelopeCurves[3] = envelopeCurve;
     }
 
     public boolean addModulator(Oscillator modulator) {
@@ -185,7 +226,7 @@ public class Oscillator {
     // </editor-fold>
 
     boolean fillFrame(int keyId, double[] sample, long time) {
-        createEnvelope(keyId);
+        defineEnvelopeAmplitude(keyId);
 
         modulatorSample[keyId][0] = 0.0;
 
@@ -196,7 +237,7 @@ public class Oscillator {
 
             modulatorSample[keyId][0] /= modulators.size();
         } else if (feedback != null) {
-            modulatorSample[keyId][0] = ((feedback.feedbackMemory[keyId][1] - feedback.feedbackMemory[keyId][2]) / 2) * feedbackLevel ;
+            modulatorSample[keyId][0] = ((feedback.feedbackMemory[keyId][1] - feedback.feedbackMemory[keyId][2]) / 2) * feedbackLevel;
         }
 
         sample[0] += gain * envelopeAmplitude[keyId] * produceSample(keyId, modulatorSample[keyId][0], time);
@@ -208,57 +249,27 @@ public class Oscillator {
         return envelopeState[keyId] != EnvelopeState.IDLE;
     }
 
-    private void createEnvelope(int keyId) {
+    private void defineEnvelopeAmplitude(int keyId) {
         switch (envelopeState[keyId]) {
             case ATTACK:
-                if (attackStep[keyId] == -1) {
-                    attackStep[keyId] = (attackAmplitude - envelopeAmplitude[keyId]) / (((attackDuration == 0) ? 0.001 : attackDuration) * Instrument.getSampleRate());
-                }
-
-                envelopeAmplitude[keyId] = envelopeAmplitude[keyId] + attackStep[keyId];
-
-                if (envelopeAmplitude[keyId] >= attackAmplitude) {
+                if (applyEnvelope(keyId, 0)) {
+                    envelopePosition[keyId] = 0;
                     envelopeState[keyId] = EnvelopeState.DECAY;
                 }
-
                 break;
 
             case DECAY:
-                if (decayStep[keyId] == -1) {
-                    decayStep[keyId] = (decayAmplitude - attackAmplitude) / (((decayDuration == 0) ? 0.001 : decayDuration) * Instrument.getSampleRate());
+                if (applyEnvelope(keyId, 1)) {
+                    envelopePosition[keyId] = 0;
+                    envelopeState[keyId] = EnvelopeState.SUSTAIN;
                 }
-
-                envelopeAmplitude[keyId] = envelopeAmplitude[keyId] + decayStep[keyId];
-
-                if (attackAmplitude >= decayAmplitude) {
-                    if (envelopeAmplitude[keyId] <= decayAmplitude) {
-                        envelopeState[keyId] = EnvelopeState.SUSTAIN;
-                    }
-                } else {
-                    if (envelopeAmplitude[keyId] >= decayAmplitude) {
-                        envelopeState[keyId] = EnvelopeState.SUSTAIN;
-                    }
-                }
-
                 break;
 
             case SUSTAIN:
-                if (sustainStep[keyId] == -1) {
-                    sustainStep[keyId] = (sustainAmplitude - decayAmplitude) / (((sustainDuration == 0) ? 0.001 : sustainDuration) * Instrument.getSampleRate());
+                if (applyEnvelope(keyId, 2)) {
+                    envelopePosition[keyId] = 0;
+                    envelopeState[keyId] = EnvelopeState.HOLD;
                 }
-
-                envelopeAmplitude[keyId] = envelopeAmplitude[keyId] + sustainStep[keyId];
-
-                if (decayAmplitude >= sustainAmplitude) {
-                    if (envelopeAmplitude[keyId] <= sustainAmplitude) {
-                        envelopeState[keyId] = EnvelopeState.HOLD;
-                    }
-                } else {
-                    if (envelopeAmplitude[keyId] >= sustainAmplitude) {
-                        envelopeState[keyId] = EnvelopeState.HOLD;
-                    }
-                }
-
                 break;
 
             case HOLD:
@@ -266,32 +277,18 @@ public class Oscillator {
                 break;
 
             case RELEASE:
-                if (releaseStep[keyId] == -1) {
-                    releaseStep[keyId] = (releaseAmplitude - envelopeAmplitude[keyId]) / (((decayDuration == 0) ? 0.001 : releaseDuration) * Instrument.getSampleRate());
+                if (applyEnvelope(keyId, 3)) {
+                    envelopeState[keyId] = EnvelopeState.RELEASE_END;
                 }
-
-                envelopeAmplitude[keyId] = envelopeAmplitude[keyId] + releaseStep[keyId];
-
-                if (sustainAmplitude >= releaseAmplitude) {
-                    if (envelopeAmplitude[keyId] <= releaseAmplitude) {
-                        envelopeState[keyId] = EnvelopeState.RELEASE_END;
-                    }
-                } else {
-                    if (envelopeAmplitude[keyId] >= releaseAmplitude) {
-                        envelopeState[keyId] = EnvelopeState.RELEASE_END;
-                    }
-                }
-
                 break;
 
             case RELEASE_END:
-                if (envelopeAmplitude[keyId] > 0) {
-                    envelopeAmplitude[keyId] = envelopeAmplitude[keyId] - 0.005;
+                if (envelopeAmplitude[keyId] > 0.005) {
+                    envelopeAmplitude[keyId] -= 0.005;
                 } else {
                     envelopeAmplitude[keyId] = 0.0;
                     envelopeState[keyId] = EnvelopeState.IDLE;
                 }
-
                 break;
 
             case IDLE:
@@ -300,10 +297,57 @@ public class Oscillator {
         }
     }
 
+    private boolean applyEnvelope(int keyId, int envelopeState) {
+        if (envelopePosition[keyId] < envelopes[envelopeState].length) {
+            envelopeAmplitude[keyId] = envelopes[envelopeState][envelopePosition[keyId]];
+            envelopePosition[keyId] += 1;
+
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    void calculateEnvelope(int envelopeCurve, double duration, double startAmplitude, double endAmplitude) {
+        final int samples = (int) (((duration == 0) ? 0.001 : duration) * sampleRate);
+        final double factor = 1d / samples;
+        double accumulator = 0;
+
+        if (envelopes[envelopeCurve].length != samples) {
+            envelopes[envelopeCurve] = new double[samples];
+        }
+
+        for (int i = 0; i < samples; i++) {
+            switch (envelopeCurves[envelopeCurve]) {
+                case LINEAR:
+                    envelopes[envelopeCurve][i] = MathUtil.linearInterpolation(startAmplitude, endAmplitude, accumulator);
+                    break;
+
+                case SMOOTH:
+                    envelopes[envelopeCurve][i] = MathUtil.smoothInterpolation(startAmplitude, endAmplitude, accumulator);
+                    break;
+
+                case ACCELERATION:
+                    envelopes[envelopeCurve][i] = MathUtil.accelerationInterpolation(startAmplitude, endAmplitude, accumulator);
+                    break;
+
+                case DECELERATION:
+                    envelopes[envelopeCurve][i] = MathUtil.decelerationInterpolation(startAmplitude, endAmplitude, accumulator);
+                    break;
+
+                default:
+                    break;
+            }
+
+            accumulator += factor;
+        }
+    }
+
+
     private double produceSample(int keyId, double modulation, long time) {
         return DspUtil.oscillator(
                 waveForm,
-                Instrument.getSampleRate(),
+                sampleRate,
                 effectiveFrequency[keyId],
                 modulation,
                 0,
@@ -315,13 +359,9 @@ public class Oscillator {
             oscillator.start(keyId, frequency);
         }
 
+        calculateEnvelope(0, attackDuration, envelopeAmplitude[keyId], attackAmplitude);
+
         effectiveFrequency[keyId] = frequency * frequencyRatio;
-
-        attackStep[keyId] = -1;
-        decayStep[keyId] = -1;
-        sustainStep[keyId] = -1;
-        releaseStep[keyId] = -1;
-
         keyReleased[keyId] = false;
         envelopeState[keyId] = EnvelopeState.ATTACK;
     }
@@ -330,6 +370,8 @@ public class Oscillator {
         for (Oscillator oscillator : modulators) {
             oscillator.stop(keyId);
         }
+
+        calculateEnvelope(0, releaseDuration, envelopeAmplitude[keyId], releaseAmplitude);
 
         envelopeState[keyId] = EnvelopeState.RELEASE;
     }

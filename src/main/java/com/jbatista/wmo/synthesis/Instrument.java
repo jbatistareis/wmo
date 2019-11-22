@@ -31,12 +31,16 @@ public class Instrument {
     private double finalSample = 0;
 
     public Instrument(AudioFormat audioFormat) {
-        Instrument.audioFormat = audioFormat;
+        setAudioFormat(audioFormat);
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public static AudioFormat getAudioFormat() {
         return audioFormat;
+    }
+
+    private static void setAudioFormat(AudioFormat _audioFormat) {
+        audioFormat = _audioFormat;
     }
 
     public static double getSampleRate() {

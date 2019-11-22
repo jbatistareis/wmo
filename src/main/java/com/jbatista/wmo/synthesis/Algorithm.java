@@ -51,7 +51,7 @@ public class Algorithm {
     }
 
     public Oscillator buildOscillator() {
-        return new Oscillator(oscillatorId++);
+        return new Oscillator(oscillatorId++, Instrument.getSampleRate());
     }
 
 }

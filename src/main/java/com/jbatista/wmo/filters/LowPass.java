@@ -1,11 +1,11 @@
 package com.jbatista.wmo.filters;
 
 import com.jbatista.wmo.MathUtil;
-import com.jbatista.wmo.synthesis.Instrument;
 
 public class LowPass extends Filter {
 
-    public LowPass() {
+    public LowPass(double sampleRate) {
+        this.sampleRate = sampleRate;
         setCutoffFrequency(440);
         setResonance(1);
     }
@@ -30,7 +30,7 @@ public class LowPass extends Filter {
 
     @Override
     protected void calculateCoefficients() {
-        omega = (MathUtil.TAU * frequency) / Instrument.getSampleRate();
+        omega = (MathUtil.TAU * frequency) / sampleRate;
         sin = Math.sin(omega);
         cos = Math.cos(omega);
         alpha = sin / (2 * q);
