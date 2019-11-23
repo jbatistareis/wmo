@@ -19,13 +19,12 @@ public class Oscillator {
 
     // I/O
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
-    private Oscillator feedback = null;
 
     // parameters
     private DspUtil.WaveForm waveForm = DspUtil.WaveForm.SINE;
 
-    private double gain = 1;
-    private double feedbackLevel = 1;
+    private int outputLevel = 75;
+    private int feedbackLevel = 0;
     private double frequencyRatio = 1;
 
     private double attackAmplitude = 0;
@@ -50,7 +49,7 @@ public class Oscillator {
     private final boolean[] keyReleased = new boolean[144];
 
     private final double[][] modulatorSample = new double[144][1];
-    private final double[][] feedbackMemory = new double[144][3];
+    private final double[] feedbackSample = new double[144];
 
     Oscillator(int id, double sampleRate) {
         this.id = id;
@@ -76,24 +75,20 @@ public class Oscillator {
         this.waveForm = waveForm;
     }
 
-    public void setFeedback(Oscillator feedback) {
-        this.feedback = feedback;
+    public int getOutputLevel() {
+        return outputLevel;
     }
 
-    public double getGain() {
-        return gain;
+    public void setOutputLevel(int outputLevel) {
+        this.outputLevel = Math.max(0, Math.min(outputLevel, 99));
     }
 
-    public void setGain(double gain) {
-        this.gain = Math.max(0, Math.min(gain, 2));
-    }
-
-    public double getFeedbackLevel() {
+    public int getFeedbackLevel() {
         return feedbackLevel;
     }
 
-    public void setFeedbackLevel(double feedbackLevel) {
-        this.feedbackLevel = Math.max(0, Math.min(feedbackLevel, 9));
+    public void setFeedbackLevel(int feedbackLevel) {
+        this.feedbackLevel = Math.max(0, Math.min(feedbackLevel, 7));
     }
 
     public double getFrequencyRatio() {
@@ -228,23 +223,24 @@ public class Oscillator {
     boolean fillFrame(int keyId, double[] sample, long time) {
         defineEnvelopeAmplitude(keyId);
 
-        modulatorSample[keyId][0] = 0.0;
+        modulatorSample[keyId][0] = 0;
+        feedbackSample[keyId] = 0;
 
-        if (!modulators.isEmpty() && (feedback == null)) {
+        if (!modulators.isEmpty() && (feedbackLevel == 0)) {
             for (Oscillator oscillator : modulators) {
                 oscillator.fillFrame(keyId, modulatorSample[keyId], time);
             }
 
             modulatorSample[keyId][0] /= modulators.size();
-        } else if (feedback != null) {
-            modulatorSample[keyId][0] = ((feedback.feedbackMemory[keyId][1] - feedback.feedbackMemory[keyId][2]) / 2) * feedbackLevel;
+        } else if (feedbackLevel > 0) {
+            feedbackSample[keyId] = Tables.outputLevels[feedbackLevel * 14]
+                    * ((produceSample(effectiveFrequency[keyId] * 2, 0, time) / 2)
+                    + (produceSample(effectiveFrequency[keyId] * 3, 0, time) / 3)
+                    + (produceSample(effectiveFrequency[keyId] * 4, 0, time) / 4)
+                    + (produceSample(effectiveFrequency[keyId] * 5, 0, time) / 5));
         }
 
-        sample[0] += gain * envelopeAmplitude[keyId] * produceSample(keyId, modulatorSample[keyId][0], time);
-
-        feedbackMemory[keyId][2] = feedbackMemory[keyId][1];
-        feedbackMemory[keyId][1] = feedbackMemory[keyId][0];
-        feedbackMemory[keyId][0] = sample[0];
+        sample[0] += Tables.outputLevels[outputLevel] * envelopeAmplitude[keyId] * (produceSample(effectiveFrequency[keyId], modulatorSample[keyId][0], time) + feedbackSample[keyId]);
 
         return envelopeState[keyId] != EnvelopeState.IDLE;
     }
@@ -344,11 +340,11 @@ public class Oscillator {
     }
 
 
-    private double produceSample(int keyId, double modulation, long time) {
+    private double produceSample(double frequency, double modulation, long time) {
         return DspUtil.oscillator(
                 waveForm,
                 sampleRate,
-                effectiveFrequency[keyId],
+                frequency,
                 modulation,
                 0,
                 time);
@@ -360,6 +356,7 @@ public class Oscillator {
         }
 
         calculateEnvelope(0, attackDuration, envelopeAmplitude[keyId], attackAmplitude);
+        envelopePosition[keyId] = 0;
 
         effectiveFrequency[keyId] = frequency * frequencyRatio;
         keyReleased[keyId] = false;
