@@ -27,8 +27,8 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    private double[] sample = new double[1];
-    private double finalSample = 0;
+    private final double[] sample = new double[1];
+    private final double[] finalSample = new double[2];
 
     public Instrument(AudioFormat audioFormat) {
         setAudioFormat(audioFormat);
@@ -101,7 +101,6 @@ public class Instrument {
     private void fillFrame() {
         sample[0] = 0;
 
-        // TODO channel stuff
         for (Key key : keysQueue) {
             sample[0] += key.getSample();
 
@@ -111,8 +110,11 @@ public class Instrument {
         }
 
         filterChain.forEach(filter -> filter.apply(sample));
+        sample[0] *= gain;
 
-        finalSample = sample[0] *= gain;
+        // TODO channel stuff
+        finalSample[0] = sample[0];
+        finalSample[1] = sample[0];
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
@@ -120,17 +122,14 @@ public class Instrument {
 
         switch (audioFormat.getBitsPerSample()) {
             case 16:
-                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) finalSample);
-                buffer16bit[2] = buffer16bit[0];
-                buffer16bit[3] = buffer16bit[1];
+                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) finalSample[0]);
+                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) finalSample[1]);
 
                 return buffer16bit;
 
             case 32:
-                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) finalSample);
-                buffer16bit[3] = buffer16bit[0];
-                buffer16bit[4] = buffer16bit[1];
-                buffer16bit[5] = buffer16bit[2];
+                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) finalSample[0]);
+                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 3, (long) finalSample[1]);
 
                 return buffer32bit;
 
@@ -143,10 +142,10 @@ public class Instrument {
         fillFrame();
 
         // L
-        shortBuffer[0] = (short) finalSample;
+        shortBuffer[0] = (short) finalSample[0];
 
         // R
-        shortBuffer[1] = shortBuffer[0];
+        shortBuffer[1] = (short) finalSample[1];
 
         return shortBuffer;
     }
@@ -155,10 +154,10 @@ public class Instrument {
         fillFrame();
 
         // L
-        floatBuffer[0] = (float) finalSample;
+        floatBuffer[0] = (float) finalSample[0];
 
         // R
-        floatBuffer[1] = floatBuffer[0];
+        floatBuffer[1] = (float) finalSample[1];
 
         return floatBuffer;
     }

@@ -240,7 +240,9 @@ public class Oscillator {
                     + (produceSample(effectiveFrequency[keyId] * 5, 0, time) / 5));
         }
 
-        sample[0] += Tables.outputLevels[outputLevel] * envelopeAmplitude[keyId] * (produceSample(effectiveFrequency[keyId], modulatorSample[keyId][0], time) + feedbackSample[keyId]);
+        sample[0] += Tables.outputLevels[outputLevel]
+                * envelopeAmplitude[keyId]
+                * (produceSample(effectiveFrequency[keyId], modulatorSample[keyId][0], time) + feedbackSample[keyId]);
 
         return envelopeState[keyId] != EnvelopeState.IDLE;
     }
