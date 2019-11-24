@@ -24,7 +24,7 @@ public class Oscillator {
     private DspUtil.WaveForm waveForm = DspUtil.WaveForm.SINE;
 
     private int outputLevel = 75;
-    private int feedbackLevel = 0;
+    private int feedbackType = 0;
     private double frequencyRatio = 1;
 
     private double attackAmplitude = 0;
@@ -83,12 +83,12 @@ public class Oscillator {
         this.outputLevel = Math.max(0, Math.min(outputLevel, 99));
     }
 
-    public int getFeedbackLevel() {
-        return feedbackLevel;
+    public int getFeedbackType() {
+        return feedbackType;
     }
 
-    public void setFeedbackLevel(int feedbackLevel) {
-        this.feedbackLevel = Math.max(0, Math.min(feedbackLevel, 7));
+    public void setFeedbackType(int feedbackType) {
+        this.feedbackType = Math.max(-7, Math.min(feedbackType, 7));
     }
 
     public double getFrequencyRatio() {
@@ -226,18 +226,24 @@ public class Oscillator {
         modulatorSample[keyId][0] = 0;
         feedbackSample[keyId] = 0;
 
-        if (!modulators.isEmpty() && (feedbackLevel == 0)) {
+        if (!modulators.isEmpty() && (feedbackType == 0)) {
             for (Oscillator oscillator : modulators) {
                 oscillator.fillFrame(keyId, modulatorSample[keyId], time);
             }
 
             modulatorSample[keyId][0] /= modulators.size();
-        } else if (feedbackLevel > 0) {
-            feedbackSample[keyId] = Tables.feedbackOutputLevels[feedbackLevel]
+        } else if (feedbackType > 0) {
+            feedbackSample[keyId] = Tables.feedbackOutputLevels[feedbackType]
                     * ((produceSample(sineFrequency[keyId] * 2, 0, time) / 2)
                     + (produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
                     + (produceSample(sineFrequency[keyId] * 4, 0, time) / 4)
                     + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5));
+        } else if (feedbackType < 0) {
+            feedbackSample[keyId] = Tables.feedbackOutputLevels[-feedbackType]
+                    * ((produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
+                    + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5)
+                    + (produceSample(sineFrequency[keyId] * 7, 0, time) / 7)
+                    + (produceSample(sineFrequency[keyId] * 9, 0, time) / 9));
         }
 
         sample[0] += Tables.oscillatorOutputLevels[outputLevel]
