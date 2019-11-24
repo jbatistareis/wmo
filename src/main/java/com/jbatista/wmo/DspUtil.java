@@ -4,16 +4,16 @@ public class DspUtil {
 
     public enum WaveForm {SINE, SQUARE, TRIANGLE, SAWTOOTH, WHITE_NOISE}
 
-    public static double oscillator(WaveForm waveForm, double sampleRate, double frequency, double modulation, double phase, long time) {
+    public static double oscillator(WaveForm waveForm, double frequency, double modulation, double phase, long time) {
         switch (waveForm) {
             case SINE:
-                return sineWave(sampleRate, frequency, modulation, phase, time);
+                return sineWave(frequency, modulation, phase, time);
             case SQUARE:
-                return squareWave(sampleRate, frequency, modulation, phase, time);
+                return squareWave(frequency, modulation, phase, time);
             case TRIANGLE:
-                return triangleWave(sampleRate, frequency, modulation, phase, time);
+                return triangleWave(frequency, modulation, phase, time);
             case SAWTOOTH:
-                return sawtoothWave(sampleRate, frequency, modulation, phase, time);
+                return sawtoothWave(frequency, modulation, phase, time);
             case WHITE_NOISE:
                 return whiteNoise();
             default:
@@ -21,20 +21,20 @@ public class DspUtil {
         }
     }
 
-    private static double sineWave(double sampleRate, double frequency, double modulation, double phase, long time) {
-        return Math.sin((MathUtil.TAU * frequency * time) / sampleRate + modulation + phase);
+    private static double sineWave(double frequency, double modulation, double phase, long time) {
+        return Math.sin(MathUtil.TAU * frequency * time + modulation + phase);
     }
 
-    private static double squareWave(double sampleRate, double frequency, double modulation, double phase, long time) {
-        return Math.signum(sineWave(sampleRate, frequency, modulation, phase, time));
+    private static double squareWave(double frequency, double modulation, double phase, long time) {
+        return Math.signum(sineWave(frequency, modulation, phase, time));
     }
 
-    private static double triangleWave(double sampleRate, double frequency, double modulation, double phase, long time) {
-        return MathUtil.PI_D2 * Math.asin(sineWave(sampleRate, frequency, modulation, phase, time));
+    private static double triangleWave(double frequency, double modulation, double phase, long time) {
+        return MathUtil.PI_D2 * Math.asin(sineWave(frequency, modulation, phase, time));
     }
 
-    private static double sawtoothWave(double sampleRate, double frequency, double modulation, double phase, long time) {
-        return -MathUtil.PI_D2 * Math.atan(1 / Math.tan((Math.PI * time * frequency) / sampleRate + modulation + phase));
+    private static double sawtoothWave(double frequency, double modulation, double phase, long time) {
+        return -MathUtil.PI_D2 * Math.atan(1 / Math.tan(Math.PI * time * frequency + modulation + phase));
     }
 
     private static double whiteNoise() {

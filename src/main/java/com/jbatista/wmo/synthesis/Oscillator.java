@@ -14,7 +14,7 @@ public class Oscillator {
     private final int id;
     private final int hash;
 
-    private final double[] effectiveFrequency = new double[144];
+    private final double[] sineFrequency = new double[144];
     private final double sampleRate;
 
     // I/O
@@ -234,15 +234,15 @@ public class Oscillator {
             modulatorSample[keyId][0] /= modulators.size();
         } else if (feedbackLevel > 0) {
             feedbackSample[keyId] = Tables.feedbackOutputLevels[feedbackLevel]
-                    * ((produceSample(effectiveFrequency[keyId] * 2, 0, time) / 2)
-                    + (produceSample(effectiveFrequency[keyId] * 3, 0, time) / 3)
-                    + (produceSample(effectiveFrequency[keyId] * 4, 0, time) / 4)
-                    + (produceSample(effectiveFrequency[keyId] * 5, 0, time) / 5));
+                    * ((produceSample(sineFrequency[keyId] * 2, 0, time) / 2)
+                    + (produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
+                    + (produceSample(sineFrequency[keyId] * 4, 0, time) / 4)
+                    + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5));
         }
 
         sample[0] += Tables.oscillatorOutputLevels[outputLevel]
                 * envelopeAmplitude[keyId]
-                * (produceSample(effectiveFrequency[keyId], modulatorSample[keyId][0], time) + feedbackSample[keyId]);
+                * (produceSample(sineFrequency[keyId], modulatorSample[keyId][0], time) + feedbackSample[keyId]);
 
         return envelopeState[keyId] != EnvelopeState.IDLE;
     }
@@ -345,7 +345,6 @@ public class Oscillator {
     private double produceSample(double frequency, double modulation, long time) {
         return DspUtil.oscillator(
                 waveForm,
-                sampleRate,
                 frequency,
                 modulation,
                 0,
@@ -360,7 +359,7 @@ public class Oscillator {
         calculateEnvelope(0, attackDuration, envelopeAmplitude[keyId], attackAmplitude);
         envelopePosition[keyId] = 0;
 
-        effectiveFrequency[keyId] = frequency * frequencyRatio;
+        sineFrequency[keyId] = (frequency * frequencyRatio) / sampleRate;
         keyReleased[keyId] = false;
         envelopeState[keyId] = EnvelopeState.ATTACK;
     }
