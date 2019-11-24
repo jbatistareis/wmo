@@ -198,26 +198,6 @@ public class Oscillator {
     public void setReleaseCurve(EnvelopeCurve envelopeCurve) {
         envelopeCurves[3] = envelopeCurve;
     }
-
-    public boolean addModulator(Oscillator modulator) {
-        if (modulators.contains(modulator)) {
-            return false;
-        }
-
-        return modulators.add(modulator);
-    }
-
-    public boolean removeModulator(Oscillator modulator) {
-        return modulators.remove(modulator);
-    }
-
-    public void clearModulators() {
-        modulators.clear();
-    }
-
-    public Oscillator[] getModulators() {
-        return modulators.toArray(new Oscillator[0]);
-    }
     // </editor-fold>
 
     boolean fillFrame(int keyId, double[] sample, long time) {
@@ -378,6 +358,27 @@ public class Oscillator {
         calculateEnvelope(0, releaseDuration, envelopeAmplitude[keyId], releaseAmplitude);
 
         envelopeState[keyId] = EnvelopeState.RELEASE;
+    }
+
+
+    public boolean addModulator(Oscillator modulator) {
+        if (modulators.contains(modulator)) {
+            return false;
+        }
+
+        return modulators.add(modulator);
+    }
+
+    public boolean removeModulator(Oscillator modulator) {
+        return modulators.remove(modulator);
+    }
+
+    public void clearModulators() {
+        modulators.clear();
+    }
+
+    public Oscillator[] getModulators() {
+        return modulators.toArray(new Oscillator[0]);
     }
 
     @Override

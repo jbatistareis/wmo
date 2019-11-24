@@ -36,7 +36,6 @@ public class Key {
 
     double getSample() {
         instrument.getAlgorithm().fillFrame(this, sample, elapsed++);
-
         return sample[0];
     }
 
@@ -48,7 +47,7 @@ public class Key {
         pressed = true;
         instrument.getAlgorithm().start(id, frequency);
 
-        instrument.addToQueue(this);
+        instrument.addKeyToQueue(this);
     }
 
     public void release() {

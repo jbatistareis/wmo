@@ -31,16 +31,12 @@ public class Instrument {
     private final double[] finalSample = new double[2];
 
     public Instrument(AudioFormat audioFormat) {
-        setAudioFormat(audioFormat);
+        Instrument.audioFormat = audioFormat;
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public static AudioFormat getAudioFormat() {
         return audioFormat;
-    }
-
-    private static void setAudioFormat(AudioFormat _audioFormat) {
-        audioFormat = _audioFormat;
     }
 
     public static double getSampleRate() {
@@ -78,24 +74,6 @@ public class Instrument {
     public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
-
-    public void pressKey(double frequency) {
-        keys.get(frequency).press();
-    }
-
-    public void releaseKey(double frequency) {
-        keys.get(frequency).release();
-    }
-
-    public Key getKey(double frequency) {
-        return keys.get(frequency);
-    }
-
-    void addToQueue(Key key) {
-        if (!keysQueue.contains(key)) {
-            keysQueue.add(key);
-        }
-    }
     // </editor-fold>
 
     private void fillFrame() {
@@ -112,7 +90,7 @@ public class Instrument {
         filterChain.forEach(filter -> filter.apply(sample));
         sample[0] *= gain;
 
-        // TODO channel stuff
+        // TODO channel stuff, [L][R]
         finalSample[0] = sample[0];
         finalSample[1] = sample[0];
     }
@@ -141,10 +119,7 @@ public class Instrument {
     public short[] getShortFrame() {
         fillFrame();
 
-        // L
         shortBuffer[0] = (short) finalSample[0];
-
-        // R
         shortBuffer[1] = (short) finalSample[1];
 
         return shortBuffer;
@@ -153,10 +128,7 @@ public class Instrument {
     public float[] getFloatFrame() {
         fillFrame();
 
-        // L
         floatBuffer[0] = (float) finalSample[0];
-
-        // R
         floatBuffer[1] = (float) finalSample[1];
 
         return floatBuffer;
@@ -168,6 +140,24 @@ public class Instrument {
         }
 
         return keys.get(frequency);
+    }
+
+    public void pressKey(double frequency) {
+        keys.get(frequency).press();
+    }
+
+    public void releaseKey(double frequency) {
+        keys.get(frequency).release();
+    }
+
+    public Key getKey(double frequency) {
+        return keys.get(frequency);
+    }
+
+    void addKeyToQueue(Key key) {
+        if (!keysQueue.contains(key)) {
+            keysQueue.add(key);
+        }
     }
 
 }
