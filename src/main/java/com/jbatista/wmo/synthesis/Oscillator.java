@@ -233,14 +233,14 @@ public class Oscillator {
 
             modulatorSample[keyId][0] /= modulators.size();
         } else if (feedbackLevel > 0) {
-            feedbackSample[keyId] = Tables.outputLevels[feedbackLevel * 14]
+            feedbackSample[keyId] = Tables.feedbackOutputLevels[feedbackLevel]
                     * ((produceSample(effectiveFrequency[keyId] * 2, 0, time) / 2)
                     + (produceSample(effectiveFrequency[keyId] * 3, 0, time) / 3)
                     + (produceSample(effectiveFrequency[keyId] * 4, 0, time) / 4)
                     + (produceSample(effectiveFrequency[keyId] * 5, 0, time) / 5));
         }
 
-        sample[0] += Tables.outputLevels[outputLevel]
+        sample[0] += Tables.oscillatorOutputLevels[outputLevel]
                 * envelopeAmplitude[keyId]
                 * (produceSample(effectiveFrequency[keyId], modulatorSample[keyId][0], time) + feedbackSample[keyId]);
 
