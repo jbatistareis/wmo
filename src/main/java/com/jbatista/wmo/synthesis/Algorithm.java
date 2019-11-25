@@ -35,7 +35,7 @@ public class Algorithm {
         sample = 0;
 
         for (Oscillator oscillator : carriers) {
-            sample = oscillator.fillFrame(keyId, elapsed[keyId]);
+            sample += oscillator.fillFrame(keyId, elapsed[keyId]);
             activeCarriers[keyId][oscillator.getId()] = oscillator.isActive(keyId);
         }
 
