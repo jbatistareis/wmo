@@ -4,14 +4,11 @@ import com.jbatista.wmo.AudioFormat;
 import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.filters.Filter;
 
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Instrument {
 
-    private int keyId = 0;
+    private int keyCounter = 0;
 
     // parameters
     private static AudioFormat audioFormat;
@@ -19,15 +16,15 @@ public class Instrument {
     private Algorithm algorithm = new Algorithm();
     private final LinkedList<Filter> filterChain = new LinkedList<>();
 
-    private final Map<Double, Key> keys = new LinkedHashMap<>();
-    private final CopyOnWriteArrayList<Key> keysQueue = new CopyOnWriteArrayList<>();
+    private final boolean[] keysQueue = new boolean[144];
 
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
     private final byte[] buffer32bit = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    private final double[] sample = new double[1];
+    private final double[][] keySample = new double[144][1];
+    private final double[] algorithmSample = new double[1];
     private final double[] finalSample = new double[2];
 
     public Instrument(AudioFormat audioFormat) {
@@ -77,22 +74,25 @@ public class Instrument {
     // </editor-fold>
 
     private void fillFrame() {
-        sample[0] = 0;
+        algorithmSample[0] = 0;
 
-        for (Key key : keysQueue) {
-            sample[0] += key.getSample();
+        for (keyCounter = 0; keyCounter < 144; keyCounter++) {
+            if (keysQueue[keyCounter]) {
+                algorithm.fillFrame(keyCounter, keySample[keyCounter]);
+                algorithmSample[0] += keySample[keyCounter][0];
 
-            if (!key.hasActiveCarriers()) {
-                keysQueue.remove(key);
+                if (!algorithm.hasActiveCarriers(keyCounter)) {
+                    keysQueue[keyCounter] = false;
+                }
             }
         }
 
-        filterChain.forEach(filter -> filter.apply(sample));
-        sample[0] *= gain;
+        filterChain.forEach(filter -> filter.apply(algorithmSample));
+        algorithmSample[0] *= gain;
 
         // TODO channel stuff, [L][R]
-        finalSample[0] = sample[0];
-        finalSample[1] = sample[0];
+        finalSample[0] = algorithmSample[0];
+        finalSample[1] = algorithmSample[0];
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
@@ -134,30 +134,13 @@ public class Instrument {
         return floatBuffer;
     }
 
-    public Key buildKey(double frequency) {
-        if (!keys.containsKey(frequency)) {
-            keys.put(frequency, new Key(keyId++, frequency, this));
-        }
-
-        return keys.get(frequency);
+    public void pressKey(int keyId, double frequency) {
+        algorithm.start(keyId, frequency);
+        keysQueue[keyId] = true;
     }
 
-    public void pressKey(double frequency) {
-        keys.get(frequency).press();
-    }
-
-    public void releaseKey(double frequency) {
-        keys.get(frequency).release();
-    }
-
-    public Key getKey(double frequency) {
-        return keys.get(frequency);
-    }
-
-    void addKeyToQueue(Key key) {
-        if (!keysQueue.contains(key)) {
-            keysQueue.add(key);
-        }
+    public void releaseKey(int keyId, double frequency) {
+        algorithm.stop(keyId);
     }
 
 }

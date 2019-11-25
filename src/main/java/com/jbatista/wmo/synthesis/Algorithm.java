@@ -7,6 +7,8 @@ public class Algorithm {
     private int oscillatorId = 0;
 
     private final LinkedList<Oscillator> carriers = new LinkedList<>();
+    private final boolean[][] activeCarriers = new boolean[144][36];
+    private final long[] elapsed = new long[144];
 
     public boolean addCarrier(Oscillator carrier) {
         if (carriers.contains(carrier)) {
@@ -28,17 +30,22 @@ public class Algorithm {
         return carriers.toArray(new Oscillator[0]);
     }
 
-    void fillFrame(Key key, double[] sample, long time) {
+    void fillFrame(int keyId, double[] sample) {
         sample[0] = 0;
 
         for (Oscillator oscillator : carriers) {
-            key.setActiveCarrier(oscillator.getId(), oscillator.fillFrame(key.getId(), sample, time));
+            activeCarriers[keyId][oscillator.getId()] = oscillator.fillFrame(keyId, sample, elapsed[keyId]);
         }
 
         sample[0] /= carriers.size();
+        elapsed[keyId] += 1;
     }
 
     void start(int keyId, double frequency) {
+        if (!hasActiveCarriers(keyId)) {
+            elapsed[keyId] = 0;
+        }
+
         for (Oscillator oscillator : carriers) {
             oscillator.start(keyId, frequency);
         }
@@ -48,6 +55,16 @@ public class Algorithm {
         for (Oscillator oscillator : carriers) {
             oscillator.stop(keyId);
         }
+    }
+
+    public boolean hasActiveCarriers(int keyId) {
+        for (boolean value : activeCarriers[keyId]) {
+            if (value) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public Oscillator buildOscillator() {
