@@ -60,12 +60,12 @@ public class Instrument {
     }
     // </editor-fold>
 
-    private void fillFrame() {
+    private void getFrame() {
         sample = 0;
 
         for (keyCounter = 0; keyCounter < 144; keyCounter++) {
             if (keysQueue[keyCounter]) {
-                sample += algorithm.fillFrame(keyCounter);
+                sample += algorithm.getFrame(keyCounter);
 
                 if (!algorithm.hasActiveCarriers(keyCounter)) {
                     keysQueue[keyCounter] = false;
@@ -82,7 +82,7 @@ public class Instrument {
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
-        fillFrame();
+        getFrame();
 
         switch (audioFormat.getBitsPerSample()) {
             case 16:
@@ -103,7 +103,7 @@ public class Instrument {
     }
 
     public short[] getShortFrame() {
-        fillFrame();
+        getFrame();
 
         shortBuffer[0] = (short) finalSample[0];
         shortBuffer[1] = (short) finalSample[1];
@@ -112,7 +112,7 @@ public class Instrument {
     }
 
     public float[] getFloatFrame() {
-        fillFrame();
+        getFrame();
 
         floatBuffer[0] = (float) finalSample[0];
         floatBuffer[1] = (float) finalSample[1];

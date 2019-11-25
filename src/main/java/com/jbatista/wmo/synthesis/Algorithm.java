@@ -31,18 +31,17 @@ public class Algorithm {
         return carriers.toArray(new Oscillator[0]);
     }
 
-    double fillFrame(int keyId) {
+    double getFrame(int keyId) {
         sample = 0;
 
         for (Oscillator oscillator : carriers) {
-            sample += oscillator.fillFrame(keyId, elapsed[keyId]);
+            sample += oscillator.getFrame(keyId, elapsed[keyId]);
             activeCarriers[keyId][oscillator.getId()] = oscillator.isActive(keyId);
         }
 
-        sample /= carriers.size();
         elapsed[keyId] += 1;
 
-        return sample;
+        return sample / carriers.size();
     }
 
     void start(int keyId, double frequency) {

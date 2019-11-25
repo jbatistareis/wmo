@@ -196,14 +196,14 @@ public class Oscillator {
     }
     // </editor-fold>
 
-    double fillFrame(int keyId, long time) {
+    double getFrame(int keyId, long time) {
         modulatorSample = 0;
         feedbackSample = 0;
         defineEnvelopeAmplitude(keyId);
 
         if (!modulators.isEmpty()) {
             for (Oscillator oscillator : modulators) {
-                modulatorSample += oscillator.fillFrame(keyId, time);
+                modulatorSample += oscillator.getFrame(keyId, time);
             }
 
             modulatorSample /= modulators.size();
