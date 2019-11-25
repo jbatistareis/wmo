@@ -56,18 +56,6 @@ public class Instrument {
         return algorithm;
     }
 
-    public boolean addFilter(Filter filter) {
-        return filterChain.add(filter);
-    }
-
-    public boolean removeFilter(Filter filter) {
-        return filterChain.remove(filter);
-    }
-
-    public void clearFilters() {
-        filterChain.clear();
-    }
-
     public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
@@ -141,6 +129,18 @@ public class Instrument {
 
     public void releaseKey(int keyId, double frequency) {
         algorithm.stop(keyId);
+    }
+
+    public boolean addFilter(Filter filter) {
+        return filterChain.add(filter);
+    }
+
+    public boolean removeFilter(Filter filter) {
+        return filterChain.remove(filter);
+    }
+
+    public void clearFilters() {
+        filterChain.clear();
     }
 
 }

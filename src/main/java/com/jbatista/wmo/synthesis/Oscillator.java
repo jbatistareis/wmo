@@ -46,8 +46,6 @@ public class Oscillator {
     private double[][] envelopes = new double[4][0];
     private final int[] envelopePosition = new int[144];
 
-    private final boolean[] keyReleased = new boolean[144];
-
     private final double[][] modulatorSample = new double[144][1];
     private final double[] feedbackSample = new double[144];
 
@@ -346,7 +344,6 @@ public class Oscillator {
         envelopePosition[keyId] = 0;
 
         sineFrequency[keyId] = (frequency * frequencyRatio) / sampleRate;
-        keyReleased[keyId] = false;
         envelopeState[keyId] = EnvelopeState.ATTACK;
     }
 
