@@ -15,7 +15,6 @@ public class Oscillator {
     private final int hash;
 
     private final double[] sineFrequency = new double[144];
-    private final double sampleRate;
 
     // I/O
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
@@ -46,12 +45,11 @@ public class Oscillator {
     private double[][] envelopes = new double[4][0];
     private final int[] envelopePosition = new int[144];
 
-    private final double[][] modulatorSample = new double[144][1];
-    private final double[] feedbackSample = new double[144];
+    private double modulatorSample = 0;
+    private double feedbackSample = 0;
 
-    Oscillator(int id, double sampleRate) {
+    Oscillator(int id) {
         this.id = id;
-        this.sampleRate = sampleRate;
         this.hash = ((Integer) this.id).hashCode();
 
         setAttackDuration(0);
@@ -198,36 +196,39 @@ public class Oscillator {
     }
     // </editor-fold>
 
-    boolean fillFrame(int keyId, double[] sample, long time) {
+    double fillFrame(int keyId, long time) {
+        modulatorSample = 0;
+        feedbackSample = 0;
         defineEnvelopeAmplitude(keyId);
 
-        modulatorSample[keyId][0] = 0;
-        feedbackSample[keyId] = 0;
-
-        if (!modulators.isEmpty() && (feedbackType == 0)) {
+        if (!modulators.isEmpty()) {
             for (Oscillator oscillator : modulators) {
-                oscillator.fillFrame(keyId, modulatorSample[keyId], time);
+                modulatorSample += oscillator.fillFrame(keyId, time);
             }
 
-            modulatorSample[keyId][0] /= modulators.size();
-        } else if (feedbackType > 0) {
-            feedbackSample[keyId] = Tables.feedbackOutputLevels[feedbackType]
+            modulatorSample /= modulators.size();
+        }
+
+        if (feedbackType > 0) {
+            feedbackSample = Tables.feedbackOutputLevels[feedbackType]
                     * ((produceSample(sineFrequency[keyId] * 2, 0, time) / 2)
                     + (produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
                     + (produceSample(sineFrequency[keyId] * 4, 0, time) / 4)
                     + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5));
         } else if (feedbackType < 0) {
-            feedbackSample[keyId] = Tables.feedbackOutputLevels[-feedbackType]
+            feedbackSample = Tables.feedbackOutputLevels[-feedbackType]
                     * ((produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
                     + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5)
                     + (produceSample(sineFrequency[keyId] * 7, 0, time) / 7)
                     + (produceSample(sineFrequency[keyId] * 9, 0, time) / 9));
         }
 
-        sample[0] += Tables.oscillatorOutputLevels[outputLevel]
+        return Tables.oscillatorOutputLevels[outputLevel]
                 * envelopeAmplitude[keyId]
-                * (produceSample(sineFrequency[keyId], modulatorSample[keyId][0], time) + feedbackSample[keyId]);
+                * (produceSample(sineFrequency[keyId], modulatorSample, time) + feedbackSample);
+    }
 
+    boolean isActive(int keyId) {
         return envelopeState[keyId] != EnvelopeState.IDLE;
     }
 
@@ -291,7 +292,7 @@ public class Oscillator {
     }
 
     void calculateEnvelope(int envelopeCurve, double duration, double startAmplitude, double endAmplitude) {
-        final int samples = (int) (((duration == 0) ? 0.001 : duration) * sampleRate);
+        final int samples = (int) (((duration == 0) ? 0.001 : duration) * Instrument.getSampleRate());
         final double factor = 1d / samples;
         double accumulator = 0;
 
@@ -343,7 +344,7 @@ public class Oscillator {
         calculateEnvelope(0, attackDuration, envelopeAmplitude[keyId], attackAmplitude);
         envelopePosition[keyId] = 0;
 
-        sineFrequency[keyId] = (frequency * frequencyRatio) / sampleRate;
+        sineFrequency[keyId] = (frequency * frequencyRatio) / Instrument.getSampleRate();
         envelopeState[keyId] = EnvelopeState.ATTACK;
     }
 

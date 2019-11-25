@@ -35,21 +35,14 @@ public class HighPass extends Filter {
         cos = Math.cos(omega);
         alpha = sin / (2 * q);
 
-        cB[0] = (1 - cos) / 2;
-        cB[1] = 1 - cos;
-        cB[2] = (1 - cos) / 2;
+        cB[0] = (1 + cos) / 2;
+        cB[1] = 1 + cos;
+        cB[2] = (1 + cos) / 2;
         cA[0] = 1 + alpha;
         cA[1] = -2 * cos;
         cA[2] = 1 - alpha;
 
         normalize();
     }
-/*
-                b0 =  (1 + cos)/2
-                b1 = -(1 + cos)
-                b2 =  (1 + cos)/2
-                a0 =   1 + alpha
-                a1 =  -2*cos
-                a2 =   1 - alpha
- */
+
 }

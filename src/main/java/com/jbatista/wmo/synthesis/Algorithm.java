@@ -4,11 +4,12 @@ import java.util.LinkedList;
 
 public class Algorithm {
 
-    private int oscillatorId = 0;
+    private int oscillatorsCounter = 0;
 
     private final LinkedList<Oscillator> carriers = new LinkedList<>();
     private final boolean[][] activeCarriers = new boolean[144][36];
     private final long[] elapsed = new long[144];
+    private double sample = 0;
 
     public boolean addCarrier(Oscillator carrier) {
         if (carriers.contains(carrier)) {
@@ -30,15 +31,18 @@ public class Algorithm {
         return carriers.toArray(new Oscillator[0]);
     }
 
-    void fillFrame(int keyId, double[] sample) {
-        sample[0] = 0;
+    double fillFrame(int keyId) {
+        sample = 0;
 
         for (Oscillator oscillator : carriers) {
-            activeCarriers[keyId][oscillator.getId()] = oscillator.fillFrame(keyId, sample, elapsed[keyId]);
+            sample = oscillator.fillFrame(keyId, elapsed[keyId]);
+            activeCarriers[keyId][oscillator.getId()] = oscillator.isActive(keyId);
         }
 
-        sample[0] /= carriers.size();
+        sample /= carriers.size();
         elapsed[keyId] += 1;
+
+        return sample;
     }
 
     void start(int keyId, double frequency) {
@@ -68,7 +72,7 @@ public class Algorithm {
     }
 
     public Oscillator buildOscillator() {
-        return new Oscillator(oscillatorId++, Instrument.getSampleRate());
+        return new Oscillator(oscillatorsCounter++);
     }
 
 }

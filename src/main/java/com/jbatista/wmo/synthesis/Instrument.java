@@ -23,8 +23,7 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    private final double[][] keySample = new double[144][1];
-    private final double[] algorithmSample = new double[1];
+    private double sample;
     private final double[] finalSample = new double[2];
 
     public Instrument(AudioFormat audioFormat) {
@@ -62,12 +61,11 @@ public class Instrument {
     // </editor-fold>
 
     private void fillFrame() {
-        algorithmSample[0] = 0;
+        sample = 0;
 
         for (keyCounter = 0; keyCounter < 144; keyCounter++) {
             if (keysQueue[keyCounter]) {
-                algorithm.fillFrame(keyCounter, keySample[keyCounter]);
-                algorithmSample[0] += keySample[keyCounter][0];
+                sample += algorithm.fillFrame(keyCounter);
 
                 if (!algorithm.hasActiveCarriers(keyCounter)) {
                     keysQueue[keyCounter] = false;
@@ -75,12 +73,12 @@ public class Instrument {
             }
         }
 
-        filterChain.forEach(filter -> filter.apply(algorithmSample));
-        algorithmSample[0] *= gain;
+        filterChain.forEach(filter -> sample = filter.apply(sample));
+        sample *= gain;
 
         // TODO channel stuff, [L][R]
-        finalSample[0] = algorithmSample[0];
-        finalSample[1] = algorithmSample[0];
+        finalSample[0] = sample;
+        finalSample[1] = sample;
     }
 
     public byte[] getByteFrame(boolean bigEndian) {

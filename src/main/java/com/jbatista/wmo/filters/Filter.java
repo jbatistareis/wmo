@@ -54,8 +54,8 @@ public abstract class Filter {
         a2a0 = (cA[2] / cA[0]);
     }
 
-    public void apply(double[] sample) {
-        in[0] = sample[0];
+    public double apply(double sample) {
+        in[0] = sample;
 
         y = b0a0 * in[0] + b1a0 * in[1] + b2a0 * in[2] - a1a0 * out[0] - a2a0 * out[1];
 
@@ -64,7 +64,7 @@ public abstract class Filter {
         out[1] = out[0];
         out[0] = y;
 
-        sample[0] = y;
+        return y;
     }
 
     protected abstract void calculateCoefficients();
