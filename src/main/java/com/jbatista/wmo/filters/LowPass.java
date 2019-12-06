@@ -2,6 +2,11 @@ package com.jbatista.wmo.filters;
 
 import com.jbatista.wmo.MathUtil;
 
+/*
+    Based on the 'Cookbook formulae for audio equalizer biquad filter coefficients' by Robert Bristow-Johnson
+    https://www.w3.org/2011/audio/audio-eq-cookbook.html
+*/
+
 public class LowPass extends Filter {
 
     public LowPass(double sampleRate) {
@@ -35,12 +40,12 @@ public class LowPass extends Filter {
         cos = Math.cos(omega);
         alpha = sin / (2 * q);
 
-        cB[0] = (1 - cos) / 2;
-        cB[1] = 1 - cos;
-        cB[2] = (1 - cos) / 2;
-        cA[0] = 1 + alpha;
-        cA[1] = -2 * cos;
-        cA[2] = 1 - alpha;
+        cB0 = (1 - cos) / 2;
+        cB1 = 1 - cos;
+        cB2 = (1 - cos) / 2;
+        cA0 = 1 + alpha;
+        cA1 = -2 * cos;
+        cA2 = 1 - alpha;
 
         normalize();
     }
