@@ -3,11 +3,13 @@ package com.jbatista.wmo.preset;
 import com.jbatista.wmo.filters.Filter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class InstrumentPreset {
 
     private String name = "Default preset";
+    private double gain = 0.5;
     private int[][] algorithm = new int[][]{{0}, {}};
     private List<OscillatorPreset> oscillatorPresets = new ArrayList<>();
     private List<Filter> filterChain = new ArrayList<>();
@@ -24,6 +26,14 @@ public class InstrumentPreset {
         this.name = name;
     }
 
+    public double getGain() {
+        return gain;
+    }
+
+    public void setGain(double gain) {
+        this.gain = gain;
+    }
+
     public int[][] getAlgorithm() {
         return algorithm;
     }
@@ -38,6 +48,10 @@ public class InstrumentPreset {
 
     public void setOscillatorPresets(List<OscillatorPreset> oscillatorPresets) {
         this.oscillatorPresets = oscillatorPresets;
+    }
+
+    public void addOscillatorPresets(OscillatorPreset... oscillatorPresets) {
+        Collections.addAll(this.oscillatorPresets, oscillatorPresets);
     }
 
     public List<Filter> getFilterChain() {
