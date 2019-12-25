@@ -3,17 +3,20 @@ package com.jbatista.wmo.synthesis;
 import com.jbatista.wmo.AudioFormat;
 import com.jbatista.wmo.MathUtil;
 import com.jbatista.wmo.filters.Filter;
+import com.jbatista.wmo.preset.InstrumentPreset;
+import com.jbatista.wmo.preset.OscillatorPreset;
 
 import java.util.LinkedList;
 
 public class Instrument {
 
     private int keyCounter = 0;
+    private int filterCounter = 0;
 
     // parameters
     private static AudioFormat audioFormat;
     private double gain = 0.5;
-    private Algorithm algorithm = new Algorithm();
+    private final Algorithm algorithm = new Algorithm();
     private final LinkedList<Filter> filterChain = new LinkedList<>();
 
     private final boolean[] keysQueue = new boolean[144];
@@ -48,15 +51,11 @@ public class Instrument {
     }
 
     public void setGain(double gain) {
-        this.gain = Math.max(0, Math.min(gain, 2));
+        this.gain = Math.max(0, Math.min(gain, 10));
     }
 
     public Algorithm getAlgorithm() {
         return algorithm;
-    }
-
-    public void setAlgorithm(Algorithm algorithm) {
-        this.algorithm = algorithm;
     }
     // </editor-fold>
 
@@ -73,7 +72,9 @@ public class Instrument {
             }
         }
 
-        filterChain.forEach(filter -> sample = filter.apply(sample));
+        for (filterCounter = 0; filterCounter < filterChain.size(); filterCounter++) {
+            sample = filterChain.get(filterCounter).apply(sample);
+        }
         sample *= gain;
 
         // TODO channel stuff, [L][R]
@@ -129,6 +130,10 @@ public class Instrument {
         algorithm.stop(keyId);
     }
 
+    public void releaseAllKeys() {
+        algorithm.stopAll();
+    }
+
     public boolean addFilter(Filter filter) {
         return filterChain.add(filter);
     }
@@ -139,6 +144,20 @@ public class Instrument {
 
     public void clearFilters() {
         filterChain.clear();
+    }
+
+    public void loadInstrumentPreset(InstrumentPreset instrumentPreset) {
+        setGain(instrumentPreset.getGain());
+        algorithm.loadAlgorithmPreset(instrumentPreset.getAlgorithm());
+
+        for (OscillatorPreset oscillatorPreset : instrumentPreset.getOscillatorPresets()) {
+            algorithm.getOscillator(oscillatorPreset.getId()).loadOscillatorPreset(oscillatorPreset);
+        }
+
+        clearFilters();
+        for (Filter filter : instrumentPreset.getFilterChain()) {
+            addFilter(filter);
+        }
     }
 
 }

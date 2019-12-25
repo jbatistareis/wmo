@@ -1,47 +1,45 @@
 package com.jbatista.wmo.synthesis;
 
-import java.util.LinkedList;
+class Algorithm {
 
-public class Algorithm {
+    private Oscillator[] carriers;
 
-    private int oscillatorsCounter = 0;
-
-    private final LinkedList<Oscillator> carriers = new LinkedList<>();
+    private final Oscillator[] oscillators = new Oscillator[36];
     private final boolean[][] activeCarriers = new boolean[144][36];
     private final long[] elapsed = new long[144];
     private double sample = 0;
 
-    public boolean addCarrier(Oscillator carrier) {
-        if (carriers.contains(carrier)) {
-            return false;
+    void loadAlgorithmPreset(int[][] algorithm) {
+        carriers = new Oscillator[algorithm[0].length];
+
+        for (int i = 0; i < algorithm[0].length; i++) {
+            carriers[i] = getOscillator(algorithm[0][i]);
         }
 
-        return carriers.add(carrier);
+        for (int i = 1; i < algorithm.length; i++) {
+            getOscillator(algorithm[i][0]).addModulator(getOscillator(algorithm[i][1]));
+        }
     }
 
-    public boolean removeCarrier(Oscillator carrier) {
-        return carriers.remove(carrier);
-    }
+    Oscillator getOscillator(int id) {
+        if (oscillators[id] == null) {
+            oscillators[id] = new Oscillator(id);
+        }
 
-    public void clearCarriers() {
-        carriers.clear();
-    }
-
-    public Oscillator[] getCarriers() {
-        return carriers.toArray(new Oscillator[0]);
+        return oscillators[id];
     }
 
     double getFrame(int keyId) {
         sample = 0;
 
-        for (Oscillator oscillator : carriers) {
-            sample += oscillator.getFrame(keyId, elapsed[keyId]);
-            activeCarriers[keyId][oscillator.getId()] = oscillator.isActive(keyId);
+        for (int i = 0; i < carriers.length; i++) {
+            sample += carriers[i].getFrame(keyId, elapsed[keyId]);
+            activeCarriers[keyId][carriers[i].getId()] = carriers[i].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
 
-        return sample / carriers.size();
+        return sample / carriers.length;
     }
 
     void start(int keyId, double frequency) {
@@ -49,29 +47,33 @@ public class Algorithm {
             elapsed[keyId] = 0;
         }
 
-        for (Oscillator oscillator : carriers) {
-            oscillator.start(keyId, frequency);
+        for (int i = 0; i < carriers.length; i++) {
+            carriers[i].start(keyId, frequency);
         }
     }
 
     void stop(int keyId) {
-        for (Oscillator oscillator : carriers) {
-            oscillator.stop(keyId);
+        for (int i = 0; i < carriers.length; i++) {
+            carriers[i].stop(keyId);
         }
     }
 
-    public boolean hasActiveCarriers(int keyId) {
-        for (boolean value : activeCarriers[keyId]) {
-            if (value) {
+    void stopAll() {
+        for (int i = 0; i < 144; i++) {
+            for (int j = 0; j < carriers.length; i++) {
+                carriers[j].stop(i);
+            }
+        }
+    }
+
+    boolean hasActiveCarriers(int keyId) {
+        for (int i = 0; i < 36; i++) {
+            if (activeCarriers[keyId][i]) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    public Oscillator buildOscillator() {
-        return new Oscillator(oscillatorsCounter++);
     }
 
 }
