@@ -7,7 +7,7 @@ import com.jbatista.wmo.MathUtil;
     https://www.w3.org/2011/audio/audio-eq-cookbook.html
 */
 
-public class HighPass extends Filter {
+public class HighPass extends BiquadFilter {
 
     public HighPass(double sampleRate) {
         this.sampleRate = sampleRate;
