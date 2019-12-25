@@ -41,7 +41,7 @@ public class HighPass extends BiquadFilter {
         alpha = sin / (2 * q);
 
         cB0 = (1 + cos) / 2;
-        cB1 = 1 + cos;
+        cB1 = -(1 + cos);
         cB2 = (1 + cos) / 2;
         cA0 = 1 + alpha;
         cA1 = -2 * cos;
