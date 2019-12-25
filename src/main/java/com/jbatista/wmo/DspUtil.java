@@ -2,8 +2,6 @@ package com.jbatista.wmo;
 
 public class DspUtil {
 
-    public enum WaveForm {SINE, SQUARE, TRIANGLE, SAWTOOTH, WHITE_NOISE}
-
     public static double oscillator(WaveForm waveForm, double frequency, double modulation, double phase, long time) {
         switch (waveForm) {
             case SINE:
