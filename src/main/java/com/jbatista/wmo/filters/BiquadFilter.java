@@ -6,7 +6,7 @@ abstract class BiquadFilter implements Filter {
 
     protected double frequency = 0;
     protected double sampleRate = 0;
-    protected double dbGain = 0;
+    protected double gain = 0;
     protected double bandwidth = 0;
     protected double q = 0;
     protected double s = 0;
@@ -15,6 +15,7 @@ abstract class BiquadFilter implements Filter {
     protected double omega = 0;
     protected double sin = 0;
     protected double cos = 0;
+    protected double tan = 0;
     protected double alpha = 0;
     protected double beta = 0;
 
