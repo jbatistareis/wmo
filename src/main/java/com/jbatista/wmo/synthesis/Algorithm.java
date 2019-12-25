@@ -1,6 +1,6 @@
 package com.jbatista.wmo.synthesis;
 
-class Algorithm {
+public class Algorithm {
 
     private Oscillator[] carriers;
 
@@ -9,7 +9,7 @@ class Algorithm {
     private final long[] elapsed = new long[144];
     private double sample = 0;
 
-    void loadAlgorithmPreset(int[][] algorithm) {
+    public void loadAlgorithmPreset(int[][] algorithm) {
         carriers = new Oscillator[algorithm[0].length];
 
         for (int i = 0; i < algorithm[0].length; i++) {
@@ -21,7 +21,7 @@ class Algorithm {
         }
     }
 
-    Oscillator getOscillator(int id) {
+    public Oscillator getOscillator(int id) {
         if (oscillators[id] == null) {
             oscillators[id] = new Oscillator(id);
         }

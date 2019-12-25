@@ -1,7 +1,6 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.DspUtil;
-import com.jbatista.wmo.EnvelopeState;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.OscillatorPreset;
 
@@ -151,7 +150,7 @@ public class Oscillator {
         envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.RELEASE);
     }
 
-    public boolean addModulator(Oscillator modulator) {
+    boolean addModulator(Oscillator modulator) {
         if (modulators.contains(modulator)) {
             return false;
         }

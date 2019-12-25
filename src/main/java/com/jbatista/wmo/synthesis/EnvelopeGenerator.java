@@ -1,7 +1,6 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.EnvelopeCurve;
-import com.jbatista.wmo.EnvelopeState;
 import com.jbatista.wmo.MathUtil;
 
 public class EnvelopeGenerator {
