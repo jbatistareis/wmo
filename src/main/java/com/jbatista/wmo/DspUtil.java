@@ -19,6 +19,14 @@ public class DspUtil {
         }
     }
 
+    // from [https://www.musicdsp.org/en/latest/Effects/46-waveshaper.html]
+    public static double waveshaper(double sample, double factor) {
+        factor = Math.max(-1, Math.min(factor, 1));
+        final double k = 2 * factor / (1 - factor);
+
+        return (1 + k) * sample / (1 + k * Math.abs(sample));
+    }
+
     private static double sineWave(double frequency, double modulation, double phase, long time) {
         return Math.sin(MathUtil.TAU * frequency * time + modulation + phase);
     }

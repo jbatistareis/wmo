@@ -8,7 +8,6 @@ import java.util.LinkedList;
 
 public class Oscillator {
     private final int id;
-    private final int hash;
 
     private final double[] sineFrequency = new double[144];
 
@@ -24,11 +23,10 @@ public class Oscillator {
 
     Oscillator(int id) {
         this.id = id;
-        this.hash = ((Integer) this.id).hashCode();
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    int getId() {
+    public int getId() {
         return id;
     }
 
@@ -63,6 +61,10 @@ public class Oscillator {
     public void setFrequencyRatio(double frequencyRatio) {
         this.frequencyRatio = Math.max(0, Math.min(frequencyRatio, 32));
     }
+
+    LinkedList<Oscillator> getModulators() {
+        return modulators;
+    }
     // </editor-fold>
 
     double getFrame(int keyId, long time) {
@@ -83,14 +85,14 @@ public class Oscillator {
             positive values produces a sawtooth, negative ones produces a square
         */
         if (feedback > 0) {
-            feedbackSample = Tables.feedbackOutputLevels[feedback]
+            feedbackSample = Tables.FEEDBACK_OUTPUT_LEVELS[feedback]
                     * ((produceSample(sineFrequency[keyId] * 2, 0, time) / 2)
                     + (produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
                     + (produceSample(sineFrequency[keyId] * 4, 0, time) / 4)
                     + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5)
                     + (produceSample(sineFrequency[keyId] * 6, 0, time) / 6));
         } else if (feedback < 0) {
-            feedbackSample = Tables.feedbackOutputLevels[-feedback]
+            feedbackSample = Tables.FEEDBACK_OUTPUT_LEVELS[-feedback]
                     * ((produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
                     + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5)
                     + (produceSample(sineFrequency[keyId] * 7, 0, time) / 7)
@@ -99,13 +101,9 @@ public class Oscillator {
         }
 
         envelopeGenerator.setPreviousTime(keyId, time);
-        return Tables.oscillatorOutputLevels[outputLevel]
+        return Tables.OSCILLATOR_OUTPUT_LEVELS[outputLevel]
                 * envelopeGenerator.getEnvelopeAmplitude(keyId)
                 * (produceSample(sineFrequency[keyId], modulatorSample, time) + feedbackSample);
-    }
-
-    boolean isActive(int keyId) {
-        return envelopeGenerator.getEnvelopeState(keyId) != EnvelopeState.IDLE;
     }
 
     private double produceSample(double frequency, double modulation, long time) {
@@ -126,7 +124,7 @@ public class Oscillator {
 
         envelopeGenerator.calculateEnvelope(
                 0,
-                envelopeGenerator.getAttackDuration(),
+                envelopeGenerator.getAttackSpeed(),
                 envelopeGenerator.getEnvelopeAmplitude(keyId),
                 envelopeGenerator.getAttackAmplitude());
 
@@ -143,19 +141,15 @@ public class Oscillator {
 
         envelopeGenerator.calculateEnvelope(
                 3,
-                envelopeGenerator.getReleaseDuration(),
+                envelopeGenerator.getReleaseSpeed(),
                 envelopeGenerator.getEnvelopeAmplitude(keyId),
                 envelopeGenerator.getReleaseAmplitude());
 
         envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.RELEASE);
     }
 
-    boolean addModulator(Oscillator modulator) {
-        if (modulators.contains(modulator)) {
-            return false;
-        }
-
-        return modulators.add(modulator);
+    boolean isActive(int keyId) {
+        return envelopeGenerator.getEnvelopeState(keyId) != EnvelopeState.IDLE;
     }
 
     public void loadOscillatorPreset(OscillatorPreset oscillatorPreset) {
@@ -164,15 +158,15 @@ public class Oscillator {
         setFeedback(oscillatorPreset.getFeedback());
         setWaveForm(oscillatorPreset.getWaveForm());
 
-        envelopeGenerator.setAttackAmplitude(oscillatorPreset.getAttackAmplitude());
-        envelopeGenerator.setDecayAmplitude(oscillatorPreset.getDecayAmplitude());
-        envelopeGenerator.setSustainAmplitude(oscillatorPreset.getSustainAmplitude());
-        envelopeGenerator.setReleaseAmplitude(oscillatorPreset.getReleaseAmplitude());
+        envelopeGenerator.setAttackLevel(oscillatorPreset.getAttackLevel());
+        envelopeGenerator.setDecayLevel(oscillatorPreset.getDecayLevel());
+        envelopeGenerator.setSustainLevel(oscillatorPreset.getSustainLevel());
+        envelopeGenerator.setReleaseLevel(oscillatorPreset.getReleaseLevel());
 
-        envelopeGenerator.setAttackDuration(oscillatorPreset.getAttackDuration());
-        envelopeGenerator.setDecayDuration(oscillatorPreset.getDecayDuration());
-        envelopeGenerator.setSustainDuration(oscillatorPreset.getSustainDuration());
-        envelopeGenerator.setReleaseDuration(oscillatorPreset.getReleaseDuration());
+        envelopeGenerator.setAttackSpeed(oscillatorPreset.getAttackSpeed());
+        envelopeGenerator.setDecaySpeed(oscillatorPreset.getDecaySpeed());
+        envelopeGenerator.setSustainSpeed(oscillatorPreset.getSustainSpeed());
+        envelopeGenerator.setReleaseSpeed(oscillatorPreset.getReleaseSpeed());
 
         envelopeGenerator.setAttackCurve(oscillatorPreset.getAttackCurve());
         envelopeGenerator.setDecayCurve(oscillatorPreset.getDecayCurve());
@@ -180,13 +174,4 @@ public class Oscillator {
         envelopeGenerator.setReleaseCurve(oscillatorPreset.getReleaseCurve());
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return (obj instanceof Oscillator) && (obj.hashCode() == this.hash);
-    }
-
-    @Override
-    public int hashCode() {
-        return hash;
-    }
 }

@@ -6,19 +6,24 @@ import com.jbatista.wmo.MathUtil;
 public class EnvelopeGenerator {
 
     // parameters
-    private double attackAmplitude = 0;
-    private double decayAmplitude = 0;
-    private double sustainAmplitude = 1;
-    private double releaseAmplitude = 0;
+    private int attackLevel;
+    private int decayLevel;
+    private int sustainLevel;
+    private int releaseLevel;
 
-    private double attackDuration = 0;
-    private double decayDuration = 0;
-    private double sustainDuration = 0;
-    private double releaseDuration = 0;
+    private int attackSpeed = 99;
+    private int decaySpeed = 99;
+    private int sustainSpeed = 99;
+    private int releaseSpeed = 99;
 
     private final EnvelopeCurve[] envelopeCurves = new EnvelopeCurve[]{EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR};
 
     // envelope data
+    private double attackAmplitude;
+    private double decayAmplitude;
+    private double sustainAmplitude;
+    private double releaseAmplitude;
+
     private final EnvelopeState[] envelopeStates = new EnvelopeState[144];
     private final double[] envelopeAmplitude = new double[144];
     // attack -> decay -> sustain -> release
@@ -27,77 +32,100 @@ public class EnvelopeGenerator {
     private final long[] previousTime = new long[144];
 
     EnvelopeGenerator() {
-        setDecayDuration(0);
-        setSustainDuration(0);
+        // initialize envelope shape
+        setAttackLevel(0);
+        setDecayLevel(0);
+        setSustainLevel(99);
+        setReleaseLevel(0);
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    public double getAttackAmplitude() {
-        return attackAmplitude;
+    public int getAttackLevel() {
+        return attackLevel;
     }
 
-    public void setAttackAmplitude(double attackAmplitude) {
-        this.attackAmplitude = Math.max(0, Math.min(attackAmplitude, 1));
+    public void setAttackLevel(int attackLevel) {
+        this.attackLevel = Math.max(0, Math.min(attackLevel, 99));
+        this.attackAmplitude = Tables.ENV_EXP_INCREASE[this.attackLevel];
+    }
+
+    public int getDecayLevel() {
+        return decayLevel;
+    }
+
+    public void setDecayLevel(int decayLevel) {
+        this.decayLevel = Math.max(0, Math.min(decayLevel, 99));
+        this.decayAmplitude = Tables.ENV_EXP_INCREASE[this.decayLevel];
+        calculateEnvelope(1, this.decaySpeed, this.attackAmplitude, this.decayAmplitude);
+    }
+
+    public int getSustainLevel() {
+        return sustainLevel;
+    }
+
+    public void setSustainLevel(int sustainLevel) {
+        this.sustainLevel = Math.max(0, Math.min(sustainLevel, 99));
+        this.sustainAmplitude = Tables.ENV_EXP_INCREASE[this.sustainLevel];
+        calculateEnvelope(2, this.sustainSpeed, this.decayAmplitude, this.sustainAmplitude);
+    }
+
+    public int getReleaseLevel() {
+        return releaseLevel;
+    }
+
+    public void setReleaseLevel(int releaseLevel) {
+        this.releaseLevel = Math.max(0, Math.min(releaseLevel, 99));
+        this.releaseAmplitude = Tables.ENV_EXP_INCREASE[this.releaseLevel];
+    }
+
+    public int getAttackSpeed() {
+        return attackSpeed;
+    }
+
+    public void setAttackSpeed(int attackSpeed) {
+        this.attackSpeed = Math.max(0, Math.min(attackSpeed, 99));
+    }
+
+    public int getDecaySpeed() {
+        return decaySpeed;
+    }
+
+    public void setDecaySpeed(int decaySpeed) {
+        this.decaySpeed = Math.max(0, Math.min(decaySpeed, 99));
+        calculateEnvelope(1, this.decaySpeed, this.attackAmplitude, this.decayAmplitude);
+    }
+
+    public double getSustainSpeed() {
+        return sustainSpeed;
+    }
+
+    public void setSustainSpeed(int sustainSpeed) {
+        this.sustainSpeed = Math.max(0, Math.min(sustainSpeed, 99));
+        calculateEnvelope(2, this.sustainSpeed, this.decayAmplitude, this.sustainAmplitude);
+    }
+
+    public int getReleaseSpeed() {
+        return releaseSpeed;
+    }
+
+    public void setReleaseSpeed(int releaseSpeed) {
+        this.releaseSpeed = Math.max(0, Math.min(releaseSpeed, 99));
+    }
+
+    public double getAttackAmplitude() {
+        return attackAmplitude;
     }
 
     public double getDecayAmplitude() {
         return decayAmplitude;
     }
 
-    public void setDecayAmplitude(double decayAmplitude) {
-        this.decayAmplitude = Math.max(0, Math.min(decayAmplitude, 1));
-        calculateEnvelope(1, this.decayDuration, this.attackAmplitude, this.decayAmplitude);
-    }
-
     public double getSustainAmplitude() {
         return sustainAmplitude;
     }
 
-    public void setSustainAmplitude(double sustainAmplitude) {
-        this.sustainAmplitude = Math.max(0, Math.min(sustainAmplitude, 1));
-        calculateEnvelope(2, this.sustainDuration, this.decayAmplitude, this.sustainAmplitude);
-    }
-
     public double getReleaseAmplitude() {
         return releaseAmplitude;
-    }
-
-    public void setReleaseAmplitude(double releaseAmplitude) {
-        this.releaseAmplitude = Math.max(0, Math.min(releaseAmplitude, 1));
-    }
-
-    public double getAttackDuration() {
-        return attackDuration;
-    }
-
-    public void setAttackDuration(double attackDuration) {
-        this.attackDuration = Math.max(0, Math.min(attackDuration, 1));
-    }
-
-    public double getDecayDuration() {
-        return decayDuration;
-    }
-
-    public void setDecayDuration(double decayDuration) {
-        this.decayDuration = Math.max(0, Math.min(decayDuration, 1));
-        calculateEnvelope(1, this.decayDuration, this.attackAmplitude, this.decayAmplitude);
-    }
-
-    public double getSustainDuration() {
-        return sustainDuration;
-    }
-
-    public void setSustainDuration(double sustainDuration) {
-        this.sustainDuration = Math.max(0, Math.min(sustainDuration, 1));
-        calculateEnvelope(2, this.sustainDuration, this.decayAmplitude, this.sustainAmplitude);
-    }
-
-    public double getReleaseDuration() {
-        return releaseDuration;
-    }
-
-    public void setReleaseDuration(double releaseDuration) {
-        this.releaseDuration = Math.max(0, Math.min(releaseDuration, 1));
     }
 
     public EnvelopeCurve getAttackCurve() {
@@ -223,8 +251,8 @@ public class EnvelopeGenerator {
     }
 
     // envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release
-    void calculateEnvelope(int envelopeStateId, double duration, double startAmplitude, double endAmplitude) {
-        final int samples = (int) (((duration == 0) ? 0.001 : duration) * Instrument.getSampleRate());
+    void calculateEnvelope(int envelopeStateId, int speed, double startAmplitude, double endAmplitude) {
+        final int samples = (int) (Tables.ENV_EXP_INCREASE[99 - speed] * Instrument.getSampleRate());
         final double factor = 1d / samples;
         double accumulator = 0;
 
@@ -242,12 +270,12 @@ public class EnvelopeGenerator {
                     envelopes[envelopeStateId][i] = MathUtil.smoothInterpolation(startAmplitude, endAmplitude, accumulator);
                     break;
 
-                case ACCELERATION:
-                    envelopes[envelopeStateId][i] = MathUtil.accelerationInterpolation(startAmplitude, endAmplitude, accumulator);
+                case EXP_INCREASE:
+                    envelopes[envelopeStateId][i] = MathUtil.expIncreaseInterpolation(startAmplitude, endAmplitude, accumulator);
                     break;
 
-                case DECELERATION:
-                    envelopes[envelopeStateId][i] = MathUtil.decelerationInterpolation(startAmplitude, endAmplitude, accumulator);
+                case EXP_DECREASE:
+                    envelopes[envelopeStateId][i] = MathUtil.expDecreaseInterpolation(startAmplitude, endAmplitude, accumulator);
                     break;
 
                 default:

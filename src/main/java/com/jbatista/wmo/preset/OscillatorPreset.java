@@ -12,15 +12,15 @@ public class OscillatorPreset {
     private int feedback = 0;
     private WaveForm waveForm = WaveForm.SINE;
 
-    private double attackAmplitude = 0;
-    private double decayAmplitude = 0;
-    private double sustainAmplitude = 1;
-    private double releaseAmplitude = 0;
+    private int attackLevel = 0;
+    private int decayLevel = 0;
+    private int sustainLevel = 99;
+    private int releaseLevel = 0;
 
-    private double attackDuration = 0;
-    private double decayDuration = 0;
-    private double sustainDuration = 0;
-    private double releaseDuration = 0;
+    private int attackSpeed = 99;
+    private int decaySpeed = 99;
+    private int sustainSpeed = 99;
+    private int releaseSpeed = 99;
 
     private EnvelopeCurve attackCurve = EnvelopeCurve.LINEAR;
     private EnvelopeCurve decayCurve = EnvelopeCurve.LINEAR;
@@ -67,68 +67,68 @@ public class OscillatorPreset {
         this.waveForm = waveForm;
     }
 
-    public double getAttackAmplitude() {
-        return attackAmplitude;
+    public int getAttackLevel() {
+        return attackLevel;
     }
 
-    public void setAttackAmplitude(double attackAmplitude) {
-        this.attackAmplitude = attackAmplitude;
+    public void setAttackLevel(int attackLevel) {
+        this.attackLevel = attackLevel;
     }
 
-    public double getDecayAmplitude() {
-        return decayAmplitude;
+    public int getDecayLevel() {
+        return decayLevel;
     }
 
-    public void setDecayAmplitude(double decayAmplitude) {
-        this.decayAmplitude = decayAmplitude;
+    public void setDecayLevel(int decayLevel) {
+        this.decayLevel = decayLevel;
     }
 
-    public double getSustainAmplitude() {
-        return sustainAmplitude;
+    public int getSustainLevel() {
+        return sustainLevel;
     }
 
-    public void setSustainAmplitude(double sustainAmplitude) {
-        this.sustainAmplitude = sustainAmplitude;
+    public void setSustainLevel(int sustainLevel) {
+        this.sustainLevel = sustainLevel;
     }
 
-    public double getReleaseAmplitude() {
-        return releaseAmplitude;
+    public int getReleaseLevel() {
+        return releaseLevel;
     }
 
-    public void setReleaseAmplitude(double releaseAmplitude) {
-        this.releaseAmplitude = releaseAmplitude;
+    public void setReleaseLevel(int releaseLevel) {
+        this.releaseLevel = releaseLevel;
     }
 
-    public double getAttackDuration() {
-        return attackDuration;
+    public int getAttackSpeed() {
+        return attackSpeed;
     }
 
-    public void setAttackDuration(double attackDuration) {
-        this.attackDuration = attackDuration;
+    public void setAttackSpeed(int attackSpeed) {
+        this.attackSpeed = attackSpeed;
     }
 
-    public double getDecayDuration() {
-        return decayDuration;
+    public int getDecaySpeed() {
+        return decaySpeed;
     }
 
-    public void setDecayDuration(double decayDuration) {
-        this.decayDuration = decayDuration;
+    public void setDecaySpeed(int decaySpeed) {
+        this.decaySpeed = decaySpeed;
     }
 
-    public double getSustainDuration() {
-        return sustainDuration;
+    public int getSustainSpeed() {
+        return sustainSpeed;
     }
 
-    public void setSustainDuration(double sustainDuration) {
-        this.sustainDuration = sustainDuration;
+    public void setSustainSpeed(int sustainSpeed) {
+        this.sustainSpeed = sustainSpeed;
     }
 
-    public double getReleaseDuration() {
-        return releaseDuration;
+    public int getReleaseSpeed() {
+        return releaseSpeed;
     }
 
-    public void setReleaseDuration(double releaseDuration) {
-        this.releaseDuration = releaseDuration;
+    public void setReleaseSpeed(int releaseSpeed) {
+        this.releaseSpeed = releaseSpeed;
     }
 
     public EnvelopeCurve getAttackCurve() {

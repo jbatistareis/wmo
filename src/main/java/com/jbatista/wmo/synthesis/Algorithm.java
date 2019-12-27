@@ -2,12 +2,11 @@ package com.jbatista.wmo.synthesis;
 
 public class Algorithm {
 
-    private Oscillator[] carriers;
+    private Oscillator[] carriers = new Oscillator[1];
 
     private final Oscillator[] oscillators = new Oscillator[36];
     private final boolean[][] activeCarriers = new boolean[144][36];
     private final long[] elapsed = new long[144];
-    private double sample = 0;
 
     public void loadAlgorithmPreset(int[][] algorithm) {
         carriers = new Oscillator[algorithm[0].length];
@@ -17,7 +16,7 @@ public class Algorithm {
         }
 
         for (int i = 1; i < algorithm.length; i++) {
-            getOscillator(algorithm[i][0]).addModulator(getOscillator(algorithm[i][1]));
+            getOscillator(algorithm[i][0]).getModulators().add(getOscillator(algorithm[i][1]));
         }
     }
 
@@ -30,7 +29,7 @@ public class Algorithm {
     }
 
     double getFrame(int keyId) {
-        sample = 0;
+        double sample = 0;
 
         for (int i = 0; i < carriers.length; i++) {
             sample += carriers[i].getFrame(keyId, elapsed[keyId]);

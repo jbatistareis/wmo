@@ -26,9 +26,6 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    private double sample;
-    private final double[] finalSample = new double[2];
-
     public Instrument(AudioFormat audioFormat) {
         Instrument.audioFormat = audioFormat;
     }
@@ -57,10 +54,14 @@ public class Instrument {
     public Algorithm getAlgorithm() {
         return algorithm;
     }
+
+    public LinkedList<Filter> getFilterChain() {
+        return filterChain;
+    }
     // </editor-fold>
 
-    private void getFrame() {
-        sample = 0;
+    public double getFrame() {
+        double sample = 0;
 
         for (keyCounter = 0; keyCounter < 144; keyCounter++) {
             if (keysQueue[keyCounter]) {
@@ -75,26 +76,24 @@ public class Instrument {
         for (filterCounter = 0; filterCounter < filterChain.size(); filterCounter++) {
             sample = filterChain.get(filterCounter).apply(sample);
         }
-        sample *= gain;
 
-        // TODO channel stuff, [L][R]
-        finalSample[0] = sample;
-        finalSample[1] = sample;
+        return gain * sample;
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
-        getFrame();
+        double sample = getFrame();
 
+        // TODO channel stuff, [L][R]
         switch (audioFormat.getBitsPerSample()) {
             case 16:
-                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) finalSample[0]);
-                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) finalSample[1]);
+                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) sample);
+                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) sample);
 
                 return buffer16bit;
 
             case 32:
-                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) finalSample[0]);
-                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 3, (long) finalSample[1]);
+                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) sample);
+                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 3, (long) sample);
 
                 return buffer32bit;
 
@@ -104,19 +103,21 @@ public class Instrument {
     }
 
     public short[] getShortFrame() {
-        getFrame();
+        double sample = getFrame();
 
-        shortBuffer[0] = (short) finalSample[0];
-        shortBuffer[1] = (short) finalSample[1];
+        // TODO channel stuff, [L][R]
+        shortBuffer[0] = (short) sample;
+        shortBuffer[1] = (short) sample;
 
         return shortBuffer;
     }
 
     public float[] getFloatFrame() {
-        getFrame();
+        double sample = getFrame();
 
-        floatBuffer[0] = (float) finalSample[0];
-        floatBuffer[1] = (float) finalSample[1];
+        // TODO channel stuff, [L][R]
+        floatBuffer[0] = (float) sample;
+        floatBuffer[1] = (float) sample;
 
         return floatBuffer;
     }
@@ -134,18 +135,6 @@ public class Instrument {
         algorithm.stopAll();
     }
 
-    public boolean addFilter(Filter filter) {
-        return filterChain.add(filter);
-    }
-
-    public boolean removeFilter(Filter filter) {
-        return filterChain.remove(filter);
-    }
-
-    public void clearFilters() {
-        filterChain.clear();
-    }
-
     public void loadInstrumentPreset(InstrumentPreset instrumentPreset) {
         setGain(instrumentPreset.getGain());
         algorithm.loadAlgorithmPreset(instrumentPreset.getAlgorithm());
@@ -154,9 +143,9 @@ public class Instrument {
             algorithm.getOscillator(oscillatorPreset.getId()).loadOscillatorPreset(oscillatorPreset);
         }
 
-        clearFilters();
+        filterChain.clear();
         for (Filter filter : instrumentPreset.getFilterChain()) {
-            addFilter(filter);
+            filterChain.add(filter);
         }
     }
 
