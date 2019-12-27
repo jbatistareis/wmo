@@ -2,36 +2,37 @@
 ###### A FM sound synthesis library
 
 
-### [Demo here!](https://github.com/jbatistareis/wmo-demo)
+### [Demo here!](https://github.com/jbatistareis/wmo-demo) (outdated, just beeps and boops version)
 
 
-## Usage  
-_tl;dr instantiate an instrument, build its keys based on a frequency, add modulators as seen fit, press some keys, get the frame_  
-This library create audio frames at 16bit 44100Hz. To produce a constant sound, you need to perform multiple calls to it using a loop, or feeding an audio dataline:   
-```
-final Instrument instrument = new Instrument(WaveForm.SINE, AudioFormat._44100Hz_16bit);
-// creates a key that plays A4
-final Key key = instrument.buildKey(440);
+## Description
+This library replicates the functionality of an old school Yamaha synthesizer, i'm not aiming to perfection, or creating an emulator, i just want to create something that sounds good enough.
 
-...
-// this code blocks the current thread, it has to run from another one
-// get a SourceDataLine using the Sound API
-sourceDataLine.open(new AudioFormat(44100, 16, 2, true, true));
-sourceDataLine.start();
+It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate various instruments, ***80's style***.
 
-// the write method blocks the thread, so it can safely be used in this kind loop
-while (true) {
-  sourceDataLine.write(instrument.getByteFrame(true), 0, 4);
-}
-...
 
-// plays it
-key.pressKey();
-```  
-To achieve different sounds, you can change the phase, set an envelope or add modulation.
+## Features (for now) 
+* Up to 144 key frequencies
+* Up to 144 voices (in theory, as many as your processor can handle)
+* Create your own algorithm...
+* ...or choose one of the classic 4 and 6 operators algorithms
+* Filters (high pass, low pass, band pass, distortion, etc...)
+* MIDI support (in the near future)
+
+
+## Note
+Currently undergoing major changes to be more similar to a DX family synthesizer
 
 
 ## TODO
-* More audio formats
-* Better modulation
-* Lots of stuff
+* Proper README/documentation
+* Parameters fine tuning
+* Improve feedback
+* Create some instrument presets
+* MIDI interpretation
+* Filter serialization
+* More filters
+* Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)
+* Investigate crackings
+* Squash bugs on the envelope generator
+* Channel separation/manipulation
