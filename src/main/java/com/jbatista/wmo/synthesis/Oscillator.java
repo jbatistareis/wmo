@@ -116,20 +116,12 @@ public class Oscillator {
     }
 
     void start(int keyId, double frequency) {
-        envelopeGenerator.setPreviousTime(keyId, -1);
-
         for (Oscillator oscillator : modulators) {
             oscillator.start(keyId, frequency);
         }
 
-        envelopeGenerator.calculateEnvelope(
-                0,
-                envelopeGenerator.getAttackSpeed(),
-                envelopeGenerator.getEnvelopeAmplitude(keyId),
-                envelopeGenerator.getAttackAmplitude());
-
+        envelopeGenerator.setPreviousTime(keyId, -1);
         envelopeGenerator.setEnvelopePosition(keyId, 0);
-
         sineFrequency[keyId] = (frequency * frequencyRatio) / Instrument.getSampleRate();
         envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.ATTACK);
     }
@@ -139,13 +131,7 @@ public class Oscillator {
             oscillator.stop(keyId);
         }
 
-        envelopeGenerator.calculateEnvelope(
-                3,
-                envelopeGenerator.getReleaseSpeed(),
-                envelopeGenerator.getEnvelopeAmplitude(keyId),
-                envelopeGenerator.getReleaseAmplitude());
-
-        envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.RELEASE);
+        envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.PRE_RELEASE);
     }
 
     boolean isActive(int keyId) {

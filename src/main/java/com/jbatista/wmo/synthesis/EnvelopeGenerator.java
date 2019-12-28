@@ -27,7 +27,8 @@ public class EnvelopeGenerator {
     private final EnvelopeState[] envelopeStates = new EnvelopeState[144];
     private final double[] envelopeAmplitude = new double[144];
     // attack -> decay -> sustain -> release
-    private double[][] envelopes = new double[4][0];
+    private double[][] envelopes = new double[3][0];
+    private double[][] releaseEnvelopes = new double[144][0];
     private final int[] envelopePosition = new int[144];
     private final long[] previousTime = new long[144];
 
@@ -47,6 +48,7 @@ public class EnvelopeGenerator {
     public void setAttackLevel(int attackLevel) {
         this.attackLevel = Math.max(0, Math.min(attackLevel, 99));
         this.attackAmplitude = Tables.ENV_EXP_INCREASE[this.attackLevel];
+        calculateEnvelope(0, -1, this.attackSpeed, 0.0000, this.attackAmplitude);
     }
 
     public int getDecayLevel() {
@@ -56,7 +58,7 @@ public class EnvelopeGenerator {
     public void setDecayLevel(int decayLevel) {
         this.decayLevel = Math.max(0, Math.min(decayLevel, 99));
         this.decayAmplitude = Tables.ENV_EXP_INCREASE[this.decayLevel];
-        calculateEnvelope(1, this.decaySpeed, this.attackAmplitude, this.decayAmplitude);
+        calculateEnvelope(1, -1, this.decaySpeed, this.attackAmplitude, this.decayAmplitude);
     }
 
     public int getSustainLevel() {
@@ -66,7 +68,7 @@ public class EnvelopeGenerator {
     public void setSustainLevel(int sustainLevel) {
         this.sustainLevel = Math.max(0, Math.min(sustainLevel, 99));
         this.sustainAmplitude = Tables.ENV_EXP_INCREASE[this.sustainLevel];
-        calculateEnvelope(2, this.sustainSpeed, this.decayAmplitude, this.sustainAmplitude);
+        calculateEnvelope(2, -1, this.sustainSpeed, this.decayAmplitude, this.sustainAmplitude);
     }
 
     public int getReleaseLevel() {
@@ -84,6 +86,7 @@ public class EnvelopeGenerator {
 
     public void setAttackSpeed(int attackSpeed) {
         this.attackSpeed = Math.max(0, Math.min(attackSpeed, 99));
+        calculateEnvelope(0, -1, this.attackSpeed, 0.0000, this.attackAmplitude);
     }
 
     public int getDecaySpeed() {
@@ -92,7 +95,7 @@ public class EnvelopeGenerator {
 
     public void setDecaySpeed(int decaySpeed) {
         this.decaySpeed = Math.max(0, Math.min(decaySpeed, 99));
-        calculateEnvelope(1, this.decaySpeed, this.attackAmplitude, this.decayAmplitude);
+        calculateEnvelope(1, -1, this.decaySpeed, this.attackAmplitude, this.decayAmplitude);
     }
 
     public double getSustainSpeed() {
@@ -101,7 +104,7 @@ public class EnvelopeGenerator {
 
     public void setSustainSpeed(int sustainSpeed) {
         this.sustainSpeed = Math.max(0, Math.min(sustainSpeed, 99));
-        calculateEnvelope(2, this.sustainSpeed, this.decayAmplitude, this.sustainAmplitude);
+        calculateEnvelope(2, -1, this.sustainSpeed, this.decayAmplitude, this.sustainAmplitude);
     }
 
     public int getReleaseSpeed() {
@@ -110,22 +113,6 @@ public class EnvelopeGenerator {
 
     public void setReleaseSpeed(int releaseSpeed) {
         this.releaseSpeed = Math.max(0, Math.min(releaseSpeed, 99));
-    }
-
-    public double getAttackAmplitude() {
-        return attackAmplitude;
-    }
-
-    public double getDecayAmplitude() {
-        return decayAmplitude;
-    }
-
-    public double getSustainAmplitude() {
-        return sustainAmplitude;
-    }
-
-    public double getReleaseAmplitude() {
-        return releaseAmplitude;
     }
 
     public EnvelopeCurve getAttackCurve() {
@@ -183,26 +170,23 @@ public class EnvelopeGenerator {
     }
 
     void defineEnvelopeAmplitude(int keyId, long time) {
-        final boolean advancePosition = previousTime[keyId] != time;
-
         switch (envelopeStates[keyId]) {
             case ATTACK:
-                if (applyEnvelope(keyId, 0, advancePosition)) {
+                if (applyEnvelope(keyId, 0, time)) {
                     envelopePosition[keyId] = 0;
                     envelopeStates[keyId] = EnvelopeState.DECAY;
                 }
                 break;
 
             case DECAY:
-                if (applyEnvelope(keyId, 1, advancePosition)) {
+                if (applyEnvelope(keyId, 1, time)) {
                     envelopePosition[keyId] = 0;
                     envelopeStates[keyId] = EnvelopeState.SUSTAIN;
                 }
                 break;
 
             case SUSTAIN:
-                if (applyEnvelope(keyId, 2, advancePosition)) {
-                    envelopePosition[keyId] = 0;
+                if (applyEnvelope(keyId, 2, time)) {
                     envelopeStates[keyId] = EnvelopeState.HOLD;
                 }
                 break;
@@ -211,8 +195,14 @@ public class EnvelopeGenerator {
                 // do noting
                 break;
 
+            case PRE_RELEASE:
+                calculateEnvelope(3, keyId, releaseSpeed, envelopeAmplitude[keyId], releaseAmplitude);
+                envelopePosition[keyId] = 0;
+                envelopeStates[keyId] = EnvelopeState.RELEASE;
+                break;
+
             case RELEASE:
-                if (applyEnvelope(keyId, 3, advancePosition)) {
+                if (applyEnvelope(keyId, 3, time)) {
                     envelopeStates[keyId] = EnvelopeState.RELEASE_END;
                 }
                 break;
@@ -236,11 +226,13 @@ public class EnvelopeGenerator {
         returns true if finished
         envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release
      */
-    boolean applyEnvelope(int keyId, int envelopeStateId, boolean advancePosition) {
-        if (envelopePosition[keyId] < envelopes[envelopeStateId].length) {
-            envelopeAmplitude[keyId] = envelopes[envelopeStateId][envelopePosition[keyId]];
+    boolean applyEnvelope(int keyId, int envelopeStateId, long time) {
+        final boolean isRelease = (envelopeStateId == 3);
 
-            if (advancePosition) {
+        if (envelopePosition[keyId] < (isRelease ? releaseEnvelopes[keyId].length : envelopes[envelopeStateId].length)) {
+            envelopeAmplitude[keyId] = isRelease ? releaseEnvelopes[keyId][envelopePosition[keyId]] : envelopes[envelopeStateId][envelopePosition[keyId]];
+
+            if (previousTime[keyId] != time) {
                 envelopePosition[keyId] += 1;
             }
 
@@ -251,31 +243,41 @@ public class EnvelopeGenerator {
     }
 
     // envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release
-    void calculateEnvelope(int envelopeStateId, int speed, double startAmplitude, double endAmplitude) {
+    void calculateEnvelope(int envelopeStateId, int keyId, int speed, double startAmplitude, double endAmplitude) {
+        final double[][] envValues;
+        final int index;
         final int samples = (int) (Tables.ENV_EXP_INCREASE[99 - speed] * Instrument.getSampleRate());
         final double factor = 1d / samples;
         double accumulator = 0;
 
-        if (envelopes[envelopeStateId].length != samples) {
-            envelopes[envelopeStateId] = new double[samples];
+        if (envelopeStateId == 3) {
+            envValues = releaseEnvelopes;
+            index = keyId;
+        } else {
+            envValues = envelopes;
+            index = envelopeStateId;
+        }
+
+        if (envValues[index].length != samples) {
+            envValues[index] = new double[samples];
         }
 
         for (int i = 0; i < samples; i++) {
             switch (envelopeCurves[envelopeStateId]) {
                 case LINEAR:
-                    envelopes[envelopeStateId][i] = MathUtil.linearInterpolation(startAmplitude, endAmplitude, accumulator);
+                    envValues[index][i] = MathUtil.linearInterpolation(startAmplitude, endAmplitude, accumulator);
                     break;
 
                 case SMOOTH:
-                    envelopes[envelopeStateId][i] = MathUtil.smoothInterpolation(startAmplitude, endAmplitude, accumulator);
+                    envValues[index][i] = MathUtil.smoothInterpolation(startAmplitude, endAmplitude, accumulator);
                     break;
 
                 case EXP_INCREASE:
-                    envelopes[envelopeStateId][i] = MathUtil.expIncreaseInterpolation(startAmplitude, endAmplitude, accumulator);
+                    envValues[index][i] = MathUtil.expIncreaseInterpolation(startAmplitude, endAmplitude, accumulator);
                     break;
 
                 case EXP_DECREASE:
-                    envelopes[envelopeStateId][i] = MathUtil.expDecreaseInterpolation(startAmplitude, endAmplitude, accumulator);
+                    envValues[index][i] = MathUtil.expDecreaseInterpolation(startAmplitude, endAmplitude, accumulator);
                     break;
 
                 default:
