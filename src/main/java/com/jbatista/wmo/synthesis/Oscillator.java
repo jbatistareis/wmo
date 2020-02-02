@@ -1,6 +1,7 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.DspUtil;
+import com.jbatista.wmo.EnvelopeState;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.OscillatorPreset;
 
@@ -8,11 +9,12 @@ import java.util.LinkedList;
 
 public class Oscillator {
     private final int id;
+    private final double sampleRate;
 
-    private final double[] sineFrequency = new double[144];
+    private final double[] sineFrequency = new double[168];
 
     // I/O
-    private final EnvelopeGenerator envelopeGenerator = new EnvelopeGenerator();
+    private final EnvelopeGenerator envelopeGenerator;
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
 
     // parameters
@@ -21,8 +23,10 @@ public class Oscillator {
     private int feedback = 0;
     private double frequencyRatio = 1;
 
-    Oscillator(int id) {
+    Oscillator(int id, double sampleRate) {
         this.id = id;
+        this.sampleRate = sampleRate;
+        this.envelopeGenerator = new EnvelopeGenerator(this.sampleRate);
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -67,13 +71,13 @@ public class Oscillator {
     }
     // </editor-fold>
 
-    double getFrame(int keyId, long time) {
+    double getFrame(int keyId, double pitchOffset, long time) {
         double modulatorSample = 0;
         double feedbackSample = 0;
 
         if (!modulators.isEmpty()) {
             for (Oscillator oscillator : modulators) {
-                modulatorSample += oscillator.getFrame(keyId, time);
+                modulatorSample += oscillator.getFrame(keyId, pitchOffset, time);
             }
 
             modulatorSample /= modulators.size();
@@ -85,25 +89,25 @@ public class Oscillator {
         */
         if (feedback > 0) {
             feedbackSample = Tables.FEEDBACK_OUTPUT_LEVELS[feedback]
-                    * ((produceSample(sineFrequency[keyId] * 2, 0, time) / 2)
-                    + (produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
-                    + (produceSample(sineFrequency[keyId] * 4, 0, time) / 4)
-                    + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5)
-                    + (produceSample(sineFrequency[keyId] * 6, 0, time) / 6));
+                    * ((produceSample(pitchOffset * sineFrequency[keyId] * 2, 0, time) / 2)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 3, 0, time) / 3)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 4, 0, time) / 4)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 5, 0, time) / 5)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 6, 0, time) / 6));
         } else if (feedback < 0) {
             feedbackSample = Tables.FEEDBACK_OUTPUT_LEVELS[-feedback]
-                    * ((produceSample(sineFrequency[keyId] * 3, 0, time) / 3)
-                    + (produceSample(sineFrequency[keyId] * 5, 0, time) / 5)
-                    + (produceSample(sineFrequency[keyId] * 7, 0, time) / 7)
-                    + (produceSample(sineFrequency[keyId] * 9, 0, time) / 9)
-                    + (produceSample(sineFrequency[keyId] * 11, 0, time) / 11));
+                    * ((produceSample(pitchOffset * sineFrequency[keyId] * 3, 0, time) / 3)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 5, 0, time) / 5)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 7, 0, time) / 7)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 9, 0, time) / 9)
+                    + (produceSample(pitchOffset * sineFrequency[keyId] * 11, 0, time) / 11));
         }
 
         envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
         envelopeGenerator.setPreviousTime(keyId, time);
         return Tables.OSCILLATOR_OUTPUT_LEVELS[outputLevel]
                 * envelopeGenerator.getEnvelopeAmplitude(keyId)
-                * (produceSample(sineFrequency[keyId], modulatorSample, time) + feedbackSample);
+                * (produceSample(pitchOffset * sineFrequency[keyId], modulatorSample, time) + feedbackSample);
     }
 
     private double produceSample(double frequency, double modulation, long time) {
@@ -116,15 +120,13 @@ public class Oscillator {
     }
 
     void start(int keyId, double frequency) {
-        envelopeGenerator.setPreviousTime(keyId, -1);
-        envelopeGenerator.setEnvelopePosition(keyId, 0);
-        envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.ATTACK);
+        envelopeGenerator.reset(keyId);
 
         for (Oscillator oscillator : modulators) {
             oscillator.start(keyId, frequency);
         }
 
-        sineFrequency[keyId] = (frequency * frequencyRatio) / Instrument.getSampleRate();
+        sineFrequency[keyId] = (frequency * frequencyRatio) / sampleRate;
     }
 
     void stop(int keyId) {

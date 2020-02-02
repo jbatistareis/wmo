@@ -1,8 +1,11 @@
 package com.jbatista.wmo.synthesis;
 
+import com.jbatista.wmo.EnvelopeState;
 import com.jbatista.wmo.MathUtil;
 
 public class EnvelopeGenerator {
+
+    private final double sampleRate;
 
     // parameters
     private int attackLevel;
@@ -21,15 +24,17 @@ public class EnvelopeGenerator {
     private double sustainAmplitude;
     private double releaseAmplitude;
 
-    private final EnvelopeState[] envelopeStates = new EnvelopeState[144];
-    private final double[] envelopeAmplitude = new double[144];
+    private final EnvelopeState[] envelopeStates = new EnvelopeState[168];
+    private final double[] envelopeAmplitude = new double[168];
     // attack -> decay -> sustain -> release
     private double[][] envelopes = new double[3][0];
-    private double[][] releaseEnvelopes = new double[144][0];
-    private final int[] envelopePosition = new int[144];
-    private final long[] previousTime = new long[144];
+    private double[][] releaseEnvelopes = new double[168][0];
+    private final int[] envelopePosition = new int[168];
+    private final long[] previousTime = new long[168];
 
-    EnvelopeGenerator() {
+    EnvelopeGenerator(double sampleRate) {
+        this.sampleRate = sampleRate;
+
         // initialize envelope shape
         setAttackLevel(0);
         setDecayLevel(0);
@@ -211,7 +216,7 @@ public class EnvelopeGenerator {
     void calculateEnvelope(int envelopeStateId, int keyId, int speed, double startAmplitude, double endAmplitude) {
         final double[][] envValues;
         final int index;
-        final int samples = (int) (Tables.ENV_EXP_INCREASE[99 - speed] * Instrument.getSampleRate());
+        final int samples = (int) (Tables.ENV_EXP_INCREASE[99 - speed] * sampleRate);
         final double factor = 1d / samples;
         double accumulator = 0;
 
@@ -231,6 +236,12 @@ public class EnvelopeGenerator {
             envValues[index][i] = MathUtil.linearInterpolation(startAmplitude, endAmplitude, accumulator);
             accumulator += factor;
         }
+    }
+
+    void reset(int keyId) {
+        setPreviousTime(keyId, -1);
+        setEnvelopePosition(keyId, 0);
+        setEnvelopeState(keyId, EnvelopeState.ATTACK);
     }
 
 }

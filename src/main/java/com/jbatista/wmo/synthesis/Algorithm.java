@@ -2,11 +2,21 @@ package com.jbatista.wmo.synthesis;
 
 public class Algorithm {
 
-    private Oscillator[] carriers = new Oscillator[1];
+    private final double sampleRate;
 
+    private Oscillator[] carriers = new Oscillator[1];
     private final Oscillator[] oscillators = new Oscillator[36];
-    private final boolean[][] activeCarriers = new boolean[144][36];
-    private final long[] elapsed = new long[144];
+    private final boolean[][] activeCarriers = new boolean[168][36];
+    private final EnvelopeGenerator envelopeGenerator;
+    private final long[] elapsed = new long[168];
+
+    public Algorithm(double sampleRate) {
+        this.sampleRate = sampleRate;
+        this.envelopeGenerator = new EnvelopeGenerator(this.sampleRate);
+
+        envelopeGenerator.setAttackLevel(5);
+        envelopeGenerator.setAttackSpeed(1);
+    }
 
     public void loadAlgorithmPreset(int[][] algorithm) {
         carriers = new Oscillator[algorithm[0].length];
@@ -22,7 +32,7 @@ public class Algorithm {
 
     public Oscillator getOscillator(int id) {
         if (oscillators[id] == null) {
-            oscillators[id] = new Oscillator(id);
+            oscillators[id] = new Oscillator(id, sampleRate);
         }
 
         return oscillators[id];
@@ -30,9 +40,11 @@ public class Algorithm {
 
     double getFrame(int keyId) {
         double sample = 0;
+        // envelopeGenerator.defineEnvelopeAmplitude(keyId, elapsed[keyId]);
+        // envelopeGenerator.setPreviousTime(keyId, elapsed[keyId]);
 
         for (int i = 0; i < carriers.length; i++) {
-            sample += carriers[i].getFrame(keyId, elapsed[keyId]);
+            sample += carriers[i].getFrame(keyId, 1, elapsed[keyId]);
             activeCarriers[keyId][carriers[i].getId()] = carriers[i].isActive(keyId);
         }
 
@@ -42,6 +54,8 @@ public class Algorithm {
     }
 
     void start(int keyId, double frequency) {
+        envelopeGenerator.reset(keyId);
+
         if (!hasActiveCarriers(keyId)) {
             elapsed[keyId] = 0;
         }

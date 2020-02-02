@@ -1,6 +1,5 @@
 package com.jbatista.wmo.preset;
 
-import com.jbatista.wmo.EnvelopeCurve;
 import com.jbatista.wmo.WaveForm;
 
 public class OscillatorPreset {
@@ -21,11 +20,6 @@ public class OscillatorPreset {
     private int decaySpeed = 99;
     private int sustainSpeed = 99;
     private int releaseSpeed = 99;
-
-    private EnvelopeCurve attackCurve = EnvelopeCurve.LINEAR;
-    private EnvelopeCurve decayCurve = EnvelopeCurve.LINEAR;
-    private EnvelopeCurve sustainCurve = EnvelopeCurve.LINEAR;
-    private EnvelopeCurve releaseCurve = EnvelopeCurve.LINEAR;
 
     public int getId() {
         return id;
@@ -129,38 +123,6 @@ public class OscillatorPreset {
 
     public void setReleaseSpeed(int releaseSpeed) {
         this.releaseSpeed = releaseSpeed;
-    }
-
-    public EnvelopeCurve getAttackCurve() {
-        return attackCurve;
-    }
-
-    public void setAttackCurve(EnvelopeCurve attackCurve) {
-        this.attackCurve = attackCurve;
-    }
-
-    public EnvelopeCurve getDecayCurve() {
-        return decayCurve;
-    }
-
-    public void setDecayCurve(EnvelopeCurve decayCurve) {
-        this.decayCurve = decayCurve;
-    }
-
-    public EnvelopeCurve getSustainCurve() {
-        return sustainCurve;
-    }
-
-    public void setSustainCurve(EnvelopeCurve sustainCurve) {
-        this.sustainCurve = sustainCurve;
-    }
-
-    public EnvelopeCurve getReleaseCurve() {
-        return releaseCurve;
-    }
-
-    public void setReleaseCurve(EnvelopeCurve releaseCurve) {
-        this.releaseCurve = releaseCurve;
     }
 
 }

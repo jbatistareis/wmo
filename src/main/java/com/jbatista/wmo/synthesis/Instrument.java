@@ -14,9 +14,9 @@ public class Instrument {
     private int filterCounter = 0;
 
     // parameters
-    private static AudioFormat audioFormat;
+    private AudioFormat audioFormat;
     private double gain = 0.5;
-    private final Algorithm algorithm = new Algorithm();
+    private final Algorithm algorithm;
     private final LinkedList<Filter> filterChain = new LinkedList<>();
 
     private final boolean[] keysQueue = new boolean[144];
@@ -27,19 +27,20 @@ public class Instrument {
     private final float[] floatBuffer = new float[]{0, 0};
 
     public Instrument(AudioFormat audioFormat) {
-        Instrument.audioFormat = audioFormat;
+        this.audioFormat = audioFormat;
+        this.algorithm = new Algorithm(audioFormat.getSampleRate());
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    public static AudioFormat getAudioFormat() {
+    public AudioFormat getAudioFormat() {
         return audioFormat;
     }
 
-    public static double getSampleRate() {
+    public double getSampleRate() {
         return audioFormat.getSampleRate();
     }
 
-    public static int getBitsPerSample() {
+    public int getBitsPerSample() {
         return audioFormat.getBitsPerSample();
     }
 
