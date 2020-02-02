@@ -2,7 +2,7 @@
 ###### A FM sound synthesis library
 
 
-### [Demo here!](https://github.com/jbatistareis/wmo-demo) (outdated, just beeps and boops version)
+[~~Demo here~~](https://github.com/jbatistareis/wmo-demo) (outdated, beeps and boops version)
 
 
 ## Description
@@ -12,27 +12,29 @@ It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate 
 
 
 ## Features (for now) 
-* Up to 144 key frequencies
-* Up to 144 voices (in theory, as many as your processor can handle)
+* Up to 168 key frequencies
+* Up to 168 voices (in theory, as many as your CPU can handle)
 * Create your own algorithm...
 * ...or choose one of the classic 4 and 6 operators algorithms
 * Filters (high pass, low pass, band pass, distortion, etc...)
-* MIDI support (in the near future)
 
 
 ## Note
-Currently undergoing major changes to be more similar to a DX family synthesizer
+WIP!
 
 
 ## TODO
 * Proper README/documentation
+* API fine tuning
 * Parameters fine tuning
 * Improve feedback
+* Pitch envelope
+* Break points
 * Create some instrument presets
-* MIDI interpretation
+* MIDI support
 * Filter serialization
 * More filters
 * Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)
-* Investigate crackings
-* Squash bugs on the envelope generator
+* ~~Investigate crackings~~ **OK!**
+* ~~Squash bugs on the envelope generator~~ **OK!**
 * Channel separation/manipulation
