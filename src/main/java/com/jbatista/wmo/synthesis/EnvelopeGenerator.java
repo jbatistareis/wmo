@@ -1,6 +1,5 @@
 package com.jbatista.wmo.synthesis;
 
-import com.jbatista.wmo.EnvelopeCurve;
 import com.jbatista.wmo.MathUtil;
 
 public class EnvelopeGenerator {
@@ -15,8 +14,6 @@ public class EnvelopeGenerator {
     private int decaySpeed = 99;
     private int sustainSpeed = 99;
     private int releaseSpeed = 99;
-
-    private final EnvelopeCurve[] envelopeCurves = new EnvelopeCurve[]{EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR, EnvelopeCurve.LINEAR};
 
     // envelope data
     private double attackAmplitude;
@@ -115,38 +112,6 @@ public class EnvelopeGenerator {
         this.releaseSpeed = Math.max(0, Math.min(releaseSpeed, 99));
     }
 
-    public EnvelopeCurve getAttackCurve() {
-        return envelopeCurves[0];
-    }
-
-    public void setAttackCurve(EnvelopeCurve attackCurve) {
-        envelopeCurves[0] = attackCurve;
-    }
-
-    public EnvelopeCurve getDecayCurve() {
-        return envelopeCurves[1];
-    }
-
-    public void setDecayCurve(EnvelopeCurve decayCurve) {
-        envelopeCurves[1] = decayCurve;
-    }
-
-    public EnvelopeCurve getSustainCurve() {
-        return envelopeCurves[2];
-    }
-
-    public void setSustainCurve(EnvelopeCurve sustainCurve) {
-        envelopeCurves[2] = sustainCurve;
-    }
-
-    public EnvelopeCurve getReleaseCurve() {
-        return envelopeCurves[3];
-    }
-
-    public void setReleaseCurve(EnvelopeCurve releaseCurve) {
-        envelopeCurves[3] = releaseCurve;
-    }
-
     void setPreviousTime(int keyId, long time) {
         previousTime[keyId] = time;
     }
@@ -209,7 +174,7 @@ public class EnvelopeGenerator {
 
             case RELEASE_END:
                 if (envelopeAmplitude[keyId] > 0.005) {
-                    envelopeAmplitude[keyId] -= 0.005;
+                    envelopeAmplitude[keyId] -= 0.000001;
                 } else {
                     envelopeAmplitude[keyId] = 0.0;
                     envelopeStates[keyId] = EnvelopeState.IDLE;
@@ -263,27 +228,7 @@ public class EnvelopeGenerator {
         }
 
         for (int i = 0; i < samples; i++) {
-            switch (envelopeCurves[envelopeStateId]) {
-                case LINEAR:
-                    envValues[index][i] = MathUtil.linearInterpolation(startAmplitude, endAmplitude, accumulator);
-                    break;
-
-                case SMOOTH:
-                    envValues[index][i] = MathUtil.smoothInterpolation(startAmplitude, endAmplitude, accumulator);
-                    break;
-
-                case EXP_INCREASE:
-                    envValues[index][i] = MathUtil.expIncreaseInterpolation(startAmplitude, endAmplitude, accumulator);
-                    break;
-
-                case EXP_DECREASE:
-                    envValues[index][i] = MathUtil.expDecreaseInterpolation(startAmplitude, endAmplitude, accumulator);
-                    break;
-
-                default:
-                    break;
-            }
-
+            envValues[index][i] = MathUtil.linearInterpolation(startAmplitude, endAmplitude, accumulator);
             accumulator += factor;
         }
     }

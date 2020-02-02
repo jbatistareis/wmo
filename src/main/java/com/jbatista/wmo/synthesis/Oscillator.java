@@ -70,7 +70,6 @@ public class Oscillator {
     double getFrame(int keyId, long time) {
         double modulatorSample = 0;
         double feedbackSample = 0;
-        envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
 
         if (!modulators.isEmpty()) {
             for (Oscillator oscillator : modulators) {
@@ -100,6 +99,7 @@ public class Oscillator {
                     + (produceSample(sineFrequency[keyId] * 11, 0, time) / 11));
         }
 
+        envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
         envelopeGenerator.setPreviousTime(keyId, time);
         return Tables.OSCILLATOR_OUTPUT_LEVELS[outputLevel]
                 * envelopeGenerator.getEnvelopeAmplitude(keyId)
@@ -116,14 +116,15 @@ public class Oscillator {
     }
 
     void start(int keyId, double frequency) {
+        envelopeGenerator.setPreviousTime(keyId, -1);
+        envelopeGenerator.setEnvelopePosition(keyId, 0);
+        envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.ATTACK);
+
         for (Oscillator oscillator : modulators) {
             oscillator.start(keyId, frequency);
         }
 
-        envelopeGenerator.setPreviousTime(keyId, -1);
-        envelopeGenerator.setEnvelopePosition(keyId, 0);
         sineFrequency[keyId] = (frequency * frequencyRatio) / Instrument.getSampleRate();
-        envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.ATTACK);
     }
 
     void stop(int keyId) {
@@ -153,11 +154,6 @@ public class Oscillator {
         envelopeGenerator.setDecaySpeed(oscillatorPreset.getDecaySpeed());
         envelopeGenerator.setSustainSpeed(oscillatorPreset.getSustainSpeed());
         envelopeGenerator.setReleaseSpeed(oscillatorPreset.getReleaseSpeed());
-
-        envelopeGenerator.setAttackCurve(oscillatorPreset.getAttackCurve());
-        envelopeGenerator.setDecayCurve(oscillatorPreset.getDecayCurve());
-        envelopeGenerator.setSustainCurve(oscillatorPreset.getSustainCurve());
-        envelopeGenerator.setReleaseCurve(oscillatorPreset.getReleaseCurve());
     }
 
 }
