@@ -8,6 +8,7 @@ public class Algorithm {
     private final Oscillator[] oscillators = new Oscillator[36];
     private final boolean[][] activeCarriers = new boolean[168][36];
     private final long[] elapsed = new long[168];
+    private double tempSample;
 
     public Algorithm(double sampleRate) {
         this.sampleRate = sampleRate;
@@ -33,17 +34,17 @@ public class Algorithm {
         return oscillators[id];
     }
 
-    double getFrame(int keyId) {
-        double sample = 0;
+    double getSample(int keyId) {
+        tempSample = 0;
 
         for (int i = 0; i < carriers.length; i++) {
-            sample += carriers[i].getFrame(keyId, 1, elapsed[keyId]);
+            tempSample += carriers[i].getFrame(keyId, 1, elapsed[keyId]);
             activeCarriers[keyId][carriers[i].getId()] = carriers[i].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
 
-        return sample / carriers.length;
+        return tempSample / carriers.length;
     }
 
     void start(int keyId, double frequency) {

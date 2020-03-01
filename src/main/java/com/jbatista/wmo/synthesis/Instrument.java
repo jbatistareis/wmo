@@ -10,7 +10,7 @@ import java.util.LinkedList;
 
 public class Instrument {
 
-    private int keyCounter = 0;
+    private int keyId = 0;
     private int filterCounter = 0;
 
     // parameters
@@ -21,6 +21,7 @@ public class Instrument {
 
     private final boolean[] keysQueue = new boolean[144];
 
+    private double tempSample;
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
     private final byte[] buffer32bit = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
@@ -61,28 +62,28 @@ public class Instrument {
     }
     // </editor-fold>
 
-    public double getFrame() {
-        double sample = 0;
+    public double getSample() {
+        tempSample = 0;
 
-        for (keyCounter = 0; keyCounter < 144; keyCounter++) {
-            if (keysQueue[keyCounter]) {
-                sample += algorithm.getFrame(keyCounter);
+        for (keyId = 0; keyId < 144; keyId++) {
+            if (keysQueue[keyId]) {
+                tempSample += algorithm.getSample(keyId);
 
-                if (!algorithm.hasActiveCarriers(keyCounter)) {
-                    keysQueue[keyCounter] = false;
+                if (!algorithm.hasActiveCarriers(keyId)) {
+                    keysQueue[keyId] = false;
                 }
             }
         }
 
         for (filterCounter = 0; filterCounter < filterChain.size(); filterCounter++) {
-            sample = filterChain.get(filterCounter).apply(sample);
+            tempSample = filterChain.get(filterCounter).apply(tempSample);
         }
 
-        return gain * sample;
+        return gain * tempSample;
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
-        double sample = getFrame();
+        final double sample = getSample();
 
         // TODO channel stuff, [L][R]
         switch (audioFormat.getBitsPerSample()) {
@@ -104,7 +105,7 @@ public class Instrument {
     }
 
     public short[] getShortFrame() {
-        double sample = getFrame();
+        final double sample = getSample();
 
         // TODO channel stuff, [L][R]
         shortBuffer[0] = (short) sample;
@@ -114,7 +115,7 @@ public class Instrument {
     }
 
     public float[] getFloatFrame() {
-        double sample = getFrame();
+        final double sample = getSample();
 
         // TODO channel stuff, [L][R]
         floatBuffer[0] = (float) sample;

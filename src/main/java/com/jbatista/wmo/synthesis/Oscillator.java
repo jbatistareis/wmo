@@ -15,15 +15,18 @@ public class Oscillator {
 
     // I/O
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
-    private final EnvelopeGenerator envelopeGenerator;
-    private final Breakpoint breakpoint = new Breakpoint();
-    private double breakpointOffset = 1;
 
     // parameters
     private WaveForm waveForm = WaveForm.SINE;
     private int outputLevel = 75;
     private int feedback = 0;
     private double frequencyRatio = 1;
+    private final EnvelopeGenerator envelopeGenerator;
+    private final Breakpoint breakpoint = new Breakpoint();
+    private double breakpointOffset = 1;
+
+    private double modulatorSample;
+    private double feedbackSample;
 
     Oscillator(int id, double sampleRate) {
         this.id = id;
@@ -68,14 +71,22 @@ public class Oscillator {
         this.frequencyRatio = Math.max(0, Math.min(frequencyRatio, 32));
     }
 
+    public EnvelopeGenerator getEnvelopeGenerator() {
+        return envelopeGenerator;
+    }
+
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
+    }
+
     LinkedList<Oscillator> getModulators() {
         return modulators;
     }
     // </editor-fold>
 
     double getFrame(int keyId, double pitchOffset, long time) {
-        double modulatorSample = 0;
-        double feedbackSample = 0;
+        modulatorSample = 0;
+        feedbackSample = 0;
 
         if (!modulators.isEmpty()) {
             for (Oscillator oscillator : modulators) {
