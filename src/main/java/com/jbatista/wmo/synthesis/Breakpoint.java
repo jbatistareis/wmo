@@ -119,6 +119,14 @@ public class Breakpoint {
                 offset = MathUtil.linearInterpolation(0, 1, ratio);
                 break;
 
+            case SMOOTH_INCREASE:
+                offset = MathUtil.smoothInterpolation(1, 0, ratio) + 1;
+                break;
+
+            case SMOOTH_DECREASE:
+                offset = MathUtil.smoothInterpolation(0, 1, ratio);
+                break;
+
             case EXP_INCREASE:
                 offset = MathUtil.expIncreaseInterpolation(1, 0, ratio) + 1;
                 break;
