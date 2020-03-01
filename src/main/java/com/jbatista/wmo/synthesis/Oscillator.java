@@ -14,8 +14,10 @@ public class Oscillator {
     private final double[] sineFrequency = new double[168];
 
     // I/O
-    private final EnvelopeGenerator envelopeGenerator;
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
+    private final EnvelopeGenerator envelopeGenerator;
+    private final Breakpoint breakpoint = new Breakpoint();
+    private double breakpointOffset = 1;
 
     // parameters
     private WaveForm waveForm = WaveForm.SINE;
@@ -106,7 +108,7 @@ public class Oscillator {
         envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
         envelopeGenerator.setPreviousTime(keyId, time);
         return Tables.OSCILLATOR_OUTPUT_LEVELS[outputLevel]
-                * envelopeGenerator.getEnvelopeAmplitude(keyId)
+                * (breakpointOffset * envelopeGenerator.getEnvelopeAmplitude(keyId))
                 * (produceSample(pitchOffset * sineFrequency[keyId], modulatorSample, time) + feedbackSample);
     }
 
@@ -127,6 +129,7 @@ public class Oscillator {
         }
 
         sineFrequency[keyId] = (frequency * frequencyRatio) / sampleRate;
+        breakpointOffset = breakpoint.getLevelOffset(frequency);
     }
 
     void stop(int keyId) {
@@ -156,6 +159,12 @@ public class Oscillator {
         envelopeGenerator.setDecaySpeed(oscillatorPreset.getDecaySpeed());
         envelopeGenerator.setSustainSpeed(oscillatorPreset.getSustainSpeed());
         envelopeGenerator.setReleaseSpeed(oscillatorPreset.getReleaseSpeed());
+
+        breakpoint.setNote(oscillatorPreset.getBreakpointNote());
+        breakpoint.setLeftCurve(oscillatorPreset.getBreakpointLeftCurve());
+        breakpoint.setRightCurve(oscillatorPreset.getBreakpointRightCurve());
+        breakpoint.setLeftDepth(oscillatorPreset.getBreakpointLeftDepth());
+        breakpoint.setRightDepth(oscillatorPreset.getBreakpointRightDepth());
     }
 
 }

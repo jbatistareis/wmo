@@ -7,15 +7,10 @@ public class Algorithm {
     private Oscillator[] carriers = new Oscillator[1];
     private final Oscillator[] oscillators = new Oscillator[36];
     private final boolean[][] activeCarriers = new boolean[168][36];
-    private final EnvelopeGenerator envelopeGenerator;
     private final long[] elapsed = new long[168];
 
     public Algorithm(double sampleRate) {
         this.sampleRate = sampleRate;
-        this.envelopeGenerator = new EnvelopeGenerator(this.sampleRate);
-
-        envelopeGenerator.setAttackLevel(5);
-        envelopeGenerator.setAttackSpeed(1);
     }
 
     public void loadAlgorithmPreset(int[][] algorithm) {
@@ -40,8 +35,6 @@ public class Algorithm {
 
     double getFrame(int keyId) {
         double sample = 0;
-        // envelopeGenerator.defineEnvelopeAmplitude(keyId, elapsed[keyId]);
-        // envelopeGenerator.setPreviousTime(keyId, elapsed[keyId]);
 
         for (int i = 0; i < carriers.length; i++) {
             sample += carriers[i].getFrame(keyId, 1, elapsed[keyId]);
@@ -54,8 +47,6 @@ public class Algorithm {
     }
 
     void start(int keyId, double frequency) {
-        envelopeGenerator.reset(keyId);
-
         if (!hasActiveCarriers(keyId)) {
             elapsed[keyId] = 0;
         }

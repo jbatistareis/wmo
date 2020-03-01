@@ -1,5 +1,7 @@
 package com.jbatista.wmo.preset;
 
+import com.jbatista.wmo.KeyboardNote;
+import com.jbatista.wmo.TransitionCurve;
 import com.jbatista.wmo.WaveForm;
 
 public class OscillatorPreset {
@@ -20,6 +22,12 @@ public class OscillatorPreset {
     private int decaySpeed = 99;
     private int sustainSpeed = 99;
     private int releaseSpeed = 99;
+
+    private KeyboardNote breakpointNote = KeyboardNote.A_4;
+    private TransitionCurve breakpointLeftCurve = TransitionCurve.LINEAR_DECREASE;
+    private TransitionCurve breakpointRightCurve = TransitionCurve.LINEAR_DECREASE;
+    private int breakpointLeftDepth = 0;
+    private int breakpointRightDepth = 0;
 
     public int getId() {
         return id;
@@ -123,6 +131,46 @@ public class OscillatorPreset {
 
     public void setReleaseSpeed(int releaseSpeed) {
         this.releaseSpeed = releaseSpeed;
+    }
+
+    public KeyboardNote getBreakpointNote() {
+        return breakpointNote;
+    }
+
+    public void setBreakpointNote(KeyboardNote breakpointNote) {
+        this.breakpointNote = breakpointNote;
+    }
+
+    public TransitionCurve getBreakpointLeftCurve() {
+        return breakpointLeftCurve;
+    }
+
+    public void setBreakpointLeftCurve(TransitionCurve breakpointLeftCurve) {
+        this.breakpointLeftCurve = breakpointLeftCurve;
+    }
+
+    public TransitionCurve getBreakpointRightCurve() {
+        return breakpointRightCurve;
+    }
+
+    public void setBreakpointRightCurve(TransitionCurve breakpointRightCurve) {
+        this.breakpointRightCurve = breakpointRightCurve;
+    }
+
+    public int getBreakpointLeftDepth() {
+        return breakpointLeftDepth;
+    }
+
+    public void setBreakpointLeftDepth(int breakpointLeftDepth) {
+        this.breakpointLeftDepth = breakpointLeftDepth;
+    }
+
+    public int getBreakpointRightDepth() {
+        return breakpointRightDepth;
+    }
+
+    public void setBreakpointRightDepth(int breakpointRightDepth) {
+        this.breakpointRightDepth = breakpointRightDepth;
     }
 
 }

@@ -12,7 +12,7 @@ public class MathUtil {
     public static final double PI_D2 = Math.PI / 2;
     public static final Random RANDOM = new Random();
 
-    private static final int SIGNED_24BIT_MAX = 8388607;
+    private static final int SIGNED_24_BIT_MAX = 8388607;
 
     public static int primitiveFrom16bit(boolean bigEndian, boolean signed, byte b1, byte b2) {
         return (bigEndian
@@ -25,7 +25,7 @@ public class MathUtil {
         return (bigEndian
                 ? ((b1 & 0xFF) << 16) + ((b2 & 0xFF) << 8) + (b3 & 0xFF)
                 : (b3 & 0xFF) + ((b2 & 0xFF) << 8) + ((b1 & 0xFF) << 16))
-                - (signed ? SIGNED_24BIT_MAX : 0);
+                - (signed ? SIGNED_24_BIT_MAX : 0);
     }
 
     public static long primitiveFrom32bit(boolean bigEndian, boolean signed, byte b1, byte b2, byte b3, byte b4) {
@@ -102,6 +102,10 @@ public class MathUtil {
 
     public static double frequencyByKeyPosition(boolean midi, int position) {
         return 440 * Math.pow(2, (position - (midi ? 69 : 49)) / 12d);
+    }
+
+    public static double percentageInRange(double lowerLimit, double upperLimit, double value) {
+        return ((value - lowerLimit) / (upperLimit - lowerLimit)) * 100;
     }
 
 }
