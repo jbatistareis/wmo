@@ -29,7 +29,7 @@ public class FilterChainItem {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof FilterChainItem) && filter.equals(((FilterChainItem) obj).getFilter());
+        return (obj instanceof Filter) && filter.equals(((FilterChainItem) obj).getFilter());
     }
 
 }

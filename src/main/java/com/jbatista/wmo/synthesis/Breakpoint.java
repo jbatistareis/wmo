@@ -35,18 +35,8 @@ public class Breakpoint {
     }
 
     public void setNote(KeyboardNote note) {
-        int tempIndex = NOTES.indexOf(note);
-
-        if (tempIndex < C_MINUS_2_INDEX) {
-            note = KeyboardNote.A_1;
-            tempIndex = 45;
-        } else if (tempIndex > B_8_INDEX) {
-            note = KeyboardNote.C_8;
-            tempIndex = 120;
-        }
-
         this.note = note;
-        this.noteIndex = tempIndex;
+        this.noteIndex = NOTES.indexOf(note);
         this.leftRange = noteIndex - C_MINUS_2_INDEX;
         this.rightRange = B_8_INDEX - noteIndex;
         this.centerFrequency = this.note.getFrequency();

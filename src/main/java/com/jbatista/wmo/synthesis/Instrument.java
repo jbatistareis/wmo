@@ -2,7 +2,6 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.AudioFormat;
 import com.jbatista.wmo.MathUtil;
-import com.jbatista.wmo.filters.Filter;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
 
@@ -139,9 +138,6 @@ public class Instrument {
         }
 
         filterChain.clear();
-        for (Filter filter : instrumentPreset.getFilterChain()) {
-            filterChain.sum(filter);
-        }
     }
 
 }
