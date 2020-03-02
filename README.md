@@ -8,9 +8,9 @@ This library replicates the functionality of an old school Yamaha synthesizer, i
 It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate various instruments, ***80's style***.
 
 
-## Features (for now) 
-* Up to 168 key frequencies
-* Up to 168 voices (in theory, as many as your CPU can handle)
+## Features (for now)
+* Up to 132 keys (you can play any desired frequency)
+* Up to 36 oscillators per key
 * Breakpoint / Level Scaling / Keyboard Tracking / Keyboard Following
 * Create your own algorithm...
 * ...or choose one of the classic 4 and 6 operators algorithms
@@ -31,7 +31,7 @@ WIP!
 * ~~Break points~~ **OK!**
 * Create some instrument presets
 * MIDI support
-* ~~Filter serialization~~ **OK!**
+* Filter serialization
 * More filters
 * ~~Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)~~ **OK!**
 * ~~Investigate crackings~~ **OK!**
