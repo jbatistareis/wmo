@@ -31,9 +31,9 @@ WIP!
 * ~~Break points~~ **OK!**
 * Create some instrument presets
 * MIDI support
-* Filter serialization
+* ~~Filter serialization~~ **OK!**
 * More filters
-* Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)
+* ~~Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)~~ **OK!**
 * ~~Investigate crackings~~ **OK!**
 * ~~Squash bugs on the envelope generator~~ **OK!**
 * Channel separation/manipulation
