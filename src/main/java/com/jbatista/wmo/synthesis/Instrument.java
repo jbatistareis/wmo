@@ -6,18 +6,15 @@ import com.jbatista.wmo.filters.Filter;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
 
-import java.util.LinkedList;
-
 public class Instrument {
 
     private int keyId = 0;
-    private int filterCounter = 0;
 
     // parameters
     private AudioFormat audioFormat;
     private double gain = 0.5;
     private final Algorithm algorithm;
-    private final LinkedList<Filter> filterChain = new LinkedList<>();
+    private final FilterChain filterChain = new FilterChain();
 
     private final boolean[] keysQueue = new boolean[144];
 
@@ -57,7 +54,7 @@ public class Instrument {
         return algorithm;
     }
 
-    public LinkedList<Filter> getFilterChain() {
+    public FilterChain getFilterChain() {
         return filterChain;
     }
     // </editor-fold>
@@ -75,11 +72,7 @@ public class Instrument {
             }
         }
 
-        for (filterCounter = 0; filterCounter < filterChain.size(); filterCounter++) {
-            tempSample = filterChain.get(filterCounter).apply(tempSample);
-        }
-
-        return gain * tempSample;
+        return gain * filterChain.getResult(tempSample);
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
@@ -147,7 +140,7 @@ public class Instrument {
 
         filterChain.clear();
         for (Filter filter : instrumentPreset.getFilterChain()) {
-            filterChain.add(filter);
+            filterChain.sum(filter);
         }
     }
 
