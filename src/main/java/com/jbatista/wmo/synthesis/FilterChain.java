@@ -46,7 +46,7 @@ public class FilterChain {
             }
         }
 
-        return 0;
+        return output;
     }
 
     public void clear() {
