@@ -9,8 +9,8 @@ It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate 
 
 
 ## Features (for now)
-* Up to 132 keys (you can play any desired frequency)
-* Up to 36 oscillators per key
+* Up to 132 keys (on any desired frequency)
+* Up to 36 oscillators per key (can play as many keys as your CPU can handle)
 * Breakpoint / Level Scaling / Keyboard Tracking / Keyboard Following
 * Create your own algorithm...
 * ...or choose one of the classic 4 and 6 operators algorithms
