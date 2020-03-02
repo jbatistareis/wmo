@@ -24,13 +24,13 @@ public class EnvelopeGenerator {
     private double sustainAmplitude;
     private double releaseAmplitude;
 
-    private final EnvelopeState[] envelopeStates = new EnvelopeState[168];
-    private final double[] envelopeAmplitude = new double[168];
+    private final EnvelopeState[] envelopeStates = new EnvelopeState[132];
+    private final double[] envelopeAmplitude = new double[132];
     // attack -> decay -> sustain -> release
     private double[][] envelopes = new double[3][0];
-    private double[][] releaseEnvelopes = new double[168][0];
-    private final int[] envelopePosition = new int[168];
-    private final long[] previousTime = new long[168];
+    private double[][] releaseEnvelopes = new double[132][0];
+    private final int[] envelopePosition = new int[132];
+    private final long[] previousTime = new long[132];
 
     EnvelopeGenerator(double sampleRate) {
         this.sampleRate = sampleRate;

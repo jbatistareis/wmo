@@ -15,7 +15,7 @@ public class Instrument {
     private final Algorithm algorithm;
     private final FilterChain filterChain = new FilterChain();
 
-    private final boolean[] keysQueue = new boolean[144];
+    private final boolean[] keysQueue = new boolean[132];
 
     private double tempSample;
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
@@ -61,7 +61,7 @@ public class Instrument {
     public double getSample() {
         tempSample = 0;
 
-        for (keyId = 0; keyId < 144; keyId++) {
+        for (keyId = 0; keyId < 132; keyId++) {
             if (keysQueue[keyId]) {
                 tempSample += algorithm.getSample(keyId);
 

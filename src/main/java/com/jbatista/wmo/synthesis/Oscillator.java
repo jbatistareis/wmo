@@ -11,7 +11,7 @@ public class Oscillator {
     private final int id;
     private final double sampleRate;
 
-    private final double[] sineFrequency = new double[168];
+    private final double[] sineFrequency = new double[132];
 
     // I/O
     private final LinkedList<Oscillator> modulators = new LinkedList<>();

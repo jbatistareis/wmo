@@ -6,8 +6,8 @@ public class Algorithm {
 
     private Oscillator[] carriers = new Oscillator[1];
     private final Oscillator[] oscillators = new Oscillator[36];
-    private final boolean[][] activeCarriers = new boolean[168][36];
-    private final long[] elapsed = new long[168];
+    private final boolean[][] activeCarriers = new boolean[132][36];
+    private final long[] elapsed = new long[132];
     private double tempSample;
 
     public Algorithm(double sampleRate) {
