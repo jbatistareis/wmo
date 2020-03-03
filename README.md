@@ -12,8 +12,8 @@ It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate 
 * Up to 132 keys (on any desired frequency)
 * Up to 36 oscillators per key (can play as many keys as your CPU can handle)
 * Breakpoint / Level Scaling / Keyboard Tracking / Keyboard Following
-* Create your own algorithm...
-* ...or choose one of the classic 4 and 6 operators algorithms
+* Create your own algorithm, or choose one of the classic 4 and 6 operators algorithms
+* Read voices from SYSEX files (some settings can produce A LOT of noise and need to be adjusted after loading)
 * Filters (high pass, low pass, band pass, distortion, etc...)
 
 
@@ -28,12 +28,14 @@ WIP!
 * Parameters fine tuning
 * Improve feedback
 * Pitch envelope
-* ~~Break points~~ **OK!**
-* Create some instrument presets
+* LFO
+* Transpose
 * MIDI support
 * Filter serialization
 * More filters
+* Channel separation/manipulation
+* Create some instrument presets
+* ~~Break points~~ **OK!**
 * ~~Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)~~ **OK!**
 * ~~Investigate crackings~~ **OK!**
 * ~~Squash bugs on the envelope generator~~ **OK!**
-* Channel separation/manipulation
