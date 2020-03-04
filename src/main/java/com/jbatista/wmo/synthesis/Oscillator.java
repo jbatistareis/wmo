@@ -119,7 +119,8 @@ public class Oscillator {
         envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
         envelopeGenerator.setPreviousTime(keyId, time);
         return Tables.OSCILLATOR_OUTPUT_LEVELS[outputLevel]
-                * (breakpointOffset * envelopeGenerator.getEnvelopeAmplitude(keyId))
+                * breakpointOffset
+                * envelopeGenerator.getEnvelopeAmplitude(keyId)
                 * (produceSample(pitchOffset * sineFrequency[keyId], modulatorSample, time) + feedbackSample);
     }
 
