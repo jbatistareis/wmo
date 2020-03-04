@@ -4,15 +4,15 @@ import com.jbatista.wmo.filters.Filter;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class FilterChain {
 
     private final List<FilterChainItem> chain = new ArrayList<>();
-    private Iterator<FilterChainItem> chainIterator;
     private FilterChainItem chainItem;
     private double output;
+    private int index = 0;
+    private int size = 0;
     private boolean first;
 
     public double getResult(double input) {
@@ -20,12 +20,11 @@ public class FilterChain {
             return input;
         }
 
-        chainIterator = chain.iterator();
         output = 0;
         first = true;
 
-        while (chainIterator.hasNext()) {
-            chainItem = chainIterator.next();
+        for (index = 0; index < size; index++) {
+            chainItem = chain.get(index);
 
             switch (chainItem.getFilterType()) {
                 case SUM:
@@ -55,7 +54,9 @@ public class FilterChain {
 
     public FilterChain sum(Filter filter) {
         if (!chain.contains(filter)) {
-            chain.add(new FilterChainItem(FilterChainItem.FilterType.SUM, filter));
+            if (chain.add(new FilterChainItem(FilterChainItem.FilterType.SUM, filter))) {
+                size++;
+            }
         }
 
         return this;
@@ -63,14 +64,21 @@ public class FilterChain {
 
     public FilterChain link(Filter filter) {
         if (!chain.contains(filter)) {
-            chain.add(new FilterChainItem(FilterChainItem.FilterType.LINK, filter));
+            if (chain.add(new FilterChainItem(FilterChainItem.FilterType.LINK, filter))) {
+                size++;
+            }
         }
 
         return this;
     }
 
     public boolean remove(Filter filter) {
-        return chain.remove(filter);
+        if (chain.remove(filter)) {
+            size--;
+            return true;
+        }
+
+        return false;
     }
 
     public void swap(Filter filter1, Filter filter2) {
