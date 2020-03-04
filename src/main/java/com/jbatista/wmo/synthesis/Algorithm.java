@@ -1,5 +1,7 @@
 package com.jbatista.wmo.synthesis;
 
+import java.util.Arrays;
+
 public class Algorithm {
 
     private final double sampleRate;
@@ -15,6 +17,7 @@ public class Algorithm {
     }
 
     public void loadAlgorithmPreset(int[][] algorithm) {
+        Arrays.fill(oscillators, null);
         carriers = new Oscillator[algorithm[0].length];
 
         for (int i = 0; i < algorithm[0].length; i++) {
