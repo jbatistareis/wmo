@@ -1,6 +1,6 @@
 package com.jbatista.wmo.synthesis;
 
-import com.jbatista.wmo.filters.Filter;
+import com.jbatista.wmo.filter.Filter;
 
 import java.util.ArrayList;
 import java.util.Collections;

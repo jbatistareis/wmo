@@ -1,15 +1,15 @@
-package com.jbatista.wmo.filters;
+package com.jbatista.wmo.filter;
 
-import com.jbatista.wmo.MathUtil;
+import com.jbatista.wmo.util.MathFunctions;
 
 /*
     Based on the 'Cookbook formulae for audio equalizer biquad filter coefficients' by Robert Bristow-Johnson
     https://www.w3.org/2011/audio/audio-eq-cookbook.html
 */
 
-public class LowPass extends BiquadFilter {
+public class HighPass extends BiquadFilter {
 
-    public LowPass(double sampleRate) {
+    public HighPass(double sampleRate) {
         this.sampleRate = sampleRate;
         setCutoffFrequency(440);
         setResonance(1);
@@ -35,14 +35,14 @@ public class LowPass extends BiquadFilter {
 
     @Override
     protected void calculateCoefficients() {
-        omega = (MathUtil.TAU * frequency) / sampleRate;
+        omega = (MathFunctions.TAU * frequency) / sampleRate;
         sin = Math.sin(omega);
         cos = Math.cos(omega);
         alpha = sin / (2 * q);
 
-        cB0 = (1 - cos) / 2;
-        cB1 = 1 - cos;
-        cB2 = (1 - cos) / 2;
+        cB0 = (1 + cos) / 2;
+        cB1 = -(1 + cos);
+        cB2 = (1 + cos) / 2;
         cA0 = 1 + alpha;
         cA1 = -2 * cos;
         cA2 = 1 - alpha;

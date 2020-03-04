@@ -1,4 +1,4 @@
-package com.jbatista.wmo;
+package com.jbatista.wmo.util;
 
 import java.util.Random;
 
@@ -6,7 +6,7 @@ import java.util.Random;
     Interpolation algorithms based on Lewis Van Winkle's 2009 blog post "Simple Interpolation" [https://codeplea.com/simple-interpolation]
 */
 
-public class MathUtil {
+public class MathFunctions {
 
     public static final double TAU = Math.PI * 2;
     public static final double PI_D2 = Math.PI / 2;

@@ -1,7 +1,9 @@
-package com.jbatista.wmo;
+package com.jbatista.wmo.util;
 
 // Detailed description of the format can be found on https://github.com/asb2m10/dexed/blob/master/Documentation/sysex-format.txt
 
+import com.jbatista.wmo.KeyboardNote;
+import com.jbatista.wmo.TransitionCurve;
 import com.jbatista.wmo.preset.AlgorithmPreset;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
@@ -12,7 +14,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Dx7SysexUtil {
+public class Dx7Sysex {
 
     private static final String ERROR_HEADER = "\nThe following errors where found during processing:";
     private static final String START_ERROR = "Incorrect sysex start, expected 0xf0, found 0x%x";

@@ -1,6 +1,8 @@
-package com.jbatista.wmo;
+package com.jbatista.wmo.util;
 
-public class DspUtil {
+import com.jbatista.wmo.WaveForm;
+
+public class Dsp {
 
     public static double oscillator(WaveForm waveForm, double frequency, double modulation, double phase, long time) {
         switch (waveForm) {
@@ -28,7 +30,7 @@ public class DspUtil {
     }
 
     private static double sineWave(double frequency, double modulation, double phase, long time) {
-        return Math.sin(MathUtil.TAU * frequency * time + modulation + phase);
+        return Math.sin(MathFunctions.TAU * frequency * time + modulation + phase);
     }
 
     private static double squareWave(double frequency, double modulation, double phase, long time) {
@@ -36,15 +38,15 @@ public class DspUtil {
     }
 
     private static double triangleWave(double frequency, double modulation, double phase, long time) {
-        return MathUtil.PI_D2 * Math.asin(sineWave(frequency, modulation, phase, time));
+        return MathFunctions.PI_D2 * Math.asin(sineWave(frequency, modulation, phase, time));
     }
 
     private static double sawtoothWave(double frequency, double modulation, double phase, long time) {
-        return -MathUtil.PI_D2 * Math.atan(1 / Math.tan(Math.PI * time * frequency + modulation + phase));
+        return -MathFunctions.PI_D2 * Math.atan(1 / Math.tan(Math.PI * time * frequency + modulation + phase));
     }
 
     private static double whiteNoise() {
-        return 2 * MathUtil.RANDOM.nextDouble() - 1;
+        return 2 * MathFunctions.RANDOM.nextDouble() - 1;
     }
 
 }

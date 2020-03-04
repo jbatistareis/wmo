@@ -1,7 +1,7 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.EnvelopeState;
-import com.jbatista.wmo.MathUtil;
+import com.jbatista.wmo.util.MathFunctions;
 
 public class EnvelopeGenerator {
 
@@ -209,7 +209,7 @@ public class EnvelopeGenerator {
      */
     boolean applyEnvelope(int keyId, int envelopeStateId, long time) {
         if (position[keyId] < size[envelopeStateId]) {
-            currentAmplitude[keyId] = MathUtil.linearInterpolation(startAmplitude[keyId], endAmplitude[keyId], progress[keyId]);
+            currentAmplitude[keyId] = MathFunctions.linearInterpolation(startAmplitude[keyId], endAmplitude[keyId], progress[keyId]);
 
             if (previousTime[keyId] != time) {
                 position[keyId] += 1;

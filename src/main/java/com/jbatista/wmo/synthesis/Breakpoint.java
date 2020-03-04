@@ -1,7 +1,7 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.KeyboardNote;
-import com.jbatista.wmo.MathUtil;
+import com.jbatista.wmo.util.MathFunctions;
 import com.jbatista.wmo.TransitionCurve;
 
 import java.util.Arrays;
@@ -88,41 +88,41 @@ public class Breakpoint {
             }
 
             curve = leftCurve;
-            ratio = MathUtil.percentageInRange(lowerFrequency, centerFrequency, frequency) / 100;
+            ratio = MathFunctions.percentageInRange(lowerFrequency, centerFrequency, frequency) / 100;
         } else if (frequency > centerFrequency) {
             if (rightDepth == 0) {
                 return 1;
             }
 
             curve = rightCurve;
-            ratio = Math.abs(MathUtil.percentageInRange(centerFrequency, upperFrequency, frequency) - 100) / 100;
+            ratio = Math.abs(MathFunctions.percentageInRange(centerFrequency, upperFrequency, frequency) - 100) / 100;
         } else {
             return 1;
         }
 
         switch (curve) {
             case LINEAR_INCREASE:
-                offset = MathUtil.linearInterpolation(1, 0, ratio) + 1;
+                offset = MathFunctions.linearInterpolation(1, 0, ratio) + 1;
                 break;
 
             case LINEAR_DECREASE:
-                offset = MathUtil.linearInterpolation(0, 1, ratio);
+                offset = MathFunctions.linearInterpolation(0, 1, ratio);
                 break;
 
             case SMOOTH_INCREASE:
-                offset = MathUtil.smoothInterpolation(1, 0, ratio) + 1;
+                offset = MathFunctions.smoothInterpolation(1, 0, ratio) + 1;
                 break;
 
             case SMOOTH_DECREASE:
-                offset = MathUtil.smoothInterpolation(0, 1, ratio);
+                offset = MathFunctions.smoothInterpolation(0, 1, ratio);
                 break;
 
             case EXP_INCREASE:
-                offset = MathUtil.expIncreaseInterpolation(1, 0, ratio) + 1;
+                offset = MathFunctions.expIncreaseInterpolation(1, 0, ratio) + 1;
                 break;
 
             case EXP_DECREASE:
-                offset = MathUtil.expIncreaseInterpolation(0, 1, ratio);
+                offset = MathFunctions.expIncreaseInterpolation(0, 1, ratio);
                 break;
 
             default:

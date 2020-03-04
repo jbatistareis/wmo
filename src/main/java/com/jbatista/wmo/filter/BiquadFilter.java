@@ -1,4 +1,4 @@
-package com.jbatista.wmo.filters;
+package com.jbatista.wmo.filter;
 
 // uses direct-form I
 

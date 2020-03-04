@@ -1,4 +1,4 @@
-package com.jbatista.wmo;
+package com.jbatista.wmo.util;
 
 public class SysexException extends RuntimeException {
 

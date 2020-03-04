@@ -1,7 +1,7 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.AudioFormat;
-import com.jbatista.wmo.MathUtil;
+import com.jbatista.wmo.util.MathFunctions;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
 
@@ -80,14 +80,14 @@ public class Instrument {
         // TODO channel stuff, [L][R]
         switch (audioFormat.getBitsPerSample()) {
             case 16:
-                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) sample);
-                MathUtil.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) sample);
+                MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) sample);
+                MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) sample);
 
                 return buffer16bit;
 
             case 32:
-                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) sample);
-                MathUtil.primitiveTo32bit(bigEndian, buffer32bit, 3, (long) sample);
+                MathFunctions.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) sample);
+                MathFunctions.primitiveTo32bit(bigEndian, buffer32bit, 3, (long) sample);
 
                 return buffer32bit;
 
