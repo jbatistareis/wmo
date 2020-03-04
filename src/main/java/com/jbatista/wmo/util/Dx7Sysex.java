@@ -167,7 +167,7 @@ public class Dx7Sysex {
             final int outputLevel = operatorParams[14];
 
             final int frequencyCoarse = operatorParams[15] >> 1;
-            final int mode = operatorParams[15] & 1;
+            final int frequencyMode = operatorParams[15] & 1;
 
             final int frequencyFine = operatorParams[16];
 
@@ -191,9 +191,14 @@ public class Dx7Sysex {
             oscillatorPreset.setBreakpointLeftCurve(TransitionCurve.values()[breakpointLeftCurve]);
             oscillatorPreset.setBreakpointRightCurve(TransitionCurve.values()[breakpointRightCurve]);
 
+            oscillatorPreset.setFrequencyDetune(detune);
+
             oscillatorPreset.setOutputLevel(outputLevel);
 
             oscillatorPreset.setFrequencyRatio(frequencyCoarse);
+            oscillatorPreset.setFixedFrequency(frequencyMode == 1);
+
+            oscillatorPreset.setFrequencyFine(frequencyFine);
 
             instrumentPreset.getOscillatorPresets().add(oscillatorPreset);
         }

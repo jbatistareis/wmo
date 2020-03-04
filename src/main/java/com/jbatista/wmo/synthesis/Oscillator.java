@@ -1,9 +1,9 @@
 package com.jbatista.wmo.synthesis;
 
-import com.jbatista.wmo.util.Dsp;
 import com.jbatista.wmo.EnvelopeState;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.OscillatorPreset;
+import com.jbatista.wmo.util.Dsp;
 
 import java.util.LinkedList;
 
@@ -12,6 +12,7 @@ public class Oscillator {
     private final double sampleRate;
 
     private final double[] sineFrequency = new double[132];
+    private static final double[] fixedFrequencies = new double[]{1d, 10d, 100d, 1000d};
 
     // I/O
     private final LinkedList<Oscillator> modulators = new LinkedList<>();
@@ -21,6 +22,9 @@ public class Oscillator {
     private int outputLevel = 75;
     private int feedback = 0;
     private double frequencyRatio = 1;
+    private boolean fixedFrequency = false;
+    private int frequencyFine = 0;
+    private int frequencyDetune = 0;
     private final EnvelopeGenerator envelopeGenerator;
     private final Breakpoint breakpoint = new Breakpoint();
     private double breakpointOffset = 1;
@@ -68,7 +72,38 @@ public class Oscillator {
     }
 
     public void setFrequencyRatio(double frequencyRatio) {
-        this.frequencyRatio = Math.max(0, Math.min(frequencyRatio, 32));
+        this.frequencyRatio = Math.max(0, Math.min(frequencyRatio, 31));
+    }
+
+    public boolean isFixedFrequency() {
+        return fixedFrequency;
+    }
+
+    public void setFixedFrequency(boolean fixedFrequency) {
+        this.fixedFrequency = fixedFrequency;
+    }
+
+    public int getFrequencyFine() {
+        return frequencyFine;
+    }
+
+    public void setFrequencyFine(int frequencyFine) {
+        this.frequencyFine = this.outputLevel = Math.max(0, Math.min(frequencyFine, 99));
+    }
+
+    public int getFrequencyDetune() {
+        return frequencyDetune;
+    }
+
+    public void setFrequencyDetune(int frequencyDetune) {
+        this.frequencyDetune = Math.max(-7, Math.min(frequencyDetune, 7));
+    }
+
+    public double getEffectiveFrequency() {
+        return (fixedFrequency
+                ? fixedFrequencies[(int) frequencyRatio % 4]
+                : frequencyRatio)
+                * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
     }
 
     public EnvelopeGenerator getEnvelopeGenerator() {
@@ -140,7 +175,12 @@ public class Oscillator {
             oscillator.start(keyId, frequency);
         }
 
-        sineFrequency[keyId] = (frequency * frequencyRatio) / sampleRate;
+        frequency = (
+                fixedFrequency
+                        ? fixedFrequencies[(int) frequencyRatio % 4]
+                        : frequency * frequencyRatio)
+                * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
+        sineFrequency[keyId] = frequency / sampleRate;
         breakpointOffset = breakpoint.getLevelOffset(frequency);
     }
 
@@ -158,6 +198,9 @@ public class Oscillator {
 
     public void loadOscillatorPreset(OscillatorPreset oscillatorPreset) {
         setFrequencyRatio(oscillatorPreset.getFrequencyRatio());
+        setFixedFrequency(oscillatorPreset.isFixedFrequency());
+        setFrequencyFine(oscillatorPreset.getFrequencyFine());
+        setFrequencyDetune(oscillatorPreset.getFrequencyDetune());
         setOutputLevel(oscillatorPreset.getOutputLevel());
         setFeedback(oscillatorPreset.getFeedback());
         setWaveForm(oscillatorPreset.getWaveForm());

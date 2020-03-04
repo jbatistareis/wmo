@@ -9,6 +9,9 @@ public class OscillatorPreset {
     private int id = 0;
 
     private double frequencyRatio = 1;
+    private boolean fixedFrequency = false;
+    private int frequencyFine = 0;
+    private int frequencyDetune = 0;
     private int outputLevel = 75;
     private int feedback = 0;
     private WaveForm waveForm = WaveForm.SINE;
@@ -43,6 +46,30 @@ public class OscillatorPreset {
 
     public void setFrequencyRatio(double frequencyRatio) {
         this.frequencyRatio = frequencyRatio;
+    }
+
+    public boolean isFixedFrequency() {
+        return fixedFrequency;
+    }
+
+    public void setFixedFrequency(boolean fixedFrequency) {
+        this.fixedFrequency = fixedFrequency;
+    }
+
+    public int getFrequencyFine() {
+        return frequencyFine;
+    }
+
+    public void setFrequencyFine(int frequencyFine) {
+        this.frequencyFine = frequencyFine;
+    }
+
+    public int getFrequencyDetune() {
+        return frequencyDetune;
+    }
+
+    public void setFrequencyDetune(int frequencyDetune) {
+        this.frequencyDetune = frequencyDetune;
     }
 
     public int getOutputLevel() {
