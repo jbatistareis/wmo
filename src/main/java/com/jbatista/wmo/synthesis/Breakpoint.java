@@ -1,8 +1,8 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.KeyboardNote;
-import com.jbatista.wmo.util.MathFunctions;
 import com.jbatista.wmo.TransitionCurve;
+import com.jbatista.wmo.util.MathFunctions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,12 +22,12 @@ public class Breakpoint {
     private int rightRange = 39;
 
     private double centerFrequency = KeyboardNote.A_4.getFrequency();
-    private double lowerFrequency = KeyboardNote.C_MINUS_2.getFrequency();
-    private double upperFrequency = KeyboardNote.B_8.getFrequency();
+    private double lowerFrequency = KeyboardNote.A_MINUS_1.getFrequency();
+    private double upperFrequency = KeyboardNote.C_8.getFrequency();
 
     private static final List<KeyboardNote> NOTES = Arrays.asList(KeyboardNote.values());
-    private static final int C_MINUS_2_INDEX = 0;
-    private static final int B_8_INDEX = 131;
+    private static final int A_MINUS_1_INDEX = 21;
+    private static final int C_8_INDEX = 120;
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public KeyboardNote getNote() {
@@ -37,9 +37,12 @@ public class Breakpoint {
     public void setNote(KeyboardNote note) {
         this.note = note;
         this.noteIndex = NOTES.indexOf(note);
-        this.leftRange = noteIndex - C_MINUS_2_INDEX;
-        this.rightRange = B_8_INDEX - noteIndex;
+        this.leftRange = noteIndex - A_MINUS_1_INDEX;
+        this.rightRange = C_8_INDEX - noteIndex;
         this.centerFrequency = this.note.getFrequency();
+
+        setLeftDepth(leftDepth);
+        setRightDepth(rightDepth);
     }
 
     public TransitionCurve getLeftCurve() {
@@ -130,7 +133,7 @@ public class Breakpoint {
                 break;
         }
 
-        return (offset < 0) ? 0 : offset;
+        return Math.max(0, Math.min(offset, 2));
     }
 
 }

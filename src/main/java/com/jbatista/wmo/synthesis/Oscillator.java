@@ -32,6 +32,8 @@ public class Oscillator {
     private double modulatorSample;
     private double feedbackSample;
 
+    private double inputFrequency;
+
     Oscillator(int id, double sampleRate) {
         this.id = id;
         this.sampleRate = sampleRate;
@@ -175,12 +177,12 @@ public class Oscillator {
             oscillator.start(keyId, frequency);
         }
 
-        frequency = (
+        inputFrequency = (
                 fixedFrequency
                         ? fixedFrequencies[(int) frequencyRatio % 4]
                         : frequency * frequencyRatio)
                 * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
-        sineFrequency[keyId] = frequency / sampleRate;
+        sineFrequency[keyId] = inputFrequency / sampleRate;
         breakpointOffset = breakpoint.getLevelOffset(frequency);
     }
 

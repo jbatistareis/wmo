@@ -185,7 +185,7 @@ public class Dx7Sysex {
             oscillatorPreset.setSustainLevel(egLevel3);
             oscillatorPreset.setReleaseLevel(egLevel4);
 
-            oscillatorPreset.setBreakpointNote(KeyboardNote.values()[Math.min(breakpoint + 21, 131)]);
+            oscillatorPreset.setBreakpointNote(KeyboardNote.values()[Math.max(21, Math.min(breakpoint + 21, 120))]);
             oscillatorPreset.setBreakpointLeftDepth(breakpointLeftDepth);
             oscillatorPreset.setBreakpointRightDepth(breakpointRightDepth);
             oscillatorPreset.setBreakpointLeftCurve(TransitionCurve.values()[breakpointLeftCurve]);
