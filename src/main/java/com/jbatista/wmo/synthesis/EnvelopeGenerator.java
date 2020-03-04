@@ -86,7 +86,7 @@ public class EnvelopeGenerator {
 
     public void setAttackSpeed(int attackSpeed) {
         this.attackSpeed = Math.max(0, Math.min(attackSpeed, 99));
-        this.size[0] = (int) (Tables.OSCILLATOR_OUTPUT_LEVELS[99 - this.attackSpeed] * sampleRate);
+        this.size[0] = (int) (Tables.ENV_EXP_INCREASE[99 - this.attackSpeed] * sampleRate);
         this.factor[0] = 1d / size[0];
     }
 
@@ -96,7 +96,7 @@ public class EnvelopeGenerator {
 
     public void setDecaySpeed(int decaySpeed) {
         this.decaySpeed = Math.max(0, Math.min(decaySpeed, 99));
-        this.size[1] = (int) (Tables.OSCILLATOR_OUTPUT_LEVELS[99 - this.decaySpeed] * sampleRate);
+        this.size[1] = (int) (Tables.ENV_EXP_INCREASE[99 - this.decaySpeed] * sampleRate);
         this.factor[1] = 1d / size[1];
     }
 
@@ -106,7 +106,7 @@ public class EnvelopeGenerator {
 
     public void setSustainSpeed(int sustainSpeed) {
         this.sustainSpeed = Math.max(0, Math.min(sustainSpeed, 99));
-        this.size[2] = (int) (Tables.OSCILLATOR_OUTPUT_LEVELS[99 - this.sustainSpeed] * sampleRate);
+        this.size[2] = (int) (Tables.ENV_EXP_INCREASE[99 - this.sustainSpeed] * sampleRate);
         this.factor[2] = 1d / size[2];
     }
 
@@ -116,7 +116,7 @@ public class EnvelopeGenerator {
 
     public void setReleaseSpeed(int releaseSpeed) {
         this.releaseSpeed = Math.max(0, Math.min(releaseSpeed, 99));
-        this.size[3] = (int) (Tables.OSCILLATOR_OUTPUT_LEVELS[99 - this.releaseSpeed] * sampleRate);
+        this.size[3] = (int) (Tables.ENV_EXP_INCREASE[99 - this.releaseSpeed] * sampleRate);
         this.factor[3] = 1d / size[3];
     }
 
