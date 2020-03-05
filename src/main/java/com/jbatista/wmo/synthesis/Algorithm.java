@@ -1,12 +1,10 @@
 package com.jbatista.wmo.synthesis;
 
-import java.util.Arrays;
-
 public class Algorithm {
 
     private final double sampleRate;
 
-    private Oscillator[] carriers = new Oscillator[1];
+    private int[][] algorithm = new int[0][0];
     private final Oscillator[] oscillators = new Oscillator[36];
     private final boolean[][] activeCarriers = new boolean[132][36];
     private final long[] elapsed = new long[132];
@@ -17,37 +15,33 @@ public class Algorithm {
     }
 
     public void loadAlgorithmPreset(int[][] algorithm) {
-        Arrays.fill(oscillators, null);
-        carriers = new Oscillator[algorithm[0].length];
-
-        for (int i = 0; i < algorithm[0].length; i++) {
-            carriers[i] = getOscillator(algorithm[0][i]);
-        }
-
-        for (int i = 1; i < algorithm.length; i++) {
-            getOscillator(algorithm[i][0]).getModulators().add(getOscillator(algorithm[i][1]));
-        }
+        this.algorithm = algorithm;
     }
 
     public Oscillator getOscillator(int id) {
         if (oscillators[id] == null) {
-            oscillators[id] = new Oscillator(id, sampleRate);
+            oscillators[id] = new Oscillator(id, sampleRate, this);
         }
 
         return oscillators[id];
     }
 
+    int[][] getAlgorithm() {
+        return algorithm;
+    }
+
     double getSample(int keyId) {
         tempSample = 0;
 
-        for (int i = 0; i < carriers.length; i++) {
-            tempSample += carriers[i].getFrame(keyId, 1, elapsed[keyId]);
-            activeCarriers[keyId][carriers[i].getId()] = carriers[i].isActive(keyId);
+        for (int i = 0; i < algorithm[0].length; i++) {
+            tempSample += oscillators[algorithm[0][i]].getFrame(keyId, 1, elapsed[keyId]);
+            activeCarriers[keyId][oscillators[algorithm[0][i]].getId()]
+                    = oscillators[algorithm[0][i]].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
 
-        return tempSample / carriers.length;
+        return tempSample / algorithm[0].length;
     }
 
     void start(int keyId, double frequency) {
@@ -55,21 +49,21 @@ public class Algorithm {
             elapsed[keyId] = 0;
         }
 
-        for (int i = 0; i < carriers.length; i++) {
-            carriers[i].start(keyId, frequency);
+        for (int i = 0; i < algorithm[0].length; i++) {
+            oscillators[algorithm[0][i]].start(keyId, frequency);
         }
     }
 
     void stop(int keyId) {
-        for (int i = 0; i < carriers.length; i++) {
-            carriers[i].stop(keyId);
+        for (int i = 0; i < algorithm[0].length; i++) {
+            oscillators[algorithm[0][i]].stop(keyId);
         }
     }
 
     void stopAll() {
         for (int i = 0; i < 144; i++) {
-            for (int j = 0; j < carriers.length; i++) {
-                carriers[j].stop(i);
+            for (int j = 0; j < algorithm[0].length; i++) {
+                oscillators[algorithm[0][i]].stop(i);
             }
         }
     }

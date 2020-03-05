@@ -6,8 +6,6 @@ import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.Dsp;
 import com.jbatista.wmo.util.MathFunctions;
 
-import java.util.LinkedList;
-
 public class Oscillator {
     private final int id;
     private final double sampleRate;
@@ -16,7 +14,7 @@ public class Oscillator {
     private static final double[] fixedFrequencies = new double[]{1d, 10d, 100d, 1000d};
 
     // I/O
-    private final LinkedList<Oscillator> modulators = new LinkedList<>();
+    private Algorithm algorithm;
 
     // parameters
     private WaveForm waveForm = WaveForm.SINE;
@@ -30,13 +28,15 @@ public class Oscillator {
     private final Breakpoint breakpoint = new Breakpoint();
     private double breakpointOffset = 1;
 
+    private int modulatorCount;
     private double modulatorSample;
     private double feedbackSample;
 
-    Oscillator(int id, double sampleRate) {
+    Oscillator(int id, double sampleRate, Algorithm algorithm) {
         this.id = id;
         this.sampleRate = sampleRate;
         this.envelopeGenerator = new EnvelopeGenerator(this.sampleRate);
+        this.algorithm = algorithm;
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -107,22 +107,25 @@ public class Oscillator {
     public Breakpoint getBreakpoint() {
         return breakpoint;
     }
-
-    LinkedList<Oscillator> getModulators() {
-        return modulators;
-    }
     // </editor-fold>
 
     double getFrame(int keyId, double pitchOffset, long time) {
+        modulatorCount = 0;
         modulatorSample = 0;
         feedbackSample = 0;
 
-        if (!modulators.isEmpty()) {
-            for (Oscillator oscillator : modulators) {
-                modulatorSample += oscillator.getFrame(keyId, pitchOffset, time);
-            }
+        for (int i = 1; i < algorithm.getAlgorithm().length; i++) {
+            if (algorithm.getAlgorithm()[i][0] == id) {
+                modulatorSample += algorithm
+                        .getOscillator(algorithm.getAlgorithm()[i][1])
+                        .getFrame(keyId, pitchOffset, time);
 
-            modulatorSample /= modulators.size();
+                modulatorCount++;
+            }
+        }
+
+        if (modulatorCount > 0) {
+            modulatorSample /= modulatorCount;
         }
 
         /*
@@ -166,8 +169,10 @@ public class Oscillator {
     void start(int keyId, double frequency) {
         envelopeGenerator.reset(keyId);
 
-        for (Oscillator oscillator : modulators) {
-            oscillator.start(keyId, frequency);
+        for (int i = 1; i < algorithm.getAlgorithm().length; i++) {
+            if (algorithm.getAlgorithm()[i][0] == id) {
+                algorithm.getOscillator(algorithm.getAlgorithm()[i][1]).start(keyId, frequency);
+            }
         }
 
         sineFrequency[keyId] = fixedFrequency
@@ -178,8 +183,10 @@ public class Oscillator {
     }
 
     void stop(int keyId) {
-        for (Oscillator oscillator : modulators) {
-            oscillator.stop(keyId);
+        for (int i = 1; i < algorithm.getAlgorithm().length; i++) {
+            if (algorithm.getAlgorithm()[i][0] == id) {
+                algorithm.getOscillator(algorithm.getAlgorithm()[i][1]).stop(keyId);
+            }
         }
 
         envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.PRE_RELEASE);
