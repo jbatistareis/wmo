@@ -213,7 +213,7 @@ public class EnvelopeGenerator {
      */
     boolean applyEnvelope(int keyId, int envelopeStateId, long time) {
         if (position[keyId] < size[envelopeStateId]) {
-            currentAmplitude[keyId] = MathFunctions.linearInterpolation(startAmplitude[keyId], endAmplitude[keyId], progress[keyId]);
+            currentAmplitude[keyId] = MathFunctions.smoothInterpolation(startAmplitude[keyId], endAmplitude[keyId], progress[keyId]);
 
             if (previousTime[keyId] != time) {
                 position[keyId] += 1;
