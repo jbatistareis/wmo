@@ -4,6 +4,7 @@ import com.jbatista.wmo.EnvelopeState;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.Dsp;
+import com.jbatista.wmo.util.MathFunctions;
 
 import java.util.LinkedList;
 
@@ -31,8 +32,6 @@ public class Oscillator {
 
     private double modulatorSample;
     private double feedbackSample;
-
-    private double inputFrequency;
 
     Oscillator(int id, double sampleRate) {
         this.id = id;
@@ -101,13 +100,6 @@ public class Oscillator {
         this.frequencyDetune = Math.max(-7, Math.min(frequencyDetune, 7));
     }
 
-    public double getEffectiveFrequency() {
-        return (fixedFrequency
-                ? fixedFrequencies[(int) frequencyRatio % 4]
-                : (frequencyRatio == 0) ? 0.5 : frequencyRatio)
-                * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
-    }
-
     public EnvelopeGenerator getEnvelopeGenerator() {
         return envelopeGenerator;
     }
@@ -170,6 +162,7 @@ public class Oscillator {
                 time);
     }
 
+    // fixed frequency calculation from [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782]
     void start(int keyId, double frequency) {
         envelopeGenerator.reset(keyId);
 
@@ -177,12 +170,10 @@ public class Oscillator {
             oscillator.start(keyId, frequency);
         }
 
-        inputFrequency = (
-                fixedFrequency
-                        ? fixedFrequencies[(int) frequencyRatio % 4]
-                        : frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio))
-                * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
-        sineFrequency[keyId] = inputFrequency / sampleRate;
+        sineFrequency[keyId] = fixedFrequency
+                ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))
+                : (frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7]) /
+                sampleRate;
         breakpointOffset = breakpoint.getLevelOffset(frequency);
     }
 

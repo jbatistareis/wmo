@@ -10,9 +10,9 @@ public class MathFunctions {
 
     public static final double TAU = Math.PI * 2;
     public static final double PI_D2 = Math.PI / 2;
-    public static final Random RANDOM = new Random();
-
+    public static final double NATURAL_LOG10 = 2.30258509299;
     private static final int SIGNED_24_BIT_MAX = 8388607;
+    public static final Random RANDOM = new Random();
 
     public static int primitiveFrom16bit(boolean bigEndian, boolean signed, byte b1, byte b2) {
         return (bigEndian
