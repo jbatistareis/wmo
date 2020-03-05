@@ -132,7 +132,6 @@ public class Dx7Sysex {
         instrumentPreset.setName(name);
         instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm + 8].getAlgorithm());
 
-
         final byte[] operatorParams = new byte[17];
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 17; j++) {

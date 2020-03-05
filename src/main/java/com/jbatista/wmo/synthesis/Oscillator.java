@@ -104,7 +104,7 @@ public class Oscillator {
     public double getEffectiveFrequency() {
         return (fixedFrequency
                 ? fixedFrequencies[(int) frequencyRatio % 4]
-                : frequencyRatio)
+                : (frequencyRatio == 0) ? 0.5 : frequencyRatio)
                 * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
     }
 
@@ -180,7 +180,7 @@ public class Oscillator {
         inputFrequency = (
                 fixedFrequency
                         ? fixedFrequencies[(int) frequencyRatio % 4]
-                        : frequency * frequencyRatio)
+                        : frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio))
                 * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
         sineFrequency[keyId] = inputFrequency / sampleRate;
         breakpointOffset = breakpoint.getLevelOffset(frequency);

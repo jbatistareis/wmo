@@ -29,12 +29,14 @@ public class EnvelopeGenerator {
     private final double[] currentAmplitude = new double[132];
     private final double[] position = new double[132];
     private final double[] progress = new double[132];
-    private final double[] factor = new double[4];
-    private final int[] size = new int[4];
+    private final double[] factor = new double[5];
+    private final int[] size = new int[5];
     private final long[] previousTime = new long[132];
 
     EnvelopeGenerator(double sampleRate) {
         this.sampleRate = sampleRate;
+        this.size[4] = (int) ((sampleRate / 1000) * 100);
+        this.factor[4] = 1d / size[4];
 
         // initialize envelope shape
         setAttackLevel(0);
@@ -184,14 +186,16 @@ public class EnvelopeGenerator {
 
             case RELEASE:
                 if (applyEnvelope(keyId, 3, time)) {
+                    position[keyId] = 0;
+                    progress[keyId] = 0;
+                    startAmplitude[keyId] = currentAmplitude[keyId];
+                    endAmplitude[keyId] = 0;
                     state[keyId] = EnvelopeState.RELEASE_END;
                 }
                 break;
 
             case RELEASE_END:
-                if (currentAmplitude[keyId] > 0.005) {
-                    currentAmplitude[keyId] -= 0.000001;
-                } else {
+                if (applyEnvelope(keyId, 4, time)) {
                     currentAmplitude[keyId] = 0.0;
                     state[keyId] = EnvelopeState.IDLE;
                 }
@@ -205,7 +209,7 @@ public class EnvelopeGenerator {
 
     /*
         returns true if finished
-        envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release
+        envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release, 4 = release end
      */
     boolean applyEnvelope(int keyId, int envelopeStateId, long time) {
         if (position[keyId] < size[envelopeStateId]) {
@@ -227,7 +231,7 @@ public class EnvelopeGenerator {
         setEnvelopePosition(keyId, 0);
         setEnvelopeState(keyId, EnvelopeState.ATTACK);
 
-        startAmplitude[keyId] = 0d;
+        startAmplitude[keyId] = 0;
         endAmplitude[keyId] = attackAmplitude;
         progress[keyId] = 0;
     }

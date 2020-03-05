@@ -1,9 +1,9 @@
 package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.AudioFormat;
-import com.jbatista.wmo.util.MathFunctions;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
+import com.jbatista.wmo.util.MathFunctions;
 
 public class Instrument {
 
@@ -130,7 +130,6 @@ public class Instrument {
     }
 
     public void loadInstrumentPreset(InstrumentPreset instrumentPreset) {
-        setGain(instrumentPreset.getGain());
         algorithm.loadAlgorithmPreset(instrumentPreset.getAlgorithm());
 
         for (OscillatorPreset oscillatorPreset : instrumentPreset.getOscillatorPresets()) {
