@@ -114,10 +114,10 @@ public class Oscillator {
         modulatorSample = 0;
         feedbackSample = 0;
 
-        for (int i = 1; i < algorithm.getAlgorithm().length; i++) {
-            if (algorithm.getAlgorithm()[i][0] == id) {
+        for (int i = 1; i < algorithm.pattern.length; i++) {
+            if (algorithm.pattern[i][0] == id) {
                 modulatorSample += algorithm
-                        .getOscillator(algorithm.getAlgorithm()[i][1])
+                        .oscillators[algorithm.pattern[i][1]]
                         .getFrame(keyId, pitchOffset, time);
 
                 modulatorCount++;
@@ -169,9 +169,9 @@ public class Oscillator {
     void start(int keyId, double frequency) {
         envelopeGenerator.reset(keyId);
 
-        for (int i = 1; i < algorithm.getAlgorithm().length; i++) {
-            if (algorithm.getAlgorithm()[i][0] == id) {
-                algorithm.getOscillator(algorithm.getAlgorithm()[i][1]).start(keyId, frequency);
+        for (int i = 1; i < algorithm.pattern.length; i++) {
+            if (algorithm.pattern[i][0] == id) {
+                algorithm.oscillators[algorithm.pattern[i][1]].start(keyId, frequency);
             }
         }
 
@@ -183,9 +183,9 @@ public class Oscillator {
     }
 
     void stop(int keyId) {
-        for (int i = 1; i < algorithm.getAlgorithm().length; i++) {
-            if (algorithm.getAlgorithm()[i][0] == id) {
-                algorithm.getOscillator(algorithm.getAlgorithm()[i][1]).stop(keyId);
+        for (int i = 1; i < algorithm.pattern.length; i++) {
+            if (algorithm.pattern[i][0] == id) {
+                algorithm.oscillators[algorithm.pattern[i][1]].stop(keyId);
             }
         }
 

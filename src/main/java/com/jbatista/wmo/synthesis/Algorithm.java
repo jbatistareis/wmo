@@ -4,8 +4,9 @@ public class Algorithm {
 
     private final double sampleRate;
 
-    private int[][] algorithm = new int[0][0];
-    private final Oscillator[] oscillators = new Oscillator[36];
+    int[][] pattern = new int[0][0];
+    final Oscillator[] oscillators = new Oscillator[36];
+
     private final boolean[][] activeCarriers = new boolean[132][36];
     private final long[] elapsed = new long[132];
     private double tempSample;
@@ -14,8 +15,8 @@ public class Algorithm {
         this.sampleRate = sampleRate;
     }
 
-    public void loadAlgorithmPreset(int[][] algorithm) {
-        this.algorithm = algorithm;
+    public void loadAlgorithmPreset(int[][] pattern) {
+        this.pattern = pattern;
     }
 
     public Oscillator getOscillator(int id) {
@@ -26,22 +27,18 @@ public class Algorithm {
         return oscillators[id];
     }
 
-    int[][] getAlgorithm() {
-        return algorithm;
-    }
-
     double getSample(int keyId) {
         tempSample = 0;
 
-        for (int i = 0; i < algorithm[0].length; i++) {
-            tempSample += oscillators[algorithm[0][i]].getFrame(keyId, 1, elapsed[keyId]);
-            activeCarriers[keyId][oscillators[algorithm[0][i]].getId()]
-                    = oscillators[algorithm[0][i]].isActive(keyId);
+        for (int i = 0; i < pattern[0].length; i++) {
+            tempSample += oscillators[pattern[0][i]].getFrame(keyId, 1, elapsed[keyId]);
+            activeCarriers[keyId][oscillators[pattern[0][i]].getId()]
+                    = oscillators[pattern[0][i]].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
 
-        return tempSample / algorithm[0].length;
+        return tempSample / pattern[0].length;
     }
 
     void start(int keyId, double frequency) {
@@ -49,21 +46,21 @@ public class Algorithm {
             elapsed[keyId] = 0;
         }
 
-        for (int i = 0; i < algorithm[0].length; i++) {
-            oscillators[algorithm[0][i]].start(keyId, frequency);
+        for (int i = 0; i < pattern[0].length; i++) {
+            oscillators[pattern[0][i]].start(keyId, frequency);
         }
     }
 
     void stop(int keyId) {
-        for (int i = 0; i < algorithm[0].length; i++) {
-            oscillators[algorithm[0][i]].stop(keyId);
+        for (int i = 0; i < pattern[0].length; i++) {
+            oscillators[pattern[0][i]].stop(keyId);
         }
     }
 
     void stopAll() {
         for (int i = 0; i < 144; i++) {
-            for (int j = 0; j < algorithm[0].length; i++) {
-                oscillators[algorithm[0][i]].stop(i);
+            for (int j = 0; j < pattern[0].length; i++) {
+                oscillators[pattern[0][i]].stop(i);
             }
         }
     }
