@@ -10,7 +10,9 @@ import java.util.List;
 public class Breakpoint {
 
     private KeyboardNote note = KeyboardNote.A_4;
-    private int noteIndex = 81;
+    private int breakpoint = 81;
+    private int lowerNote = 0;
+    private int upperNote = 131;
 
     private TransitionCurve leftCurve = TransitionCurve.LINEAR_DECREASE;
     private TransitionCurve rightCurve = TransitionCurve.LINEAR_DECREASE;
@@ -21,10 +23,6 @@ public class Breakpoint {
     private int leftRange = 36;
     private int rightRange = 39;
 
-    private double centerFrequency = KeyboardNote.A_4.getFrequency();
-    private double lowerFrequency = KeyboardNote.A_MINUS_1.getFrequency();
-    private double upperFrequency = KeyboardNote.C_8.getFrequency();
-
     private static final List<KeyboardNote> NOTES = Arrays.asList(KeyboardNote.values());
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
@@ -34,10 +32,9 @@ public class Breakpoint {
 
     public void setNote(KeyboardNote note) {
         this.note = note;
-        this.noteIndex = NOTES.indexOf(note);
-        this.leftRange = noteIndex;
-        this.rightRange = 131 - noteIndex;
-        this.centerFrequency = this.note.getFrequency();
+        this.breakpoint = NOTES.indexOf(note);
+        this.leftRange = breakpoint;
+        this.rightRange = 131 - breakpoint;
 
         setLeftDepth(leftDepth);
         setRightDepth(rightDepth);
@@ -65,7 +62,7 @@ public class Breakpoint {
 
     public void setLeftDepth(int leftDepth) {
         this.leftDepth = Math.max(0, Math.min(leftDepth, 99));
-        this.lowerFrequency = NOTES.get((int) (noteIndex - Math.ceil((leftRange * (100 - this.leftDepth)) / 100))).getFrequency();
+        this.lowerNote = (int) Math.max(0, Math.min((breakpoint - Math.ceil((leftRange * (100 - this.leftDepth)) / 100)), 131));
     }
 
     public int getRightDepth() {
@@ -74,29 +71,29 @@ public class Breakpoint {
 
     public void setRightDepth(int rightDepth) {
         this.rightDepth = Math.max(0, Math.min(rightDepth, 99));
-        this.upperFrequency = NOTES.get((int) (noteIndex + Math.ceil((rightRange * (100 - this.rightDepth)) / 100))).getFrequency();
+        this.upperNote = (int) Math.max(0, Math.min((breakpoint + Math.ceil((leftRange * (100 - this.leftDepth)) / 100)), 131));
     }
     // </editor-fold>
 
-    double getLevelOffset(double frequency) {
+    double getLevelOffset(int keyId) {
         final double ratio;
         final double offset;
         final TransitionCurve curve;
 
-        if (frequency < centerFrequency) {
+        if (keyId < breakpoint) {
             if (leftDepth == 0) {
                 return 1;
             }
 
             curve = leftCurve;
-            ratio = MathFunctions.percentageInRange(lowerFrequency, centerFrequency, frequency) / 100;
-        } else if (frequency > centerFrequency) {
+            ratio = MathFunctions.percentageInRange(lowerNote, breakpoint, keyId) / 100;
+        } else if (keyId > breakpoint) {
             if (rightDepth == 0) {
                 return 1;
             }
 
             curve = rightCurve;
-            ratio = (100 - MathFunctions.percentageInRange(centerFrequency, upperFrequency, frequency)) / 100;
+            ratio = (100 - MathFunctions.percentageInRange(breakpoint, upperNote, keyId)) / 100;
         } else {
             return 1;
         }

@@ -179,7 +179,8 @@ public class Oscillator {
                 ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))
                 : (frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7]) /
                 sampleRate;
-        breakpointOffset = breakpoint.getLevelOffset(frequency);
+
+        breakpointOffset = breakpoint.getLevelOffset(keyId);
     }
 
     void stop(int keyId) {
