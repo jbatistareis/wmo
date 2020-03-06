@@ -24,6 +24,8 @@ public class Breakpoint {
     private int rightRange = 39;
 
     private static final List<KeyboardNote> NOTES = Arrays.asList(KeyboardNote.values());
+    private static final int A_MINUS_1_INDEX = 21;
+    private static final int C_8_INDEX = 120;
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public KeyboardNote getNote() {
@@ -31,8 +33,18 @@ public class Breakpoint {
     }
 
     public void setNote(KeyboardNote note) {
+        int index = NOTES.indexOf(note);
+
+        if (index < 21) {
+            note = KeyboardNote.A_MINUS_1;
+            index = A_MINUS_1_INDEX;
+        } else if (index > 120) {
+            note = KeyboardNote.C_8;
+            index = C_8_INDEX;
+        }
+
         this.note = note;
-        this.breakpoint = NOTES.indexOf(note);
+        this.breakpoint = index;
         this.leftRange = breakpoint;
         this.rightRange = 131 - breakpoint;
 
@@ -71,7 +83,7 @@ public class Breakpoint {
 
     public void setRightDepth(int rightDepth) {
         this.rightDepth = Math.max(0, Math.min(rightDepth, 99));
-        this.upperNote = (int) Math.max(0, Math.min((breakpoint + Math.ceil((leftRange * (100 - this.leftDepth)) / 100)), 131));
+        this.upperNote = (int) Math.max(0, Math.min((breakpoint + Math.ceil((rightRange * (100 - this.rightDepth)) / 100)), 131));
     }
     // </editor-fold>
 
@@ -100,27 +112,27 @@ public class Breakpoint {
 
         switch (curve) {
             case LINEAR_INCREASE:
-                offset = MathFunctions.linearInterpolation(1, 2, ratio);
+                offset = MathFunctions.linearInterpolation(2, 1, ratio);
                 break;
 
             case LINEAR_DECREASE:
-                offset = MathFunctions.linearInterpolation(0.005, 1, ratio);
+                offset = MathFunctions.linearInterpolation(0, 1, ratio);
                 break;
 
             case SMOOTH_INCREASE:
-                offset = MathFunctions.smoothInterpolation(1, 2, ratio);
+                offset = MathFunctions.smoothInterpolation(2, 1, ratio);
                 break;
 
             case SMOOTH_DECREASE:
-                offset = MathFunctions.smoothInterpolation(0.005, 1, ratio);
+                offset = MathFunctions.smoothInterpolation(0, 1, ratio);
                 break;
 
             case EXP_INCREASE:
-                offset = MathFunctions.expIncreaseInterpolation(1, 2, ratio);
+                offset = MathFunctions.expDecreaseInterpolation(2, 1, ratio);
                 break;
 
             case EXP_DECREASE:
-                offset = MathFunctions.expIncreaseInterpolation(0.005, 1, ratio);
+                offset = MathFunctions.expDecreaseInterpolation(0, 1, ratio);
                 break;
 
             default:

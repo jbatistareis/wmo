@@ -32,8 +32,7 @@ public class Algorithm {
 
         for (int i = 0; i < pattern[0].length; i++) {
             tempSample += oscillators[pattern[0][i]].getFrame(keyId, 1, elapsed[keyId]);
-            activeCarriers[keyId][oscillators[pattern[0][i]].getId()]
-                    = oscillators[pattern[0][i]].isActive(keyId);
+            activeCarriers[keyId][oscillators[pattern[0][i]].getId()] = oscillators[pattern[0][i]].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
