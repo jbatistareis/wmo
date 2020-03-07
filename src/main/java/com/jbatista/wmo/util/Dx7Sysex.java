@@ -83,8 +83,9 @@ public class Dx7Sysex {
         }
     }
 
-    private static void parseSingleVoice(byte[] patch) {
+    private static InstrumentPreset parseSingleVoice(byte[] patch) {
         // TODO
+        return null;
     }
 
     private static InstrumentPreset parseBulkVoice(byte[] voice) {

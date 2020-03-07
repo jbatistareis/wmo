@@ -1,6 +1,5 @@
 package com.jbatista.wmo.synthesis;
 
-import com.jbatista.wmo.EnvelopeState;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.Dsp;
