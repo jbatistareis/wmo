@@ -35,7 +35,7 @@ public class EnvelopeGenerator {
 
     EnvelopeGenerator(double sampleRate) {
         this.sampleRate = sampleRate;
-        this.size[4] = (int) (sampleRate / 10);
+        this.size[4] = (int) (sampleRate / 10 * 2);
         this.factor[4] = 1d / size[4];
 
         // initialize envelope shape
