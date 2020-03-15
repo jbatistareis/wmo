@@ -88,7 +88,7 @@ public class Oscillator {
     }
 
     public void setFrequencyFine(int frequencyFine) {
-        this.frequencyFine = this.outputLevel = Math.max(0, Math.min(frequencyFine, 99));
+        this.frequencyFine = Math.max(0, Math.min(frequencyFine, 99));
     }
 
     public int getFrequencyDetune() {
@@ -175,10 +175,11 @@ public class Oscillator {
             }
         }
 
-        sineFrequency[keyId] = fixedFrequency
+        sineFrequency[keyId] = ((fixedFrequency
                 ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))
-                : (frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine] + Tables.FREQUENCY_DETUNE[frequencyDetune + 7]) /
-                sampleRate;
+                : frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine])
+                + Tables.FREQUENCY_DETUNE[frequencyDetune + 7])
+                / sampleRate;
 
         breakpointOffset = breakpoint.getLevelOffset(keyId);
     }
@@ -195,6 +196,13 @@ public class Oscillator {
 
     boolean isActive(int keyId) {
         return envelopeGenerator.getEnvelopeState(keyId) != EnvelopeState.IDLE;
+    }
+
+    public double getEffectiveFrequency() {
+        return (fixedFrequency
+                ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))
+                : ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine])
+                + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
     }
 
     public void loadOscillatorPreset(OscillatorPreset oscillatorPreset) {

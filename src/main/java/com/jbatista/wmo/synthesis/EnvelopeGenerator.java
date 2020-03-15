@@ -101,7 +101,7 @@ public class EnvelopeGenerator {
         this.factor[1] = 1d / size[1];
     }
 
-    public double getSustainSpeed() {
+    public int getSustainSpeed() {
         return sustainSpeed;
     }
 
