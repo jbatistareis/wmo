@@ -27,14 +27,13 @@ public class Oscillator {
     private final Breakpoint breakpoint = new Breakpoint();
     private double breakpointOffset = 1;
 
-    private int modulatorCount;
     private double modulatorSample;
     private double feedbackSample;
 
     Oscillator(int id, double sampleRate, Algorithm algorithm) {
         this.id = id;
         this.sampleRate = sampleRate;
-        this.envelopeGenerator = new EnvelopeGenerator(this.sampleRate);
+        this.envelopeGenerator = new EnvelopeGenerator(sampleRate);
         this.algorithm = algorithm;
     }
 
@@ -109,22 +108,13 @@ public class Oscillator {
     // </editor-fold>
 
     double getFrame(int keyId, double pitchOffset, long time) {
-        modulatorCount = 0;
         modulatorSample = 0;
         feedbackSample = 0;
 
         for (int i = 1; i < algorithm.pattern.length; i++) {
             if (algorithm.pattern[i][0] == id) {
-                modulatorSample += algorithm
-                        .oscillators[algorithm.pattern[i][1]]
-                        .getFrame(keyId, pitchOffset, time);
-
-                modulatorCount++;
+                modulatorSample += algorithm.oscillators[algorithm.pattern[i][1]].getFrame(keyId, pitchOffset, time);
             }
-        }
-
-        if (modulatorCount > 0) {
-            modulatorSample /= modulatorCount;
         }
 
         /*

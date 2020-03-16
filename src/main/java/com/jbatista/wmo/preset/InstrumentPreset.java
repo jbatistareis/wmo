@@ -10,7 +10,7 @@ public class InstrumentPreset {
 
     private String name = "Default preset";
     private double gain = 0.5;
-    private int[][] algorithm = new int[][]{{0}, {}};
+    private int[][] algorithm = new int[][]{{0}};
     private List<OscillatorPreset> oscillatorPresets = new ArrayList<>();
     private List<Filter> filterChain = new ArrayList<>();
 

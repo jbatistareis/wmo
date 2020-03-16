@@ -26,6 +26,8 @@ public class Instrument {
     public Instrument(AudioFormat audioFormat) {
         this.audioFormat = audioFormat;
         this.algorithm = new Algorithm(audioFormat.getSampleRate());
+
+        loadInstrumentPreset(new InstrumentPreset());
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
