@@ -191,8 +191,7 @@ public class Oscillator {
     public double getEffectiveFrequency() {
         return (fixedFrequency
                 ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))
-                : ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine])
-                + Tables.FREQUENCY_DETUNE[frequencyDetune + 7];
+                : ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine]);
     }
 
     public void loadOscillatorPreset(OscillatorPreset oscillatorPreset) {
