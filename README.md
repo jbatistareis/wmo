@@ -10,10 +10,10 @@ It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate 
 
 ## Features (for now)
 * Up to 132 keys (on any desired frequency)
-* Up to 36 oscillators per key (can play as many keys as your CPU can handle)
+* Up to 6 oscillators per key (can play as many keys as your CPU can handle)
 * Breakpoint / Level Scaling / Keyboard Tracking / Keyboard Following
-* Create your own algorithm, or choose one of the classic 4 and 6 operators algorithms
-* Load voices from SYSEX files (some settings can produce A LOT of noise and need to be adjusted after loading)
+* Use one of the classic 4 and 6 operator algorithms
+* Load voices from SYSEX files (some settings can produce A LOT of noise or sound very different)
 * Filters (high pass, low pass, band pass, distortion, etc...)
 
 
@@ -34,7 +34,7 @@ WIP!
 * Filter serialization
 * More filters
 * Channel separation/manipulation
-* Create some instrument presets
+* ~~Create some instrument presets~~ **OK!**
 * ~~Break points~~ **OK!**
 * ~~Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)~~ **OK!**
 * ~~Investigate crackings~~ **OK!**
