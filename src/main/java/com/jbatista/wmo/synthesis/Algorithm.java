@@ -1,13 +1,15 @@
 package com.jbatista.wmo.synthesis;
 
+import com.jbatista.wmo.preset.AlgorithmPreset;
+
 public class Algorithm {
 
     private final double sampleRate;
 
     int[][] pattern = new int[0][0];
-    final Oscillator[] oscillators = new Oscillator[36];
+    final Oscillator[] oscillators = new Oscillator[6];
 
-    private final boolean[][] activeCarriers = new boolean[132][36];
+    private final boolean[][] activeCarriers = new boolean[132][6];
     private final long[] elapsed = new long[132];
     private double tempSample;
 
@@ -15,8 +17,8 @@ public class Algorithm {
         this.sampleRate = sampleRate;
     }
 
-    public void loadAlgorithmPreset(int[][] pattern) {
-        this.pattern = pattern;
+    public void loadAlgorithmPreset(AlgorithmPreset algorithm) {
+        this.pattern = algorithm.getPattern();
     }
 
     public Oscillator getOscillator(int id) {
@@ -65,7 +67,7 @@ public class Algorithm {
     }
 
     boolean hasActiveCarriers(int keyId) {
-        for (int i = 0; i < 36; i++) {
+        for (int i = 0; i < 6; i++) {
             if (activeCarriers[keyId][i]) {
                 return true;
             }

@@ -8,15 +8,11 @@ import java.util.List;
 
 public class InstrumentPreset {
 
-    private String name = "Default preset";
+    private String name = "Default   ";
     private double gain = 0.5;
-    private int[][] algorithm = new int[][]{{0}};
+    private AlgorithmPreset algorithm = AlgorithmPreset.ALGO_4_OSC_1;
     private List<OscillatorPreset> oscillatorPresets = new ArrayList<>();
     private List<Filter> filterChain = new ArrayList<>();
-
-    public InstrumentPreset() {
-        oscillatorPresets.add(new OscillatorPreset());
-    }
 
     public String getName() {
         return name;
@@ -34,11 +30,11 @@ public class InstrumentPreset {
         this.gain = gain;
     }
 
-    public int[][] getAlgorithm() {
+    public AlgorithmPreset getAlgorithm() {
         return algorithm;
     }
 
-    public void setAlgorithm(int[][] algorithm) {
+    public void setAlgorithm(AlgorithmPreset algorithm) {
         this.algorithm = algorithm;
     }
 

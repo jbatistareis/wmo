@@ -27,7 +27,7 @@ public class Dx7Sysex {
         final List<InstrumentPreset> instruments = new ArrayList<>();
 
         final byte[] header = new byte[6];
-        final byte[] voice = new byte[128];
+        final byte[] bulkVoice = new byte[128];
 
         try (final RandomAccessFile file = new RandomAccessFile(sysex, "r")) {
             file.read(header);
@@ -42,8 +42,8 @@ public class Dx7Sysex {
                 // bulk 32 voices
                 case 0x09:
                     for (int i = 0; i < 32; i++) {
-                        file.read(voice);
-                        instruments.add(parseBulkVoice(voice));
+                        file.read(bulkVoice);
+                        instruments.add(parseBulkVoice(bulkVoice));
                     }
 
                     break;
@@ -88,55 +88,55 @@ public class Dx7Sysex {
         return null;
     }
 
-    private static InstrumentPreset parseBulkVoice(byte[] voice) {
+    private static InstrumentPreset parseBulkVoice(byte[] bulkVoice) {
         // general parameters
-        final int pitchEgRate1 = voice[102];
-        final int pitchEgRate2 = voice[103];
-        final int pitchEgRate3 = voice[104];
-        final int pitchEgRate4 = voice[105];
+        final int pitchEgRate1 = bulkVoice[102];
+        final int pitchEgRate2 = bulkVoice[103];
+        final int pitchEgRate3 = bulkVoice[104];
+        final int pitchEgRate4 = bulkVoice[105];
 
-        final int pitchEgLevel1 = voice[106];
-        final int pitchEgLevel2 = voice[107];
-        final int pitchEgLevel3 = voice[108];
-        final int pitchEgLevel4 = voice[109];
+        final int pitchEgLevel1 = bulkVoice[106];
+        final int pitchEgLevel2 = bulkVoice[107];
+        final int pitchEgLevel3 = bulkVoice[108];
+        final int pitchEgLevel4 = bulkVoice[109];
 
-        final int algorithm = voice[110];
+        final int algorithm = bulkVoice[110];
 
-        final int keySync = voice[111] >> 3;
-        final int feedback = voice[111] & 7;
+        final int keySync = bulkVoice[111] >> 3;
+        final int feedback = bulkVoice[111] & 7;
 
-        final int lfoSpeed = voice[112];
-        final int lfoDelay = voice[113];
-        final int lfoPmDepth = voice[114];
-        final int lfoAmDepth = voice[115];
+        final int lfoSpeed = bulkVoice[112];
+        final int lfoDelay = bulkVoice[113];
+        final int lfoPmDepth = bulkVoice[114];
+        final int lfoAmDepth = bulkVoice[115];
 
-        final int lfoPmModeSensitivity = voice[116] >> 4;
-        final int lfoWave = (voice[116] >> 1) & 7;
-        final int lfoKeySync = voice[116] & 1;
+        final int lfoPmModeSensitivity = bulkVoice[116] >> 4;
+        final int lfoWave = (bulkVoice[116] >> 1) & 7;
+        final int lfoKeySync = bulkVoice[116] & 1;
 
-        final int transpose = voice[117];
+        final int transpose = bulkVoice[117];
 
         final String name = String.valueOf(new char[]{
-                (char) voice[118],
-                (char) voice[119],
-                (char) voice[120],
-                (char) voice[121],
-                (char) voice[122],
-                (char) voice[123],
-                (char) voice[124],
-                (char) voice[125],
-                (char) voice[126],
-                (char) voice[127]});
+                (char) bulkVoice[118],
+                (char) bulkVoice[119],
+                (char) bulkVoice[120],
+                (char) bulkVoice[121],
+                (char) bulkVoice[122],
+                (char) bulkVoice[123],
+                (char) bulkVoice[124],
+                (char) bulkVoice[125],
+                (char) bulkVoice[126],
+                (char) bulkVoice[127]});
 
         // preset
         final InstrumentPreset instrumentPreset = new InstrumentPreset();
         instrumentPreset.setName(name);
-        instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm + 8].getAlgorithm());
+        instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm + 8]);
 
         final byte[] operatorParams = new byte[17];
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 17; j++) {
-                operatorParams[j] = voice[j + 17 * i];
+                operatorParams[j] = bulkVoice[j + 17 * i];
             }
 
             // oscillator parameters
@@ -172,8 +172,7 @@ public class Dx7Sysex {
             final int frequencyFine = operatorParams[16];
 
             // set oscillator preset
-            final OscillatorPreset oscillatorPreset = new OscillatorPreset();
-            oscillatorPreset.setId(operator);
+            final OscillatorPreset oscillatorPreset = new OscillatorPreset(operator);
 
             oscillatorPreset.setAttackSpeed(egRate1);
             oscillatorPreset.setDecaySpeed(egRate2);

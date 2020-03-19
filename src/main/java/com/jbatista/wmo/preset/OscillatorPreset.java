@@ -32,6 +32,10 @@ public class OscillatorPreset {
     private int breakpointLeftDepth = 0;
     private int breakpointRightDepth = 0;
 
+    public OscillatorPreset(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }

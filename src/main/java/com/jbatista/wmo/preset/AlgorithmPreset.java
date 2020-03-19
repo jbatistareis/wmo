@@ -45,19 +45,19 @@ public enum AlgorithmPreset {
     ALGO_6_OSC_32(32, new int[][]{{0, 1, 2, 3, 4, 5}});
 
     private int id;
-    private int[][] algorithm;
+    private int[][] pattern;
 
-    AlgorithmPreset(int id, int[][] algorithm) {
+    AlgorithmPreset(int id, int[][] pattern) {
         this.id = id;
-        this.algorithm = algorithm;
+        this.pattern = pattern;
     }
 
     public int getId() {
         return id;
     }
 
-    public int[][] getAlgorithm() {
-        return algorithm;
+    public int[][] getPattern() {
+        return pattern;
     }
 
 }
