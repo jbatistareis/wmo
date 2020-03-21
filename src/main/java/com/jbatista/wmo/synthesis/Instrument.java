@@ -126,7 +126,7 @@ public class Instrument {
         keysQueue[keyId] = true;
     }
 
-    public void releaseKey(int keyId, double frequency) {
+    public void releaseKey(int keyId) {
         algorithm.stop(keyId);
     }
 
