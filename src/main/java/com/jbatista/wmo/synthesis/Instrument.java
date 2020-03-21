@@ -1,6 +1,6 @@
 package com.jbatista.wmo.synthesis;
 
-import com.jbatista.wmo.AudioFormat;
+import com.jbatista.wmo.SampleFormat;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.MathFunctions;
@@ -10,7 +10,7 @@ public class Instrument {
     private int keyId = 0;
 
     // parameters
-    private AudioFormat audioFormat;
+    private SampleFormat sampleFormat;
     private double gain = 0.5;
     private final Algorithm algorithm;
     private final FilterChain filterChain = new FilterChain();
@@ -23,24 +23,24 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    public Instrument(AudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
-        this.algorithm = new Algorithm(audioFormat.getSampleRate());
+    public Instrument(SampleFormat sampleFormat) {
+        this.sampleFormat = sampleFormat;
+        this.algorithm = new Algorithm(sampleFormat.getSampleRate());
 
         loadInstrumentPreset(new InstrumentPreset());
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    public AudioFormat getAudioFormat() {
-        return audioFormat;
+    public SampleFormat getSampleFormat() {
+        return sampleFormat;
     }
 
     public double getSampleRate() {
-        return audioFormat.getSampleRate();
+        return sampleFormat.getSampleRate();
     }
 
     public int getBitsPerSample() {
-        return audioFormat.getBitsPerSample();
+        return sampleFormat.getBitsPerSample();
     }
 
     public double getGain() {
@@ -80,7 +80,7 @@ public class Instrument {
         final double sample = getSample();
 
         // TODO channel stuff, [L][R]
-        switch (audioFormat.getBitsPerSample()) {
+        switch (sampleFormat.getBitsPerSample()) {
             case 16:
                 MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) sample);
                 MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) sample);
