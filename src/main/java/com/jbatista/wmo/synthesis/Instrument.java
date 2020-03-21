@@ -18,6 +18,7 @@ public class Instrument {
     private final boolean[] keysQueue = new boolean[132];
 
     private double tempSample;
+    private double frameSample;
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
     private final byte[] buffer32bit = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
@@ -77,19 +78,21 @@ public class Instrument {
     }
 
     public byte[] getByteFrame(boolean bigEndian) {
-        final double sample = getSample();
+        frameSample = getSample();
 
         // TODO channel stuff, [L][R]
         switch (sampleFormat.getBitsPerSample()) {
             case 16:
-                MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) sample);
-                MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) sample);
+                frameSample *= 32768;
+                MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) frameSample);
+                MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) frameSample);
 
                 return buffer16bit;
 
             case 32:
-                MathFunctions.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) sample);
-                MathFunctions.primitiveTo32bit(bigEndian, buffer32bit, 3, (long) sample);
+                frameSample *= 1073741823;
+                MathFunctions.primitiveTo32bit(bigEndian, buffer32bit, 0, (long) frameSample);
+                MathFunctions.primitiveTo32bit(bigEndian, buffer32bit, 3, (long) frameSample);
 
                 return buffer32bit;
 

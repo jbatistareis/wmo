@@ -15,6 +15,10 @@ public class Algorithm {
 
     public Algorithm(double sampleRate) {
         this.sampleRate = sampleRate;
+
+        for (int i = 0; i < oscillators.length; i++) {
+            oscillators[i] = new Oscillator(i, sampleRate, this);
+        }
     }
 
     public void loadAlgorithmPreset(AlgorithmPreset algorithm) {
