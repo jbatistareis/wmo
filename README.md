@@ -3,9 +3,9 @@
 
 
 ## Description
-This library replicates the functionality of an old school Yamaha synthesizer, i'm not aiming to perfection, or creating an emulator, i just want to create something that sounds good enough.
-
-It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate various instruments, ***80's style***.
+This library replicates the functionality of an old school Yamaha synthesizer, i'm not aiming to perfection, or creating an emulator, i just want to create something that sounds good enough.  
+It uses FM synthesis ~~(don't tell anyone, but it actually is PM)~~ to simulate various instruments, ***80's style***.  
+Checkout an interface demonstrating what can be done with it, called [WMO Operator](https://github.com/jbatistareis/wmo-operator).
 
 
 ## Features (for now)
@@ -23,7 +23,6 @@ WIP!
 
 ## TODO
 * Proper README/documentation
-* [A demo interface](https://github.com/jbatistareis/wmo-operator)
 * API fine tuning
 * Parameters fine tuning
 * Improve feedback
@@ -34,6 +33,7 @@ WIP!
 * Filter serialization
 * More filters
 * Channel separation/manipulation
+* [~~A demo interface~~](https://github.com/jbatistareis/wmo-operator) **OK!**
 * ~~Create some instrument presets~~ **OK!**
 * ~~Break points~~ **OK!**
 * ~~Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)~~ **OK!**
