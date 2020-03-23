@@ -7,6 +7,7 @@ public class Mixer {
     private final Instrument[] instruments;
 
     private int index;
+    private double masterGain = 1;
     private double frameSample;
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
@@ -16,12 +17,26 @@ public class Mixer {
         this.instruments = instruments;
     }
 
+    public double getMasterGain() {
+        return masterGain;
+    }
+
+    public void setMasterGain(double masterGain) {
+        this.masterGain = Math.max(0, Math.min(masterGain, 2));
+    }
+
+    public void setGain(int id, double value) {
+        instruments[id].setGain(value);
+    }
+
     public double getSample() {
         frameSample = 0;
 
         for (index = 0; index < instruments.length; index++) {
             frameSample += instruments[index].getSample();
         }
+
+        frameSample *= masterGain;
 
         return frameSample;
     }

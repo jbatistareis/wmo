@@ -112,7 +112,7 @@ public class Breakpoint {
 
         switch (curve) {
             case LINEAR_INCREASE:
-                offset = MathFunctions.linearInterpolation(2, 1, ratio);
+                offset = MathFunctions.linearInterpolation(5, 1, ratio);
                 break;
 
             case LINEAR_DECREASE:
@@ -120,7 +120,7 @@ public class Breakpoint {
                 break;
 
             case SMOOTH_INCREASE:
-                offset = MathFunctions.smoothInterpolation(2, 1, ratio);
+                offset = MathFunctions.smoothInterpolation(5, 1, ratio);
                 break;
 
             case SMOOTH_DECREASE:
@@ -128,7 +128,7 @@ public class Breakpoint {
                 break;
 
             case EXP_INCREASE:
-                offset = MathFunctions.expDecreaseInterpolation(2, 1, ratio);
+                offset = MathFunctions.expDecreaseInterpolation(5, 1, ratio);
                 break;
 
             case EXP_DECREASE:

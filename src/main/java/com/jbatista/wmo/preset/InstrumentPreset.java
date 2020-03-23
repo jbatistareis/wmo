@@ -9,7 +9,8 @@ import java.util.List;
 public class InstrumentPreset {
 
     private String name = "Default   ";
-    private double gain = 0.5;
+    private double gain = 0.01;
+    private int transpose = 0;
     private AlgorithmPreset algorithm = AlgorithmPreset.ALGO_4_OSC_1;
     private List<OscillatorPreset> oscillatorPresets = new ArrayList<>();
     private List<Filter> filterChain = new ArrayList<>();
@@ -28,6 +29,14 @@ public class InstrumentPreset {
 
     public void setGain(double gain) {
         this.gain = gain;
+    }
+
+    public int getTranspose() {
+        return transpose;
+    }
+
+    public void setTranspose(int transpose) {
+        this.transpose = transpose;
     }
 
     public AlgorithmPreset getAlgorithm() {

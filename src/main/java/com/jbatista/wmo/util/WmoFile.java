@@ -24,7 +24,7 @@ public class WmoFile {
 
             for (int i = 0; i < (wmo.length() / data.length); i++) {
                 file.read(data);
-                presets.add(parseData(data));
+                presets.add(parseBytes(data));
             }
 
             return presets;
@@ -33,7 +33,7 @@ public class WmoFile {
         }
     }
 
-    private static InstrumentPreset parseData(byte[] data) {
+    public static InstrumentPreset parseBytes(byte[] data) {
         // general parameters
         final int pitchEgRate1 = data[132];
         final int pitchEgRate2 = data[133];
@@ -76,6 +76,7 @@ public class WmoFile {
         // preset
         final InstrumentPreset instrumentPreset = new InstrumentPreset();
         instrumentPreset.setName(name);
+        instrumentPreset.setTranspose(transpose);
         instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm]);
 
         int offset = 0;
@@ -220,8 +221,7 @@ public class WmoFile {
                 file.write(0); // wave
                 file.write(0); // key sync
 
-                // TODO transpose
-                file.write(0);
+                file.write(instrument.getTranspose());
 
                 file.write(instrument.getName().charAt(0));
                 file.write(instrument.getName().charAt(1));

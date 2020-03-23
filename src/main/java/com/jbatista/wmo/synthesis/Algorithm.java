@@ -63,9 +63,9 @@ public class Algorithm {
     }
 
     void stopAll() {
-        for (int i = 0; i < 144; i++) {
-            for (int j = 0; j < pattern[0].length; i++) {
-                oscillators[pattern[0][i]].stop(i);
+        for (int i = 0; i < 132; i++) {
+            for (int j = 0; j < pattern[0].length; j++) {
+                oscillators[pattern[0][j]].stop(i);
             }
         }
     }

@@ -1,16 +1,20 @@
 package com.jbatista.wmo.synthesis;
 
+import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.MathFunctions;
 
 public class Instrument {
 
+    private final static KeyboardNote[] NOTES = KeyboardNote.values();
+
     private int keyId = 0;
 
     // parameters
     private int sampleRate;
-    private double gain = 0.5;
+    private double gain = 0.01;
+    private int transpose = 0;
     private final Algorithm algorithm;
     private final FilterChain filterChain = new FilterChain();
 
@@ -38,7 +42,15 @@ public class Instrument {
     }
 
     public void setGain(double gain) {
-        this.gain = Math.max(0, Math.min(gain, 10));
+        this.gain = Math.max(0, Math.min(gain, 1));
+    }
+
+    public int getTranspose() {
+        return transpose;
+    }
+
+    public void setTranspose(int transpose) {
+        this.transpose = Math.max(-24, Math.min(transpose, 24));
     }
 
     public Algorithm getAlgorithm() {
@@ -99,8 +111,8 @@ public class Instrument {
         return floatBuffer;
     }
 
-    public void pressKey(int keyId, double frequency) {
-        algorithm.start(keyId, frequency);
+    public void pressKey(int keyId) {
+        algorithm.start(keyId, NOTES[keyId + transpose].getFrequency());
         keysQueue[keyId] = true;
     }
 
@@ -113,6 +125,9 @@ public class Instrument {
     }
 
     public void loadInstrumentPreset(InstrumentPreset instrumentPreset) {
+        setGain(instrumentPreset.getGain());
+        setTranspose(instrumentPreset.getTranspose());
+
         algorithm.loadAlgorithmPreset(instrumentPreset.getAlgorithm());
 
         for (OscillatorPreset oscillatorPreset : instrumentPreset.getOscillatorPresets()) {
