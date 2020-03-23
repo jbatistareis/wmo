@@ -9,7 +9,7 @@ import com.jbatista.wmo.util.MathFunctions;
 
 public class HighPass extends BiquadFilter {
 
-    public HighPass(double sampleRate) {
+    public HighPass(int sampleRate) {
         this.sampleRate = sampleRate;
         setCutoffFrequency(440);
         setResonance(1);

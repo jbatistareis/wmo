@@ -4,7 +4,7 @@ import com.jbatista.wmo.util.MathFunctions;
 
 public class EnvelopeGenerator {
 
-    private final double sampleRate;
+    private final int sampleRate;
 
     // parameters
     private int attackLevel = 0;
@@ -32,9 +32,9 @@ public class EnvelopeGenerator {
     private final int[] size = new int[5];
     private final long[] previousTime = new long[132];
 
-    EnvelopeGenerator(double sampleRate) {
+    EnvelopeGenerator(int sampleRate) {
         this.sampleRate = sampleRate;
-        this.size[4] = (int) sampleRate / 6;
+        this.size[4] = sampleRate / 6;
         this.factor[4] = 1d / size[4];
 
         // initialize envelope shape
@@ -138,11 +138,6 @@ public class EnvelopeGenerator {
     }
     // </editor-fold>
 
-    // envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release
-    void setEnvelopePosition(int keyId, int envelopeStateId) {
-        position[keyId] = envelopeStateId;
-    }
-
     void defineEnvelopeAmplitude(int keyId, long time) {
         switch (state[keyId]) {
             case ATTACK:
@@ -181,6 +176,7 @@ public class EnvelopeGenerator {
                 startAmplitude[keyId] = currentAmplitude[keyId];
                 endAmplitude[keyId] = releaseAmplitude;
                 state[keyId] = EnvelopeState.RELEASE;
+
                 break;
 
             case RELEASE:
@@ -208,7 +204,7 @@ public class EnvelopeGenerator {
 
     /*
         returns true if finished
-        envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release, 4 = release end
+        envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release, 4 = pre attack / release end
      */
     boolean applyEnvelope(int keyId, int envelopeStateId, long time) {
         if (position[keyId] < size[envelopeStateId]) {
@@ -226,13 +222,15 @@ public class EnvelopeGenerator {
     }
 
     void reset(int keyId) {
-        setPreviousTime(keyId, -1);
-        setEnvelopePosition(keyId, 0);
-        setEnvelopeState(keyId, EnvelopeState.ATTACK);
+        previousTime[keyId] = -1;
 
-        startAmplitude[keyId] = 0;
-        endAmplitude[keyId] = attackAmplitude;
+        position[keyId] = 0;
         progress[keyId] = 0;
+
+        startAmplitude[keyId] = currentAmplitude[keyId];
+        endAmplitude[keyId] = attackAmplitude;
+
+        state[keyId] = EnvelopeState.ATTACK;
     }
 
 }

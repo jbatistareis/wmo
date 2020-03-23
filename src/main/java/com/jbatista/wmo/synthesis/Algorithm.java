@@ -4,7 +4,7 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
 
 public class Algorithm {
 
-    private final double sampleRate;
+    private final int sampleRate;
 
     int[][] pattern = new int[0][0];
     final Oscillator[] oscillators = new Oscillator[6];
@@ -13,7 +13,7 @@ public class Algorithm {
     private final long[] elapsed = new long[132];
     private double tempSample;
 
-    public Algorithm(double sampleRate) {
+    public Algorithm(int sampleRate) {
         this.sampleRate = sampleRate;
 
         for (int i = 0; i < oscillators.length; i++) {

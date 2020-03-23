@@ -7,7 +7,7 @@ import com.jbatista.wmo.util.MathFunctions;
 
 public class Oscillator {
     private final int id;
-    private final double sampleRate;
+    private final int sampleRate;
 
     private final double[] sineFrequency = new double[132];
     private static final double[] fixedFrequencies = new double[]{1d, 10d, 100d, 1000d};
@@ -30,7 +30,7 @@ public class Oscillator {
     private double modulatorSample;
     private double feedbackSample;
 
-    Oscillator(int id, double sampleRate, Algorithm algorithm) {
+    Oscillator(int id, int sampleRate, Algorithm algorithm) {
         this.id = id;
         this.sampleRate = sampleRate;
         this.envelopeGenerator = new EnvelopeGenerator(sampleRate);
