@@ -2,7 +2,6 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.TransitionCurve;
-import com.jbatista.wmo.util.MathFunctions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -87,60 +86,64 @@ public class Breakpoint {
     }
     // </editor-fold>
 
-    double getLevelOffset(int keyId) {
-        final double ratio;
-        final double offset;
+    // shamelessly copied from hexter [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L500]
+    int getLevelOffset(int keyId) {
+        final int offset;
+        final int distance;
+        final int depth;
         final TransitionCurve curve;
 
         if (keyId < breakpoint) {
             if (leftDepth == 0) {
-                return 1;
+                return 0;
             }
 
             curve = leftCurve;
-            ratio = MathFunctions.percentageInRange(lowerNote, breakpoint, keyId) / 100;
+            depth = leftDepth;
+            distance = breakpoint - keyId;
         } else if (keyId > breakpoint) {
             if (rightDepth == 0) {
-                return 1;
+                return 0;
             }
 
             curve = rightCurve;
-            ratio = (100 - MathFunctions.percentageInRange(breakpoint, upperNote, keyId)) / 100;
+            depth = rightDepth;
+            distance = keyId - breakpoint;
         } else {
-            return 1;
+            return 0;
         }
 
         switch (curve) {
             case LINEAR_INCREASE:
-                offset = MathFunctions.linearInterpolation(5, 1, ratio);
+                offset = linCalc(distance, depth);
                 break;
 
             case LINEAR_DECREASE:
-                offset = MathFunctions.linearInterpolation(0, 1, ratio);
-                break;
-
-            case SMOOTH_INCREASE:
-                offset = MathFunctions.smoothInterpolation(5, 1, ratio);
-                break;
-
-            case SMOOTH_DECREASE:
-                offset = MathFunctions.smoothInterpolation(0, 1, ratio);
+                offset = -linCalc(distance, depth);
                 break;
 
             case EXP_INCREASE:
-                offset = MathFunctions.expDecreaseInterpolation(5, 1, ratio);
+                offset = expCalc(distance, depth);
                 break;
 
             case EXP_DECREASE:
-                offset = MathFunctions.expDecreaseInterpolation(0, 1, ratio);
+                offset = -expCalc(distance, depth);
                 break;
 
             default:
-                offset = 1;
+                offset = 0;
                 break;
         }
 
-        return Math.max(0, Math.min(offset, 2));
+        return offset;
+    }
+
+    private int expCalc(int distance, int depth) {
+        return (int) (Math.exp((distance - 72) / 13.5) * depth);
+    }
+
+    private int linCalc(int distance, int depth) {
+        return (int) (distance / 45d * depth);
     }
 
 }

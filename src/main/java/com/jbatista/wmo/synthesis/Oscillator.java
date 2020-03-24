@@ -25,7 +25,7 @@ public class Oscillator {
     private int frequencyDetune = 0;
     private final EnvelopeGenerator envelopeGenerator;
     private final Breakpoint breakpoint = new Breakpoint();
-    private double breakpointOffset = 1;
+    private int breakpointOffset = 0;
 
     private double modulatorSample;
     private double feedbackSample;
@@ -140,8 +140,7 @@ public class Oscillator {
         envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
         envelopeGenerator.setPreviousTime(keyId, time);
 
-        return Tables.OSCILLATOR_OUTPUT_LEVELS[outputLevel]
-                * breakpointOffset
+        return Tables.OSCILLATOR_OUTPUT_LEVELS[Math.max(0, Math.min(outputLevel + breakpointOffset, 99))]
                 * envelopeGenerator.getEnvelopeAmplitude(keyId)
                 * (produceSample(pitchOffset * sineFrequency[keyId], modulatorSample, time) + feedbackSample);
     }
