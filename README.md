@@ -13,7 +13,7 @@ Checkout an interface demonstrating what can be done with it, called [WMO Operat
 * Up to 6 oscillators per key (can play as many keys as your CPU can handle)
 * Breakpoint / Level Scaling / Keyboard Tracking / Keyboard Following
 * Use one of the classic 4 and 6 operator algorithms
-* Load voices from SYSEX files (some settings can produce A LOT of noise or sound very different)
+* Load voices from SYSEX files (some settings can produce A LOT of noise or sound very different...)
 * Filters (high pass, low pass, band pass, distortion, etc...)
 
 
@@ -25,14 +25,14 @@ WIP!
 * Proper README/documentation
 * API fine tuning
 * Parameters fine tuning
-* Improve feedback
 * Pitch envelope
 * LFO
-* Transpose
 * MIDI support
 * Filter serialization
 * More filters
 * Channel separation/manipulation
+* ~~Improve feedback~~ **OK!**
+* ~~Transpose~~ **OK!**
 * [~~A demo interface~~](https://github.com/jbatistareis/wmo-operator) **OK!**
 * ~~Create some instrument presets~~ **OK!**
 * ~~Break points~~ **OK!**
