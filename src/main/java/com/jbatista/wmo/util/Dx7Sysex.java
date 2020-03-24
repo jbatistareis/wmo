@@ -132,6 +132,7 @@ public class Dx7Sysex {
         final InstrumentPreset instrumentPreset = new InstrumentPreset();
         instrumentPreset.setName(name);
         instrumentPreset.setTranspose(transpose - 24);
+        instrumentPreset.setFeedback(feedback);
         instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm + 8]);
 
         final byte[] operatorParams = new byte[17];

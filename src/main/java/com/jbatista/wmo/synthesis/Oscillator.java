@@ -10,7 +10,6 @@ public class Oscillator {
     private final int sampleRate;
 
     private final double[] sineFrequency = new double[132];
-    private static final double[] fixedFrequencies = new double[]{1d, 10d, 100d, 1000d};
 
     // I/O
     private Algorithm algorithm;
@@ -18,6 +17,7 @@ public class Oscillator {
     // parameters
     private WaveForm waveForm = WaveForm.SINE;
     private int outputLevel = 75;
+    private int correctedOutputLevel;
     private int feedback = 0;
     private double frequencyRatio = 1;
     private boolean fixedFrequency = false;
@@ -25,10 +25,8 @@ public class Oscillator {
     private int frequencyDetune = 0;
     private final EnvelopeGenerator envelopeGenerator;
     private final Breakpoint breakpoint = new Breakpoint();
-    private int breakpointOffset = 0;
 
     private double modulatorSample;
-    private double feedbackSample;
 
     Oscillator(int id, int sampleRate, Algorithm algorithm) {
         this.id = id;
@@ -63,7 +61,7 @@ public class Oscillator {
     }
 
     public void setFeedback(int feedback) {
-        this.feedback = Math.max(-7, Math.min(feedback, 7));
+        this.feedback = Math.max(0, Math.min(feedback, 7));
     }
 
     public double getFrequencyRatio() {
@@ -109,44 +107,27 @@ public class Oscillator {
 
     double getFrame(int keyId, double pitchOffset, long time) {
         modulatorSample = 0;
-        feedbackSample = 0;
+        envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
 
-        for (int i = 1; i < algorithm.pattern.length; i++) {
+        for (int i = 2; i < algorithm.pattern.length; i++) {
             if (algorithm.pattern[i][0] == id) {
                 modulatorSample += algorithm.oscillators[algorithm.pattern[i][1]].getFrame(keyId, pitchOffset, time);
             }
         }
 
-        /*
-            instead of self modulation, feedback is done with additive synthesis
-            positive values produces a sawtooth, negative ones produces a square
-        */
         if (feedback > 0) {
-            feedbackSample = Tables.FEEDBACK_OUTPUT_LEVELS[feedback]
-                    * ((produceSample(pitchOffset * sineFrequency[keyId] * 2, 0, time) / 2)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 3, 0, time) / 3)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 4, 0, time) / 4)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 5, 0, time) / 5)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 6, 0, time) / 6));
-        } else if (feedback < 0) {
-            feedbackSample = Tables.FEEDBACK_OUTPUT_LEVELS[-feedback]
-                    * ((produceSample(pitchOffset * sineFrequency[keyId] * 3, 0, time) / 3)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 5, 0, time) / 5)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 7, 0, time) / 7)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 9, 0, time) / 9)
-                    + (produceSample(pitchOffset * sineFrequency[keyId] * 11, 0, time) / 11));
+            modulatorSample += Math.pow(2, (feedback - 7)) * produceSample(keyId, pitchOffset * sineFrequency[keyId], modulatorSample, time);
         }
 
-        envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
         envelopeGenerator.setPreviousTime(keyId, time);
 
-        return Tables.OSCILLATOR_OUTPUT_LEVELS[Math.max(0, Math.min(outputLevel + breakpointOffset, 99))]
-                * envelopeGenerator.getEnvelopeAmplitude(keyId)
-                * (produceSample(pitchOffset * sineFrequency[keyId], modulatorSample, time) + feedbackSample);
+        return Tables.OSCILLATOR_OUTPUT_LEVELS[correctedOutputLevel]
+                * produceSample(keyId, pitchOffset * sineFrequency[keyId], modulatorSample, time);
     }
 
-    private double produceSample(double frequency, double modulation, long time) {
-        return Dsp.oscillator(
+    private double produceSample(int keyId, double frequency, double modulation, long time) {
+        return envelopeGenerator.getEnvelopeAmplitude(keyId)
+                * Dsp.oscillator(
                 waveForm,
                 frequency,
                 modulation,
@@ -158,7 +139,7 @@ public class Oscillator {
     void start(int keyId, double frequency) {
         envelopeGenerator.reset(keyId);
 
-        for (int i = 1; i < algorithm.pattern.length; i++) {
+        for (int i = 2; i < algorithm.pattern.length; i++) {
             if (algorithm.pattern[i][0] == id) {
                 algorithm.oscillators[algorithm.pattern[i][1]].start(keyId, frequency);
             }
@@ -170,11 +151,11 @@ public class Oscillator {
                 + Tables.FREQUENCY_DETUNE[frequencyDetune + 7])
                 / sampleRate;
 
-        breakpointOffset = breakpoint.getLevelOffset(keyId);
+        correctedOutputLevel = Math.max(0, Math.min(outputLevel + breakpoint.getLevelOffset(keyId), 99));
     }
 
     void stop(int keyId) {
-        for (int i = 1; i < algorithm.pattern.length; i++) {
+        for (int i = 2; i < algorithm.pattern.length; i++) {
             if (algorithm.pattern[i][0] == id) {
                 algorithm.oscillators[algorithm.pattern[i][1]].stop(keyId);
             }
@@ -199,7 +180,6 @@ public class Oscillator {
         setFrequencyFine(oscillatorPreset.getFrequencyFine());
         setFrequencyDetune(oscillatorPreset.getFrequencyDetune());
         setOutputLevel(oscillatorPreset.getOutputLevel());
-        setFeedback(oscillatorPreset.getFeedback());
         setWaveForm(oscillatorPreset.getWaveForm());
 
         envelopeGenerator.setAttackLevel(oscillatorPreset.getAttackLevel());

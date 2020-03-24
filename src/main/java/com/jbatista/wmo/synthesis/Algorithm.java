@@ -5,13 +5,14 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
 public class Algorithm {
 
     private final int sampleRate;
-
-    int[][] pattern = new int[0][0];
-    final Oscillator[] oscillators = new Oscillator[6];
+    private int feedback = 0;
 
     private final boolean[][] activeCarriers = new boolean[132][6];
     private final long[] elapsed = new long[132];
     private double tempSample;
+
+    int[][] pattern = AlgorithmPreset.ALGO_4_OSC_1.getPattern();
+    final Oscillator[] oscillators = new Oscillator[6];
 
     public Algorithm(int sampleRate) {
         this.sampleRate = sampleRate;
@@ -19,6 +20,15 @@ public class Algorithm {
         for (int i = 0; i < oscillators.length; i++) {
             oscillators[i] = new Oscillator(i, sampleRate, this);
         }
+    }
+
+    public int getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(int feedback) {
+        getOscillator(pattern[1][0]).setFeedback(feedback);
+        this.feedback = getOscillator(pattern[1][0]).getFeedback();
     }
 
     public void loadAlgorithmPreset(AlgorithmPreset algorithm) {

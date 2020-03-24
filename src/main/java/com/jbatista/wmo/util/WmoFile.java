@@ -77,6 +77,7 @@ public class WmoFile {
         final InstrumentPreset instrumentPreset = new InstrumentPreset();
         instrumentPreset.setName(name);
         instrumentPreset.setTranspose(transpose);
+        instrumentPreset.setFeedback(feedback);
         instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm]);
 
         int offset = 0;
@@ -209,7 +210,7 @@ public class WmoFile {
                 file.write(algorithms.indexOf(instrument.getAlgorithm()));
 
                 file.write(0); // TODO key sync
-                file.write(0); // TODO feedback
+                file.write(instrument.getFeedback());
 
                 // TODO lfo
                 file.write(0); // speed

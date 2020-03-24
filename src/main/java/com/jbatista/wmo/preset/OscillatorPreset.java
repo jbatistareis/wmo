@@ -13,7 +13,6 @@ public class OscillatorPreset {
     private int frequencyFine = 0;
     private int frequencyDetune = 0;
     private int outputLevel = 75;
-    private int feedback = 0;
     private WaveForm waveForm = WaveForm.SINE;
 
     private int attackLevel = 0;
@@ -82,14 +81,6 @@ public class OscillatorPreset {
 
     public void setOutputLevel(int outputLevel) {
         this.outputLevel = outputLevel;
-    }
-
-    public int getFeedback() {
-        return feedback;
-    }
-
-    public void setFeedback(int feedback) {
-        this.feedback = feedback;
     }
 
     public WaveForm getWaveForm() {

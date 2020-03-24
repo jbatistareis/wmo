@@ -112,12 +112,20 @@ public class Instrument {
     }
 
     public void pressKey(int keyId) {
-        algorithm.start(keyId, NOTES[keyId + transpose].getFrequency());
-        keysQueue[keyId] = true;
+        keyId += transpose;
+
+        if ((keyId >= 0) || (keyId <= 131)) {
+            algorithm.start(keyId, NOTES[keyId].getFrequency());
+            keysQueue[keyId] = true;
+        }
     }
 
     public void releaseKey(int keyId) {
-        algorithm.stop(keyId);
+        keyId += transpose;
+
+        if ((keyId >= 0) || (keyId <= 131)) {
+            algorithm.stop(keyId);
+        }
     }
 
     public void releaseAllKeys() {
@@ -129,6 +137,7 @@ public class Instrument {
         setTranspose(instrumentPreset.getTranspose());
 
         algorithm.loadAlgorithmPreset(instrumentPreset.getAlgorithm());
+        algorithm.setFeedback(instrumentPreset.getFeedback());
 
         for (OscillatorPreset oscillatorPreset : instrumentPreset.getOscillatorPresets()) {
             algorithm.getOscillator(oscillatorPreset.getId()).loadOscillatorPreset(oscillatorPreset);

@@ -17,8 +17,6 @@ class Tables {
             6.016799, 6.561366, 7.155220, 7.802823, 8.509039, 9.279172, 10.119009, 11.034858, 12.033598, 13.122731 // 90 - 99
     };
 
-    static final double[] FEEDBACK_OUTPUT_LEVELS = new double[]{0.0, 0.00762, 0.03048, 0.102521, 0.344839, 1.159897, 3.901411, 13.122731};
-
     // Based on hexter implementation [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice_tables.c#L292]
     static final double[] LFO_FREQUENCY = new double[]{
             0.062506, 0.124815, 0.311474, 0.435381, 0.619784, 0.744396, 0.930495, 1.116390, 1.284220, 1.496880, // 00 - 09
