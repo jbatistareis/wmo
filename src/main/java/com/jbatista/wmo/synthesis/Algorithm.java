@@ -36,10 +36,6 @@ public class Algorithm {
     }
 
     public Oscillator getOscillator(int id) {
-        if (oscillators[id] == null) {
-            oscillators[id] = new Oscillator(id, sampleRate, this);
-        }
-
         return oscillators[id];
     }
 
@@ -47,7 +43,7 @@ public class Algorithm {
         tempSample = 0;
 
         for (int i = 0; i < pattern[0].length; i++) {
-            tempSample += oscillators[pattern[0][i]].getFrame(keyId, 1, elapsed[keyId]);
+            tempSample += oscillators[pattern[0][i]].getSample(keyId, 1, elapsed[keyId]);
             activeCarriers[keyId][oscillators[pattern[0][i]].getId()] = oscillators[pattern[0][i]].isActive(keyId);
         }
 

@@ -221,7 +221,7 @@ public class EnvelopeGenerator {
         }
     }
 
-    void reset(int keyId) {
+    void initialize(int keyId) {
         previousTime[keyId] = -1;
 
         position[keyId] = 0;
@@ -231,6 +231,18 @@ public class EnvelopeGenerator {
         endAmplitude[keyId] = attackAmplitude;
 
         state[keyId] = EnvelopeState.ATTACK;
+    }
+
+    void reset(int keyId) {
+        previousTime[keyId] = -1;
+
+        position[keyId] = 0;
+        progress[keyId] = 0;
+
+        startAmplitude[keyId] = 0;
+        endAmplitude[keyId] = 0;
+
+        state[keyId] = EnvelopeState.IDLE;
     }
 
 }

@@ -6,8 +6,10 @@ import com.jbatista.wmo.util.Dsp;
 import com.jbatista.wmo.util.MathFunctions;
 
 public class Oscillator {
+
     private final int id;
     private final int sampleRate;
+    private boolean mute = false;
 
     private final double[] sineFrequency = new double[132];
 
@@ -38,6 +40,14 @@ public class Oscillator {
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public int getId() {
         return id;
+    }
+
+    public boolean isMute() {
+        return mute;
+    }
+
+    public void setMute(boolean mute) {
+        this.mute = mute;
     }
 
     public WaveForm getWaveForm() {
@@ -105,13 +115,17 @@ public class Oscillator {
     }
     // </editor-fold>
 
-    double getFrame(int keyId, double pitchOffset, long time) {
+    double getSample(int keyId, double pitchOffset, long time) {
+        if (mute) {
+            return 0;
+        }
+
         modulatorSample = 0;
         envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
 
         for (int i = 2; i < algorithm.pattern.length; i++) {
             if (algorithm.pattern[i][0] == id) {
-                modulatorSample += algorithm.oscillators[algorithm.pattern[i][1]].getFrame(keyId, pitchOffset, time);
+                modulatorSample += algorithm.oscillators[algorithm.pattern[i][1]].getSample(keyId, pitchOffset, time);
             }
         }
 
@@ -137,21 +151,23 @@ public class Oscillator {
 
     // fixed frequency calculation from [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782]
     void start(int keyId, double frequency) {
-        envelopeGenerator.reset(keyId);
+        if (!mute) {
+            envelopeGenerator.initialize(keyId);
 
-        for (int i = 2; i < algorithm.pattern.length; i++) {
-            if (algorithm.pattern[i][0] == id) {
-                algorithm.oscillators[algorithm.pattern[i][1]].start(keyId, frequency);
+            for (int i = 2; i < algorithm.pattern.length; i++) {
+                if (algorithm.pattern[i][0] == id) {
+                    algorithm.oscillators[algorithm.pattern[i][1]].start(keyId, frequency);
+                }
             }
+
+            sineFrequency[keyId] = ((fixedFrequency
+                    ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))
+                    : frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine])
+                    + Tables.FREQUENCY_DETUNE[frequencyDetune + 7])
+                    / sampleRate;
+
+            correctedOutputLevel = Math.max(0, Math.min(outputLevel + breakpoint.getLevelOffset(keyId), 99));
         }
-
-        sineFrequency[keyId] = ((fixedFrequency
-                ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))
-                : frequency * ((frequencyRatio == 0) ? 0.5 : frequencyRatio) * Tables.FREQUENCY_FINE[frequencyFine])
-                + Tables.FREQUENCY_DETUNE[frequencyDetune + 7])
-                / sampleRate;
-
-        correctedOutputLevel = Math.max(0, Math.min(outputLevel + breakpoint.getLevelOffset(keyId), 99));
     }
 
     void stop(int keyId) {
@@ -161,7 +177,11 @@ public class Oscillator {
             }
         }
 
-        envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.PRE_RELEASE);
+        if (mute) {
+            envelopeGenerator.reset(keyId);
+        } else {
+            envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.PRE_RELEASE);
+        }
     }
 
     boolean isActive(int keyId) {
