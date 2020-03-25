@@ -125,7 +125,6 @@ public class Oscillator {
         }
 
         modulatorSample = 0;
-        envelopeGenerator.defineEnvelopeAmplitude(keyId, time);
 
         for (int i = 2; i < algorithm.pattern.length; i++) {
             if (algorithm.pattern[i][0] == id) {
@@ -137,20 +136,14 @@ public class Oscillator {
             modulatorSample += Math.pow(2, (feedback - 7)) * produceSample(keyId, pitchOffset * sineFrequency[keyId], modulatorSample, time);
         }
 
-        envelopeGenerator.setPreviousTime(keyId, time);
+        envelopeGenerator.advanceEnvelope(keyId);
 
         return Tables.OSCILLATOR_OUTPUT_LEVELS[correctedOutputLevel]
                 * produceSample(keyId, pitchOffset * sineFrequency[keyId], modulatorSample, time);
     }
 
     private double produceSample(int keyId, double frequency, double modulation, long time) {
-        return envelopeGenerator.getEnvelopeAmplitude(keyId)
-                * Dsp.oscillator(
-                waveForm,
-                frequency,
-                modulation,
-                0,
-                time);
+        return envelopeGenerator.getEnvelopeAmplitude(keyId) * Dsp.oscillator(waveForm, frequency, modulation, 0, time);
     }
 
     void start(KeyboardNote note) {
@@ -160,8 +153,6 @@ public class Oscillator {
     // fixed frequency calculation from [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782]
     void start(int keyId, double frequency) {
         if (!mute) {
-            envelopeGenerator.initialize(keyId);
-
             for (int i = 2; i < algorithm.pattern.length; i++) {
                 if (algorithm.pattern[i][0] == id) {
                     algorithm.oscillators[algorithm.pattern[i][1]].start(keyId, frequency);
@@ -175,6 +166,8 @@ public class Oscillator {
                     / sampleRate;
 
             correctedOutputLevel = Math.max(0, Math.min(outputLevel + breakpoint.getLevelOffset(keyId), 99));
+
+            envelopeGenerator.initialize(keyId);
         }
     }
 
@@ -192,7 +185,7 @@ public class Oscillator {
         if (mute) {
             envelopeGenerator.reset(keyId);
         } else {
-            envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.PRE_RELEASE);
+            envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.RELEASE);
         }
     }
 

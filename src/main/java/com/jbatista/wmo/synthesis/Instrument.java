@@ -149,6 +149,7 @@ public class Instrument {
         setGain(instrumentPreset.getGain());
         setTranspose(instrumentPreset.getTranspose());
 
+        algorithm.stopAll();
         algorithm.loadAlgorithmPreset(instrumentPreset.getAlgorithm());
         algorithm.setFeedback(instrumentPreset.getFeedback());
 

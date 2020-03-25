@@ -5,7 +5,6 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
 public class Algorithm {
 
     private int sampleRate;
-    private int feedback = 0;
 
     private final boolean[][] activeCarriers = new boolean[132][6];
     private final long[] elapsed = new long[132];
@@ -32,13 +31,12 @@ public class Algorithm {
         }
     }
 
-    public int getFeedback() {
-        return feedback;
-    }
-
     public void setFeedback(int feedback) {
+        for (int i = 0; i < 6; i++) {
+            oscillators[i].setFeedback(0);
+        }
+
         getOscillator(pattern[1][0]).setFeedback(feedback);
-        this.feedback = getOscillator(pattern[1][0]).getFeedback();
     }
 
     public void loadAlgorithmPreset(AlgorithmPreset algorithm) {

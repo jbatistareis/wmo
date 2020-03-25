@@ -30,12 +30,11 @@ public class EnvelopeGenerator {
     private final double[] progress = new double[132];
     private final double[] factor = new double[5];
     private final int[] size = new int[5];
-    private final long[] previousTime = new long[132];
 
     EnvelopeGenerator(int sampleRate) {
         this.sampleRate = sampleRate;
-        this.size[4] = sampleRate / 6;
-        this.factor[4] = 1d / size[4];
+        this.size[EnvelopeState.PRE_IDLE.getId()] = sampleRate / 5;
+        this.factor[EnvelopeState.PRE_IDLE.getId()] = 1d / size[EnvelopeState.PRE_IDLE.getId()];
 
         // initialize envelope shape
         setAttackLevel(0);
@@ -87,8 +86,8 @@ public class EnvelopeGenerator {
 
     public void setAttackSpeed(int attackSpeed) {
         this.attackSpeed = Math.max(0, Math.min(attackSpeed, 99));
-        this.size[0] = (int) (Tables.ENV_SPEED[this.attackSpeed] * sampleRate);
-        this.factor[0] = 1d / size[0];
+        this.size[EnvelopeState.ATTACK.getId()] = (int) (Tables.ENV_SPEED[this.attackSpeed] * sampleRate);
+        this.factor[EnvelopeState.ATTACK.getId()] = 1d / size[EnvelopeState.ATTACK.getId()];
     }
 
     public int getDecaySpeed() {
@@ -97,8 +96,8 @@ public class EnvelopeGenerator {
 
     public void setDecaySpeed(int decaySpeed) {
         this.decaySpeed = Math.max(0, Math.min(decaySpeed, 99));
-        this.size[1] = (int) (Tables.ENV_SPEED[this.decaySpeed] * sampleRate);
-        this.factor[1] = 1d / size[1];
+        this.size[EnvelopeState.DECAY.getId()] = (int) (Tables.ENV_SPEED[this.decaySpeed] * sampleRate);
+        this.factor[EnvelopeState.DECAY.getId()] = 1d / size[EnvelopeState.DECAY.getId()];
     }
 
     public int getSustainSpeed() {
@@ -107,8 +106,8 @@ public class EnvelopeGenerator {
 
     public void setSustainSpeed(int sustainSpeed) {
         this.sustainSpeed = Math.max(0, Math.min(sustainSpeed, 99));
-        this.size[2] = (int) (Tables.ENV_SPEED[this.sustainSpeed] * sampleRate);
-        this.factor[2] = 1d / size[2];
+        this.size[EnvelopeState.SUSTAIN.getId()] = (int) (Tables.ENV_SPEED[this.sustainSpeed] * sampleRate);
+        this.factor[EnvelopeState.SUSTAIN.getId()] = 1d / size[EnvelopeState.SUSTAIN.getId()];
     }
 
     public int getReleaseSpeed() {
@@ -117,16 +116,8 @@ public class EnvelopeGenerator {
 
     public void setReleaseSpeed(int releaseSpeed) {
         this.releaseSpeed = Math.max(0, Math.min(releaseSpeed, 99));
-        this.size[3] = (int) (Tables.ENV_SPEED[this.releaseSpeed] * sampleRate);
-        this.factor[3] = 1d / size[3];
-    }
-
-    void setPreviousTime(int keyId, long time) {
-        previousTime[keyId] = time;
-    }
-
-    double getEnvelopeAmplitude(int keyId) {
-        return currentAmplitude[keyId];
+        this.size[EnvelopeState.RELEASE.getId()] = (int) (Tables.ENV_SPEED[this.releaseSpeed] * sampleRate);
+        this.factor[EnvelopeState.RELEASE.getId()] = 1d / size[EnvelopeState.RELEASE.getId()];
     }
 
     EnvelopeState getEnvelopeState(int keyId) {
@@ -135,13 +126,20 @@ public class EnvelopeGenerator {
 
     void setEnvelopeState(int keyId, EnvelopeState envelopeState) {
         state[keyId] = envelopeState;
+
+        if (envelopeState == EnvelopeState.RELEASE) {
+            position[keyId] = 0;
+            progress[keyId] = 0;
+            startAmplitude[keyId] = currentAmplitude[keyId];
+            endAmplitude[keyId] = releaseAmplitude;
+        }
     }
     // </editor-fold>
 
-    void defineEnvelopeAmplitude(int keyId, long time) {
+    double getEnvelopeAmplitude(int keyId) {
         switch (state[keyId]) {
             case ATTACK:
-                if (applyEnvelope(keyId, 0, time)) {
+                if (applyEnvelope(keyId, EnvelopeState.ATTACK)) {
                     position[keyId] = 0;
                     progress[keyId] = 0;
                     startAmplitude[keyId] = attackAmplitude;
@@ -151,7 +149,7 @@ public class EnvelopeGenerator {
                 break;
 
             case DECAY:
-                if (applyEnvelope(keyId, 1, time)) {
+                if (applyEnvelope(keyId, EnvelopeState.DECAY)) {
                     position[keyId] = 0;
                     progress[keyId] = 0;
                     startAmplitude[keyId] = decayAmplitude;
@@ -161,7 +159,7 @@ public class EnvelopeGenerator {
                 break;
 
             case SUSTAIN:
-                if (applyEnvelope(keyId, 2, time)) {
+                if (applyEnvelope(keyId, EnvelopeState.SUSTAIN)) {
                     state[keyId] = EnvelopeState.HOLD;
                 }
                 break;
@@ -170,29 +168,19 @@ public class EnvelopeGenerator {
                 // do noting
                 break;
 
-            case PRE_RELEASE:
-                position[keyId] = 0;
-                progress[keyId] = 0;
-                startAmplitude[keyId] = currentAmplitude[keyId];
-                endAmplitude[keyId] = releaseAmplitude;
-                state[keyId] = EnvelopeState.RELEASE;
-
-                break;
-
             case RELEASE:
-                if (applyEnvelope(keyId, 3, time)) {
+                if (applyEnvelope(keyId, EnvelopeState.RELEASE)) {
                     position[keyId] = 0;
                     progress[keyId] = 0;
                     startAmplitude[keyId] = currentAmplitude[keyId];
                     endAmplitude[keyId] = 0;
-                    state[keyId] = EnvelopeState.RELEASE_END;
+                    state[keyId] = EnvelopeState.PRE_IDLE;
                 }
                 break;
 
-            case RELEASE_END:
-                if (applyEnvelope(keyId, 4, time)) {
-                    currentAmplitude[keyId] = 0.0;
-                    state[keyId] = EnvelopeState.IDLE;
+            case PRE_IDLE:
+                if (applyEnvelope(keyId, EnvelopeState.PRE_IDLE)) {
+                    reset(keyId);
                 }
                 break;
 
@@ -200,20 +188,13 @@ public class EnvelopeGenerator {
                 // do nothing
                 break;
         }
+
+        return currentAmplitude[keyId];
     }
 
-    /*
-        returns true if finished
-        envelopeStateId: 0 = attack, 1 = decay, 2 = sustain, 3 = release, 4 = pre attack / release end
-     */
-    boolean applyEnvelope(int keyId, int envelopeStateId, long time) {
-        if (position[keyId] < size[envelopeStateId]) {
-            currentAmplitude[keyId] = MathFunctions.smoothInterpolation(startAmplitude[keyId], endAmplitude[keyId], progress[keyId]);
-
-            if (previousTime[keyId] != time) {
-                position[keyId] += 1;
-                progress[keyId] += factor[envelopeStateId];
-            }
+    boolean applyEnvelope(int keyId, EnvelopeState envelopeState) {
+        if (position[keyId] < size[envelopeState.getId()]) {
+            currentAmplitude[keyId] = MathFunctions.linearInterpolation(startAmplitude[keyId], endAmplitude[keyId], progress[keyId]);
 
             return false;
         } else {
@@ -221,9 +202,14 @@ public class EnvelopeGenerator {
         }
     }
 
-    void initialize(int keyId) {
-        previousTime[keyId] = -1;
+    void advanceEnvelope(int keyId) {
+        if (state[keyId].getId() <= 4) {
+            position[keyId] += 1;
+            progress[keyId] += factor[state[keyId].getId()];
+        }
+    }
 
+    void initialize(int keyId) {
         position[keyId] = 0;
         progress[keyId] = 0;
 
@@ -234,13 +220,12 @@ public class EnvelopeGenerator {
     }
 
     void reset(int keyId) {
-        previousTime[keyId] = -1;
-
         position[keyId] = 0;
         progress[keyId] = 0;
 
         startAmplitude[keyId] = 0;
         endAmplitude[keyId] = 0;
+        currentAmplitude[keyId] = 0;
 
         state[keyId] = EnvelopeState.IDLE;
     }

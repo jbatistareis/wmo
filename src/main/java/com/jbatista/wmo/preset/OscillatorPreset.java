@@ -36,7 +36,7 @@ public class OscillatorPreset {
     private int rateScaling = 0;
 
     public OscillatorPreset(int id) {
-        this.id = id;
+        setId(id);
     }
 
     public int getId() {
