@@ -1,6 +1,5 @@
 package com.jbatista.wmo.synthesis;
 
-
 class Tables {
 
     // Information from Yahaya Abdullah's site [https://sites.google.com/site/yalaorg/home]

@@ -38,7 +38,7 @@ public class InstrumentPreset {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = (name.length() > 10) ? name.substring(0, 10) : name;
     }
 
     public double getGain() {
@@ -46,7 +46,7 @@ public class InstrumentPreset {
     }
 
     public void setGain(double gain) {
-        this.gain = gain;
+        this.gain = Math.max(0, Math.min(gain, 1));
     }
 
     public int getTranspose() {
@@ -54,7 +54,7 @@ public class InstrumentPreset {
     }
 
     public void setTranspose(int transpose) {
-        this.transpose = transpose;
+        this.transpose = Math.max(-24, Math.min(transpose, 24));
     }
 
     public int getFeedback() {
@@ -62,7 +62,7 @@ public class InstrumentPreset {
     }
 
     public void setFeedback(int feedback) {
-        this.feedback = feedback;
+        this.feedback = Math.max(0, Math.min(feedback, 7));
     }
 
     public int getPitchAttackLevel() {
@@ -70,7 +70,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchAttackLevel(int pitchAttackLevel) {
-        this.pitchAttackLevel = pitchAttackLevel;
+        this.pitchAttackLevel = Math.max(0, Math.min(pitchAttackLevel, 99));
     }
 
     public int getPitchDecayLevel() {
@@ -78,7 +78,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchDecayLevel(int pitchDecayLevel) {
-        this.pitchDecayLevel = pitchDecayLevel;
+        this.pitchDecayLevel = Math.max(0, Math.min(pitchDecayLevel, 99));
     }
 
     public int getPitchSustainLevel() {
@@ -86,7 +86,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchSustainLevel(int pitchSustainLevel) {
-        this.pitchSustainLevel = pitchSustainLevel;
+        this.pitchSustainLevel = Math.max(0, Math.min(pitchSustainLevel, 99));
     }
 
     public int getPitchReleaseLevel() {
@@ -94,7 +94,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchReleaseLevel(int pitchReleaseLevel) {
-        this.pitchReleaseLevel = pitchReleaseLevel;
+        this.pitchReleaseLevel = Math.max(0, Math.min(pitchReleaseLevel, 99));
     }
 
     public int getPitchAttackSpeed() {
@@ -102,7 +102,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchAttackSpeed(int pitchAttackSpeed) {
-        this.pitchAttackSpeed = pitchAttackSpeed;
+        this.pitchAttackSpeed = Math.max(0, Math.min(pitchAttackSpeed, 99));
     }
 
     public int getPitchDecaySpeed() {
@@ -110,7 +110,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchDecaySpeed(int pitchDecaySpeed) {
-        this.pitchDecaySpeed = pitchDecaySpeed;
+        this.pitchDecaySpeed = Math.max(0, Math.min(pitchDecaySpeed, 99));
     }
 
     public int getPitchSustainSpeed() {
@@ -118,7 +118,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchSustainSpeed(int pitchSustainSpeed) {
-        this.pitchSustainSpeed = pitchSustainSpeed;
+        this.pitchSustainSpeed = Math.max(0, Math.min(pitchSustainSpeed, 99));
     }
 
     public int getPitchReleaseSpeed() {
@@ -126,7 +126,7 @@ public class InstrumentPreset {
     }
 
     public void setPitchReleaseSpeed(int pitchReleaseSpeed) {
-        this.pitchReleaseSpeed = pitchReleaseSpeed;
+        this.pitchReleaseSpeed = Math.max(0, Math.min(pitchReleaseSpeed, 99));
     }
 
     public boolean isOscillatorKeySync() {
@@ -150,7 +150,7 @@ public class InstrumentPreset {
     }
 
     public void setLfoSpeed(int lfoSpeed) {
-        this.lfoSpeed = lfoSpeed;
+        this.lfoSpeed = Math.max(0, Math.min(lfoSpeed, 99));
     }
 
     public int getLfoDelay() {
@@ -158,7 +158,7 @@ public class InstrumentPreset {
     }
 
     public void setLfoDelay(int lfoDelay) {
-        this.lfoDelay = lfoDelay;
+        this.lfoDelay = Math.max(0, Math.min(lfoDelay, 99));
     }
 
     public int getLfoPmDepth() {
@@ -166,7 +166,7 @@ public class InstrumentPreset {
     }
 
     public void setLfoPmDepth(int lfoPmDepth) {
-        this.lfoPmDepth = lfoPmDepth;
+        this.lfoPmDepth = Math.max(0, Math.min(lfoPmDepth, 99));
     }
 
     public int getLfoAmDepth() {
@@ -174,7 +174,7 @@ public class InstrumentPreset {
     }
 
     public void setLfoAmDepth(int lfoAmDepth) {
-        this.lfoAmDepth = lfoAmDepth;
+        this.lfoAmDepth = Math.max(0, Math.min(lfoAmDepth, 99));
     }
 
     public int getLfoPModeSensitivity() {
@@ -182,7 +182,7 @@ public class InstrumentPreset {
     }
 
     public void setLfoPModeSensitivity(int lfoPModeSensitivity) {
-        this.lfoPModeSensitivity = lfoPModeSensitivity;
+        this.lfoPModeSensitivity = Math.max(0, Math.min(lfoPModeSensitivity, 7));
     }
 
     public WaveForm getLfoWave() {

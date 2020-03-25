@@ -3,9 +3,6 @@ package com.jbatista.wmo.synthesis;
 import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.TransitionCurve;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class Breakpoint {
 
     private KeyboardNote note = KeyboardNote.A_4;
@@ -22,7 +19,6 @@ public class Breakpoint {
     private int leftRange = 36;
     private int rightRange = 39;
 
-    private static final List<KeyboardNote> NOTES = Arrays.asList(KeyboardNote.values());
     private static final int A_MINUS_1_INDEX = 21;
     private static final int C_8_INDEX = 120;
 
@@ -32,7 +28,7 @@ public class Breakpoint {
     }
 
     public void setNote(KeyboardNote note) {
-        int index = NOTES.indexOf(note);
+        int index = note.getId();
 
         if (index < 21) {
             note = KeyboardNote.A_MINUS_1;

@@ -111,6 +111,10 @@ public class Instrument {
         return floatBuffer;
     }
 
+    public void pressKey(KeyboardNote key) {
+        pressKey(key.getId());
+    }
+
     public void pressKey(int keyId) {
         keyId += transpose;
 
@@ -118,6 +122,10 @@ public class Instrument {
             algorithm.start(keyId, NOTES[keyId].getFrequency());
             keysQueue[keyId] = true;
         }
+    }
+
+    public void releaseKey(KeyboardNote key) {
+        releaseKey(key.getId());
     }
 
     public void releaseKey(int keyId) {

@@ -44,7 +44,7 @@ public class OscillatorPreset {
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.id = Math.max(0, Math.min(id, 5));
     }
 
     public WaveForm getWaveForm() {
@@ -60,7 +60,7 @@ public class OscillatorPreset {
     }
 
     public void setFrequencyRatio(double frequencyRatio) {
-        this.frequencyRatio = frequencyRatio;
+        this.frequencyRatio = Math.max(0, Math.min(frequencyRatio, 31));
     }
 
     public boolean isFixedFrequency() {
@@ -76,7 +76,7 @@ public class OscillatorPreset {
     }
 
     public void setFrequencyFine(int frequencyFine) {
-        this.frequencyFine = frequencyFine;
+        this.frequencyFine = Math.max(0, Math.min(frequencyFine, 99));
     }
 
     public int getFrequencyDetune() {
@@ -84,7 +84,7 @@ public class OscillatorPreset {
     }
 
     public void setFrequencyDetune(int frequencyDetune) {
-        this.frequencyDetune = frequencyDetune;
+        this.frequencyDetune = Math.max(-7, Math.min(frequencyDetune, 7));
     }
 
     public int getOutputLevel() {
@@ -92,7 +92,7 @@ public class OscillatorPreset {
     }
 
     public void setOutputLevel(int outputLevel) {
-        this.outputLevel = outputLevel;
+        this.outputLevel = Math.max(0, Math.min(outputLevel, 99));
     }
 
     public int getVelocitySensitivity() {
@@ -100,7 +100,7 @@ public class OscillatorPreset {
     }
 
     public void setVelocitySensitivity(int velocitySensitivity) {
-        this.velocitySensitivity = velocitySensitivity;
+        this.velocitySensitivity = Math.max(0, Math.min(velocitySensitivity, 7));
     }
 
     public int getAmSensitivity() {
@@ -108,7 +108,7 @@ public class OscillatorPreset {
     }
 
     public void setAmSensitivity(int amSensitivity) {
-        this.amSensitivity = amSensitivity;
+        this.amSensitivity = Math.max(0, Math.min(amSensitivity, 3));
     }
 
     public int getAttackLevel() {
@@ -116,7 +116,7 @@ public class OscillatorPreset {
     }
 
     public void setAttackLevel(int attackLevel) {
-        this.attackLevel = attackLevel;
+        this.attackLevel = Math.max(0, Math.min(attackLevel, 99));
     }
 
     public int getDecayLevel() {
@@ -124,7 +124,7 @@ public class OscillatorPreset {
     }
 
     public void setDecayLevel(int decayLevel) {
-        this.decayLevel = decayLevel;
+        this.decayLevel = Math.max(0, Math.min(decayLevel, 99));
     }
 
     public int getSustainLevel() {
@@ -132,7 +132,7 @@ public class OscillatorPreset {
     }
 
     public void setSustainLevel(int sustainLevel) {
-        this.sustainLevel = sustainLevel;
+        this.sustainLevel = Math.max(0, Math.min(sustainLevel, 99));
     }
 
     public int getReleaseLevel() {
@@ -140,7 +140,7 @@ public class OscillatorPreset {
     }
 
     public void setReleaseLevel(int releaseLevel) {
-        this.releaseLevel = releaseLevel;
+        this.releaseLevel = Math.max(0, Math.min(releaseLevel, 99));
     }
 
     public int getAttackSpeed() {
@@ -148,7 +148,7 @@ public class OscillatorPreset {
     }
 
     public void setAttackSpeed(int attackSpeed) {
-        this.attackSpeed = attackSpeed;
+        this.attackSpeed = Math.max(0, Math.min(attackSpeed, 99));
     }
 
     public int getDecaySpeed() {
@@ -156,7 +156,7 @@ public class OscillatorPreset {
     }
 
     public void setDecaySpeed(int decaySpeed) {
-        this.decaySpeed = decaySpeed;
+        this.decaySpeed = Math.max(0, Math.min(decaySpeed, 99));
     }
 
     public int getSustainSpeed() {
@@ -164,7 +164,7 @@ public class OscillatorPreset {
     }
 
     public void setSustainSpeed(int sustainSpeed) {
-        this.sustainSpeed = sustainSpeed;
+        this.sustainSpeed = Math.max(0, Math.min(sustainSpeed, 99));
     }
 
     public int getReleaseSpeed() {
@@ -172,7 +172,7 @@ public class OscillatorPreset {
     }
 
     public void setReleaseSpeed(int releaseSpeed) {
-        this.releaseSpeed = releaseSpeed;
+        this.releaseSpeed = Math.max(0, Math.min(releaseSpeed, 99));
     }
 
     public KeyboardNote getBreakpointNote() {
@@ -180,7 +180,13 @@ public class OscillatorPreset {
     }
 
     public void setBreakpointNote(KeyboardNote breakpointNote) {
-        this.breakpointNote = breakpointNote;
+        if (breakpointNote.getId() < 21) {
+            this.breakpointNote = KeyboardNote.A_MINUS_1;
+        } else if (breakpointNote.getId() > 120) {
+            this.breakpointNote = KeyboardNote.C_8;
+        } else {
+            this.breakpointNote = breakpointNote;
+        }
     }
 
     public TransitionCurve getBreakpointLeftCurve() {
@@ -204,7 +210,7 @@ public class OscillatorPreset {
     }
 
     public void setBreakpointLeftDepth(int breakpointLeftDepth) {
-        this.breakpointLeftDepth = breakpointLeftDepth;
+        this.breakpointLeftDepth = Math.max(0, Math.min(breakpointLeftDepth, 99));
     }
 
     public int getBreakpointRightDepth() {
@@ -212,7 +218,7 @@ public class OscillatorPreset {
     }
 
     public void setBreakpointRightDepth(int breakpointRightDepth) {
-        this.breakpointRightDepth = breakpointRightDepth;
+        this.breakpointRightDepth = Math.max(0, Math.min(breakpointRightDepth, 99));
     }
 
     public int getRateScaling() {
@@ -220,7 +226,7 @@ public class OscillatorPreset {
     }
 
     public void setRateScaling(int rateScaling) {
-        this.rateScaling = rateScaling;
+        this.rateScaling = Math.max(0, Math.min(rateScaling, 7));
     }
 
 }

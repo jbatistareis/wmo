@@ -192,14 +192,11 @@ public class WmoFile {
     }
 
     public static void saveBulkWmoInstruments(List<InstrumentPreset> instruments, File wmo) throws IOException {
-        final List<KeyboardNote> notes = Arrays.asList(NOTES);
-        final List<TransitionCurve> curves = Arrays.asList(CURVES);
         final List<AlgorithmPreset> algorithms = Arrays.asList(ALGORITHMS);
-        final List<WaveForm> waveFormsList = Arrays.asList(WAVE_FORMS);
 
         try (final RandomAccessFile file = new RandomAccessFile(wmo, "rw")) {
             for (InstrumentPreset instrument : instruments) {
-                for (int i = 0; i < ((instrument.getOscillatorPresets()[4] == null) ? 4 : 6); i++) {
+                for (int i = 0; i < instrument.getAlgorithm().getOscillatorCount(); i++) {
                     file.write(instrument.getOscillatorPresets()[i].getId());
                     file.write(instrument.getOscillatorPresets()[i].getAttackSpeed());
                     file.write(instrument.getOscillatorPresets()[i].getDecaySpeed());
@@ -211,11 +208,11 @@ public class WmoFile {
                     file.write(instrument.getOscillatorPresets()[i].getSustainLevel());
                     file.write(instrument.getOscillatorPresets()[i].getReleaseLevel());
 
-                    file.write(notes.indexOf(instrument.getOscillatorPresets()[i].getBreakpointNote()));
+                    file.write(instrument.getOscillatorPresets()[i].getBreakpointNote().getId());
                     file.write(instrument.getOscillatorPresets()[i].getBreakpointLeftDepth());
                     file.write(instrument.getOscillatorPresets()[i].getBreakpointRightDepth());
-                    file.write(curves.indexOf(instrument.getOscillatorPresets()[i].getBreakpointRightCurve()));
-                    file.write(curves.indexOf(instrument.getOscillatorPresets()[i].getBreakpointLeftCurve()));
+                    file.write(instrument.getOscillatorPresets()[i].getBreakpointRightCurve().getId());
+                    file.write(instrument.getOscillatorPresets()[i].getBreakpointLeftCurve().getId());
 
                     file.write(instrument.getOscillatorPresets()[i].getFrequencyDetune());
                     file.write(instrument.getOscillatorPresets()[i].getRateScaling());
@@ -252,7 +249,7 @@ public class WmoFile {
                 file.write(instrument.getLfoAmDepth());
 
                 file.write(instrument.getLfoPModeSensitivity());
-                file.write(waveFormsList.indexOf(instrument.getLfoWave()));
+                file.write(instrument.getLfoWave().getId());
                 file.write(instrument.isLfoKeySync() ? 1 : 0);
 
                 file.write(instrument.getTranspose());
