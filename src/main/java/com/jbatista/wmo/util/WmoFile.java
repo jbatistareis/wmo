@@ -2,6 +2,7 @@ package com.jbatista.wmo.util;
 
 import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.TransitionCurve;
+import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.AlgorithmPreset;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
@@ -14,6 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class WmoFile {
+
+    private static final AlgorithmPreset[] ALGORITHMS = AlgorithmPreset.values();
+    private static final KeyboardNote[] NOTES = KeyboardNote.values();
+    private static final WaveForm[] WAVE_FORMS = WaveForm.values();
+    private static final TransitionCurve[] CURVES = TransitionCurve.values();
 
     public static List<InstrumentPreset> loadWmoInstruments(File wmo) throws IOException {
         final List<InstrumentPreset> presets = new ArrayList<>();
@@ -47,7 +53,7 @@ public class WmoFile {
 
         final int algorithm = data[140];
 
-        final int keySync = data[141];
+        final int oscillatorKeySync = data[141];
         final int feedback = data[142];
 
         final int lfoSpeed = data[143];
@@ -75,10 +81,34 @@ public class WmoFile {
 
         // preset
         final InstrumentPreset instrumentPreset = new InstrumentPreset();
-        instrumentPreset.setName(name);
-        instrumentPreset.setTranspose(transpose);
+
+        instrumentPreset.setPitchAttackSpeed(pitchEgRate1);
+        instrumentPreset.setPitchDecaySpeed(pitchEgRate2);
+        instrumentPreset.setPitchSustainSpeed(pitchEgRate3);
+        instrumentPreset.setPitchReleaseSpeed(pitchEgRate4);
+
+        instrumentPreset.setPitchAttackLevel(pitchEgLevel1);
+        instrumentPreset.setPitchDecayLevel(pitchEgLevel2);
+        instrumentPreset.setPitchSustainLevel(pitchEgLevel3);
+        instrumentPreset.setPitchReleaseLevel(pitchEgLevel4);
+
+        instrumentPreset.setAlgorithm(ALGORITHMS[algorithm + 8]);
+
+        instrumentPreset.setOscillatorKeySync(oscillatorKeySync == 1);
         instrumentPreset.setFeedback(feedback);
-        instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm]);
+
+        instrumentPreset.setLfoSpeed(lfoSpeed);
+        instrumentPreset.setLfoDelay(lfoDelay);
+        instrumentPreset.setLfoPmDepth(lfoPmDepth);
+        instrumentPreset.setLfoAmDepth(lfoAmDepth);
+
+        instrumentPreset.setLfoPModeSensitivity(lfoPmModeSensitivity);
+        instrumentPreset.setLfoWave(WAVE_FORMS[lfoWave]);
+        instrumentPreset.setLfoKeySync(lfoKeySync == 1);
+
+        instrumentPreset.setTranspose(transpose - 24);
+
+        instrumentPreset.setName(name);
 
         int offset = 0;
         for (int i = 0; i < ((algorithm < 8) ? 4 : 6); i++) {
@@ -105,7 +135,7 @@ public class WmoFile {
             final int rateScale = data[15 + offset];
 
             final int velocitySensitivity = data[16 + offset];
-            final int modeSensitivity = data[17 + offset];
+            final int amSensitivity = data[17 + offset];
 
             final int outputLevel = data[18 + offset];
 
@@ -129,13 +159,17 @@ public class WmoFile {
             oscillatorPreset.setSustainLevel(egLevel3);
             oscillatorPreset.setReleaseLevel(egLevel4);
 
-            oscillatorPreset.setBreakpointNote(KeyboardNote.values()[breakpoint]);
+            oscillatorPreset.setBreakpointNote(NOTES[Math.max(21, Math.min(breakpoint + 21, 120))]);
             oscillatorPreset.setBreakpointLeftDepth(breakpointLeftDepth);
             oscillatorPreset.setBreakpointRightDepth(breakpointRightDepth);
-            oscillatorPreset.setBreakpointLeftCurve(TransitionCurve.values()[breakpointLeftCurve]);
-            oscillatorPreset.setBreakpointRightCurve(TransitionCurve.values()[breakpointRightCurve]);
+            oscillatorPreset.setBreakpointLeftCurve(CURVES[breakpointLeftCurve]);
+            oscillatorPreset.setBreakpointRightCurve(CURVES[breakpointRightCurve]);
 
             oscillatorPreset.setFrequencyDetune(detune);
+            oscillatorPreset.setRateScaling(rateScale);
+
+            oscillatorPreset.setVelocitySensitivity(velocitySensitivity);
+            oscillatorPreset.setAmSensitivity(amSensitivity);
 
             oscillatorPreset.setOutputLevel(outputLevel);
 
@@ -144,7 +178,7 @@ public class WmoFile {
 
             oscillatorPreset.setFrequencyFine(frequencyFine);
 
-            instrumentPreset.getOscillatorPresets().add(oscillatorPreset);
+            instrumentPreset.addOscillatorPreset(operator, oscillatorPreset);
         }
 
         return instrumentPreset;
@@ -158,69 +192,68 @@ public class WmoFile {
     }
 
     public static void saveBulkWmoInstruments(List<InstrumentPreset> instruments, File wmo) throws IOException {
-        final List<KeyboardNote> notes = Arrays.asList(KeyboardNote.values());
-        final List<TransitionCurve> curves = Arrays.asList(TransitionCurve.values());
-        final List<AlgorithmPreset> algorithms = Arrays.asList(AlgorithmPreset.values());
+        final List<KeyboardNote> notes = Arrays.asList(NOTES);
+        final List<TransitionCurve> curves = Arrays.asList(CURVES);
+        final List<AlgorithmPreset> algorithms = Arrays.asList(ALGORITHMS);
+        final List<WaveForm> waveFormsList = Arrays.asList(WAVE_FORMS);
 
         try (final RandomAccessFile file = new RandomAccessFile(wmo, "rw")) {
             for (InstrumentPreset instrument : instruments) {
-                for (int i = 0; i < instrument.getOscillatorPresets().size(); i++) {
-                    file.write(instrument.getOscillatorPresets().get(i).getId());
-                    file.write(instrument.getOscillatorPresets().get(i).getAttackSpeed());
-                    file.write(instrument.getOscillatorPresets().get(i).getDecaySpeed());
-                    file.write(instrument.getOscillatorPresets().get(i).getSustainSpeed());
-                    file.write(instrument.getOscillatorPresets().get(i).getReleaseSpeed());
+                for (int i = 0; i < ((instrument.getOscillatorPresets()[4] == null) ? 4 : 6); i++) {
+                    file.write(instrument.getOscillatorPresets()[i].getId());
+                    file.write(instrument.getOscillatorPresets()[i].getAttackSpeed());
+                    file.write(instrument.getOscillatorPresets()[i].getDecaySpeed());
+                    file.write(instrument.getOscillatorPresets()[i].getSustainSpeed());
+                    file.write(instrument.getOscillatorPresets()[i].getReleaseSpeed());
 
-                    file.write(instrument.getOscillatorPresets().get(i).getAttackLevel());
-                    file.write(instrument.getOscillatorPresets().get(i).getDecayLevel());
-                    file.write(instrument.getOscillatorPresets().get(i).getSustainLevel());
-                    file.write(instrument.getOscillatorPresets().get(i).getReleaseLevel());
+                    file.write(instrument.getOscillatorPresets()[i].getAttackLevel());
+                    file.write(instrument.getOscillatorPresets()[i].getDecayLevel());
+                    file.write(instrument.getOscillatorPresets()[i].getSustainLevel());
+                    file.write(instrument.getOscillatorPresets()[i].getReleaseLevel());
 
-                    file.write(notes.indexOf(instrument.getOscillatorPresets().get(i).getBreakpointNote()));
-                    file.write(instrument.getOscillatorPresets().get(i).getBreakpointLeftDepth());
-                    file.write(instrument.getOscillatorPresets().get(i).getBreakpointRightDepth());
-                    file.write(curves.indexOf(instrument.getOscillatorPresets().get(i).getBreakpointRightCurve()));
-                    file.write(curves.indexOf(instrument.getOscillatorPresets().get(i).getBreakpointLeftCurve()));
+                    file.write(notes.indexOf(instrument.getOscillatorPresets()[i].getBreakpointNote()));
+                    file.write(instrument.getOscillatorPresets()[i].getBreakpointLeftDepth());
+                    file.write(instrument.getOscillatorPresets()[i].getBreakpointRightDepth());
+                    file.write(curves.indexOf(instrument.getOscillatorPresets()[i].getBreakpointRightCurve()));
+                    file.write(curves.indexOf(instrument.getOscillatorPresets()[i].getBreakpointLeftCurve()));
 
-                    file.write(instrument.getOscillatorPresets().get(i).getFrequencyDetune());
-                    file.write(0); // TODO rate scale
+                    file.write(instrument.getOscillatorPresets()[i].getFrequencyDetune());
+                    file.write(instrument.getOscillatorPresets()[i].getRateScaling());
 
-                    file.write(0); // TODO velocity sensitivity
-                    file.write(0);// TODO mod sensitivity
+                    file.write(instrument.getOscillatorPresets()[i].getVelocitySensitivity());
+                    file.write(instrument.getOscillatorPresets()[i].getAmSensitivity());
 
-                    file.write(instrument.getOscillatorPresets().get(i).getOutputLevel());
+                    file.write(instrument.getOscillatorPresets()[i].getOutputLevel());
 
-                    file.write((int) instrument.getOscillatorPresets().get(i).getFrequencyRatio());
-                    file.write(instrument.getOscillatorPresets().get(i).isFixedFrequency() ? 1 : 0);
+                    file.write((int) instrument.getOscillatorPresets()[i].getFrequencyRatio());
+                    file.write(instrument.getOscillatorPresets()[i].isFixedFrequency() ? 1 : 0);
 
-                    file.write(instrument.getOscillatorPresets().get(i).getFrequencyFine());
+                    file.write(instrument.getOscillatorPresets()[i].getFrequencyFine());
                 }
 
-                // TODO pitch EG
-                file.write(0); // attack speed
-                file.write(0); // decay speed
-                file.write(0); // sustain speed
-                file.write(0); // release speed
+                file.write(instrument.getPitchAttackSpeed());
+                file.write(instrument.getPitchDecaySpeed());
+                file.write(instrument.getPitchSustainSpeed());
+                file.write(instrument.getPitchReleaseSpeed());
 
-                file.write(0); // attack level
-                file.write(0); // decay level
-                file.write(0); // sustain level
-                file.write(0); // release level
+                file.write(instrument.getPitchAttackLevel());
+                file.write(instrument.getPitchDecayLevel());
+                file.write(instrument.getPitchSustainLevel());
+                file.write(instrument.getPitchReleaseLevel());
 
                 file.write(algorithms.indexOf(instrument.getAlgorithm()));
 
-                file.write(0); // TODO key sync
+                file.write(instrument.isOscillatorKeySync() ? 1 : 0);
                 file.write(instrument.getFeedback());
 
-                // TODO lfo
-                file.write(0); // speed
-                file.write(0); // delay
-                file.write(0); // pm depth
-                file.write(0); // am depth
+                file.write(instrument.getLfoSpeed());
+                file.write(instrument.getLfoDelay());
+                file.write(instrument.getLfoPmDepth());
+                file.write(instrument.getLfoAmDepth());
 
-                file.write(0); // mod sensitivity
-                file.write(0); // wave
-                file.write(0); // key sync
+                file.write(instrument.getLfoPModeSensitivity());
+                file.write(waveFormsList.indexOf(instrument.getLfoWave()));
+                file.write(instrument.isLfoKeySync() ? 1 : 0);
 
                 file.write(instrument.getTranspose());
 

@@ -8,12 +8,15 @@ public class OscillatorPreset {
 
     private int id = 0;
 
+    private WaveForm waveForm = WaveForm.SINE;
+
     private double frequencyRatio = 1;
     private boolean fixedFrequency = false;
     private int frequencyFine = 0;
     private int frequencyDetune = 0;
     private int outputLevel = 75;
-    private WaveForm waveForm = WaveForm.SINE;
+    private int velocitySensitivity = 0;
+    private int amSensitivity = 0;
 
     private int attackLevel = 0;
     private int decayLevel = 0;
@@ -30,6 +33,7 @@ public class OscillatorPreset {
     private TransitionCurve breakpointRightCurve = TransitionCurve.LINEAR_DECREASE;
     private int breakpointLeftDepth = 0;
     private int breakpointRightDepth = 0;
+    private int rateScaling = 0;
 
     public OscillatorPreset(int id) {
         this.id = id;
@@ -41,6 +45,14 @@ public class OscillatorPreset {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public WaveForm getWaveForm() {
+        return waveForm;
+    }
+
+    public void setWaveForm(WaveForm waveForm) {
+        this.waveForm = waveForm;
     }
 
     public double getFrequencyRatio() {
@@ -83,12 +95,20 @@ public class OscillatorPreset {
         this.outputLevel = outputLevel;
     }
 
-    public WaveForm getWaveForm() {
-        return waveForm;
+    public int getVelocitySensitivity() {
+        return velocitySensitivity;
     }
 
-    public void setWaveForm(WaveForm waveForm) {
-        this.waveForm = waveForm;
+    public void setVelocitySensitivity(int velocitySensitivity) {
+        this.velocitySensitivity = velocitySensitivity;
+    }
+
+    public int getAmSensitivity() {
+        return amSensitivity;
+    }
+
+    public void setAmSensitivity(int amSensitivity) {
+        this.amSensitivity = amSensitivity;
     }
 
     public int getAttackLevel() {
@@ -193,6 +213,14 @@ public class OscillatorPreset {
 
     public void setBreakpointRightDepth(int breakpointRightDepth) {
         this.breakpointRightDepth = breakpointRightDepth;
+    }
+
+    public int getRateScaling() {
+        return rateScaling;
+    }
+
+    public void setRateScaling(int rateScaling) {
+        this.rateScaling = rateScaling;
     }
 
 }

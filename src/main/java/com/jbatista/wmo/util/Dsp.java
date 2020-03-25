@@ -12,12 +12,13 @@ public class Dsp {
                 return squareWave(frequency, modulation, phase, time);
             case TRIANGLE:
                 return triangleWave(frequency, modulation, phase, time);
-            case SAWTOOTH:
+            case SAWTOOTH_DOWN:
                 return sawtoothWave(frequency, modulation, phase, time);
             case WHITE_NOISE:
                 return whiteNoise();
             default:
-                throw new AssertionError(waveForm.name());
+                // wave form not implemented
+                return 0;
         }
     }
 

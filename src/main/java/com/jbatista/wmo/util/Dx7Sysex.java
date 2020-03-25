@@ -4,6 +4,7 @@ package com.jbatista.wmo.util;
 
 import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.TransitionCurve;
+import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.AlgorithmPreset;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.preset.OscillatorPreset;
@@ -22,6 +23,11 @@ public class Dx7Sysex {
     private static final String FORMAT_ERROR = "Incorrect format, expected 0x00 or 0x09, found 0x%x";
     private static final String BYTE_COUNT_MS_ERROR = "Incorrect byte count MS, expected 0x01 or 0x20, found 0x%x";
     private static final String BYTE_COUNT_LS_ERROR = "Incorrect byte count LS, expected 0x1B or 0x00, found 0x%x";
+
+    private static final AlgorithmPreset[] ALGORITHMS = AlgorithmPreset.values();
+    private static final KeyboardNote[] NOTES = KeyboardNote.values();
+    private static final WaveForm[] WAVE_FORMS = WaveForm.values();
+    private static final TransitionCurve[] CURVES = TransitionCurve.values();
 
     public static List<InstrumentPreset> readInstruments(File sysex) throws IOException, SysexException {
         final List<InstrumentPreset> instruments = new ArrayList<>();
@@ -102,7 +108,7 @@ public class Dx7Sysex {
 
         final int algorithm = bulkVoice[110];
 
-        final int keySync = bulkVoice[111] >> 3;
+        final int oscillatorKeySync = bulkVoice[111] >> 3;
         final int feedback = bulkVoice[111] & 7;
 
         final int lfoSpeed = bulkVoice[112];
@@ -130,10 +136,34 @@ public class Dx7Sysex {
 
         // preset
         final InstrumentPreset instrumentPreset = new InstrumentPreset();
-        instrumentPreset.setName(name);
-        instrumentPreset.setTranspose(transpose - 24);
+
+        instrumentPreset.setPitchAttackSpeed(pitchEgRate1);
+        instrumentPreset.setPitchDecaySpeed(pitchEgRate2);
+        instrumentPreset.setPitchSustainSpeed(pitchEgRate3);
+        instrumentPreset.setPitchReleaseSpeed(pitchEgRate4);
+
+        instrumentPreset.setPitchAttackLevel(pitchEgLevel1);
+        instrumentPreset.setPitchDecayLevel(pitchEgLevel2);
+        instrumentPreset.setPitchSustainLevel(pitchEgLevel3);
+        instrumentPreset.setPitchReleaseLevel(pitchEgLevel4);
+
+        instrumentPreset.setAlgorithm(ALGORITHMS[algorithm + 8]);
+
+        instrumentPreset.setOscillatorKeySync(oscillatorKeySync == 1);
         instrumentPreset.setFeedback(feedback);
-        instrumentPreset.setAlgorithm(AlgorithmPreset.values()[algorithm + 8]);
+
+        instrumentPreset.setLfoSpeed(lfoSpeed);
+        instrumentPreset.setLfoDelay(lfoDelay);
+        instrumentPreset.setLfoPmDepth(lfoPmDepth);
+        instrumentPreset.setLfoAmDepth(lfoAmDepth);
+
+        instrumentPreset.setLfoPModeSensitivity(lfoPmModeSensitivity);
+        instrumentPreset.setLfoWave(WAVE_FORMS[lfoWave]);
+        instrumentPreset.setLfoKeySync(lfoKeySync == 1);
+
+        instrumentPreset.setTranspose(transpose - 24);
+
+        instrumentPreset.setName(name);
 
         final byte[] operatorParams = new byte[17];
         for (int i = 0; i < 6; i++) {
@@ -164,7 +194,7 @@ public class Dx7Sysex {
             final int rateScale = operatorParams[12] & 7;
 
             final int velocitySensitivity = operatorParams[13] >> 2;
-            final int modeSensitivity = operatorParams[13] & 3;
+            final int amSensitivity = operatorParams[13] & 3;
 
             final int outputLevel = operatorParams[14];
 
@@ -186,13 +216,17 @@ public class Dx7Sysex {
             oscillatorPreset.setSustainLevel(egLevel3);
             oscillatorPreset.setReleaseLevel(egLevel4);
 
-            oscillatorPreset.setBreakpointNote(KeyboardNote.values()[Math.max(21, Math.min(breakpoint + 21, 120))]);
+            oscillatorPreset.setBreakpointNote(NOTES[Math.max(21, Math.min(breakpoint + 21, 120))]);
             oscillatorPreset.setBreakpointLeftDepth(breakpointLeftDepth);
             oscillatorPreset.setBreakpointRightDepth(breakpointRightDepth);
-            oscillatorPreset.setBreakpointLeftCurve(TransitionCurve.values()[breakpointLeftCurve]);
-            oscillatorPreset.setBreakpointRightCurve(TransitionCurve.values()[breakpointRightCurve]);
+            oscillatorPreset.setBreakpointLeftCurve(CURVES[breakpointLeftCurve]);
+            oscillatorPreset.setBreakpointRightCurve(CURVES[breakpointRightCurve]);
 
             oscillatorPreset.setFrequencyDetune(detune);
+            oscillatorPreset.setRateScaling(rateScale);
+
+            oscillatorPreset.setVelocitySensitivity(velocitySensitivity);
+            oscillatorPreset.setAmSensitivity(amSensitivity);
 
             oscillatorPreset.setOutputLevel(outputLevel);
 
@@ -201,7 +235,7 @@ public class Dx7Sysex {
 
             oscillatorPreset.setFrequencyFine(frequencyFine);
 
-            instrumentPreset.getOscillatorPresets().add(oscillatorPreset);
+            instrumentPreset.addOscillatorPreset(operator, oscillatorPreset);
         }
 
         return instrumentPreset;
