@@ -4,7 +4,7 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
 
 public class Algorithm {
 
-    private final int sampleRate;
+    private int sampleRate;
     private int feedback = 0;
 
     private final boolean[][] activeCarriers = new boolean[132][6];
@@ -14,11 +14,21 @@ public class Algorithm {
     int[][] pattern = AlgorithmPreset.ALGO_4_OSC_1.getPattern();
     final Oscillator[] oscillators = new Oscillator[6];
 
-    public Algorithm(int sampleRate) {
+    public Algorithm() {
+        for (int i = 0; i < 6; i++) {
+            oscillators[i] = new Oscillator(i, this);
+        }
+    }
+
+    public int getSampleRate() {
+        return sampleRate;
+    }
+
+    public void setSampleRate(int sampleRate) {
         this.sampleRate = sampleRate;
 
-        for (int i = 0; i < oscillators.length; i++) {
-            oscillators[i] = new Oscillator(i, sampleRate, this);
+        for (int i = 0; i < 6; i++) {
+            oscillators[i].setSampleRate(sampleRate);
         }
     }
 

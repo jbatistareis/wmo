@@ -1,5 +1,6 @@
 package com.jbatista.wmo.synthesis;
 
+import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.Dsp;
@@ -8,15 +9,11 @@ import com.jbatista.wmo.util.MathFunctions;
 public class Oscillator {
 
     private final int id;
-    private final int sampleRate;
-    private boolean mute = false;
-
     private final double[] sineFrequency = new double[132];
+    private final Algorithm algorithm;
 
-    // I/O
-    private Algorithm algorithm;
-
-    // parameters
+    private int sampleRate = 44100;
+    private boolean mute = false;
     private WaveForm waveForm = WaveForm.SINE;
     private int outputLevel = 75;
     private int correctedOutputLevel;
@@ -30,9 +27,8 @@ public class Oscillator {
 
     private double modulatorSample;
 
-    Oscillator(int id, int sampleRate, Algorithm algorithm) {
+    Oscillator(int id, Algorithm algorithm) {
         this.id = id;
-        this.sampleRate = sampleRate;
         this.envelopeGenerator = new EnvelopeGenerator(sampleRate);
         this.algorithm = algorithm;
     }
@@ -40,6 +36,14 @@ public class Oscillator {
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public int getId() {
         return id;
+    }
+
+    public int getSampleRate() {
+        return sampleRate;
+    }
+
+    public void setSampleRate(int sampleRate) {
+        this.sampleRate = sampleRate;
     }
 
     public boolean isMute() {
@@ -149,6 +153,10 @@ public class Oscillator {
                 time);
     }
 
+    void start(KeyboardNote note) {
+        start(note.getId(), note.getFrequency());
+    }
+
     // fixed frequency calculation from [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782]
     void start(int keyId, double frequency) {
         if (!mute) {
@@ -168,6 +176,10 @@ public class Oscillator {
 
             correctedOutputLevel = Math.max(0, Math.min(outputLevel + breakpoint.getLevelOffset(keyId), 99));
         }
+    }
+
+    void stop(KeyboardNote note) {
+        stop(note.getId());
     }
 
     void stop(int keyId) {

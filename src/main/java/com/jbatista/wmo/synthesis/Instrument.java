@@ -12,7 +12,7 @@ public class Instrument {
     private int keyId = 0;
 
     // parameters
-    private int sampleRate;
+    private int sampleRate = 44100;
     private double gain = 0.01;
     private int transpose = 0;
     private final Algorithm algorithm;
@@ -25,16 +25,21 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    public Instrument(int sampleRate) {
-        this.sampleRate = sampleRate;
-        this.algorithm = new Algorithm(sampleRate);
+    public Instrument() {
+        this.algorithm = new Algorithm();
 
         loadInstrumentPreset(new InstrumentPreset());
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
+
     public int getSampleRate() {
         return sampleRate;
+    }
+
+    public void setSampleRate(int sampleRate) {
+        this.sampleRate = sampleRate;
+        this.algorithm.setSampleRate(sampleRate);
     }
 
     public double getGain() {
