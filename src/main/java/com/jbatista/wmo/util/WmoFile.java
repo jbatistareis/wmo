@@ -92,7 +92,7 @@ public class WmoFile {
         instrumentPreset.setPitchSustainLevel(pitchEgLevel3);
         instrumentPreset.setPitchReleaseLevel(pitchEgLevel4);
 
-        instrumentPreset.setAlgorithm(ALGORITHMS[algorithm + 8]);
+        instrumentPreset.setAlgorithm(ALGORITHMS[algorithm]);
 
         instrumentPreset.setOscillatorKeySync(oscillatorKeySync == 1);
         instrumentPreset.setFeedback(feedback);
@@ -106,7 +106,7 @@ public class WmoFile {
         instrumentPreset.setLfoWave(WAVE_FORMS[lfoWave]);
         instrumentPreset.setLfoKeySync(lfoKeySync == 1);
 
-        instrumentPreset.setTranspose(transpose - 24);
+        instrumentPreset.setTranspose(transpose);
 
         instrumentPreset.setName(name);
 
@@ -159,7 +159,7 @@ public class WmoFile {
             oscillatorPreset.setSustainLevel(egLevel3);
             oscillatorPreset.setReleaseLevel(egLevel4);
 
-            oscillatorPreset.setBreakpointNote(NOTES[Math.max(21, Math.min(breakpoint + 21, 120))]);
+            oscillatorPreset.setBreakpointNote(NOTES[breakpoint]);
             oscillatorPreset.setBreakpointLeftDepth(breakpointLeftDepth);
             oscillatorPreset.setBreakpointRightDepth(breakpointRightDepth);
             oscillatorPreset.setBreakpointLeftCurve(CURVES[breakpointLeftCurve]);
@@ -198,6 +198,7 @@ public class WmoFile {
             for (InstrumentPreset instrument : instruments) {
                 for (int i = 0; i < instrument.getAlgorithm().getOscillatorCount(); i++) {
                     file.write(instrument.getOscillatorPresets()[i].getId());
+
                     file.write(instrument.getOscillatorPresets()[i].getAttackSpeed());
                     file.write(instrument.getOscillatorPresets()[i].getDecaySpeed());
                     file.write(instrument.getOscillatorPresets()[i].getSustainSpeed());
