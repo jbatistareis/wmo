@@ -2,6 +2,12 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.util.MathFunctions;
 
+/**
+ * Provides amplitude modulation for an {@link Oscillator}, based on <a href="https://en.wikipedia.org/wiki/Envelope_(music)">ADSR</a> parameters.
+ * <p>Instances of this class are created by the {@link Oscillator} class.</p>
+ *
+ * @see Oscillator
+ */
 public class EnvelopeGenerator {
 
     private final int sampleRate;
@@ -136,6 +142,11 @@ public class EnvelopeGenerator {
     }
     // </editor-fold>
 
+    /**
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     * @return The current value of the envelope shape.
+     * @see #advanceEnvelope
+     */
     double getEnvelopeAmplitude(int keyId) {
         switch (state[keyId]) {
             case ATTACK:
@@ -202,6 +213,11 @@ public class EnvelopeGenerator {
         }
     }
 
+    /**
+     * Sets the required parameters for the next value of the envelope shape.
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     */
     void advanceEnvelope(int keyId) {
         if (state[keyId].getId() <= 4) {
             position[keyId] += 1;
@@ -209,16 +225,26 @@ public class EnvelopeGenerator {
         }
     }
 
+    /**
+     * Puts the envelope on the {@link EnvelopeState#ATTACK} position.
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     */
     void initialize(int keyId) {
         position[keyId] = 0;
         progress[keyId] = 0;
 
-        startAmplitude[keyId] = currentAmplitude[keyId];
+        startAmplitude[keyId] = 0;
         endAmplitude[keyId] = attackAmplitude;
 
         state[keyId] = EnvelopeState.ATTACK;
     }
 
+    /**
+     * * Puts the envelope on the {@link EnvelopeState#IDLE} position.
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     */
     void reset(int keyId) {
         position[keyId] = 0;
         progress[keyId] = 0;

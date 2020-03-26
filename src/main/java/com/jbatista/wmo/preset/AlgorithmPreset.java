@@ -8,6 +8,8 @@ package com.jbatista.wmo.preset;
  *    <li><code>Index 1</code> contains the oscillator that is going to receive feedback and its source.</li>
  *    <li><code>Index 2</code> onward describes from where an oscillator receives its modulation, repeats for every oscillator. They are omitted if there's no modulation, like on organ presets.</li>
  * </ul>
+ *
+ * @see com.jbatista.wmo.synthesis.Algorithm
  */
 public enum AlgorithmPreset {
 

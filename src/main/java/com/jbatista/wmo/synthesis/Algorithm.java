@@ -4,7 +4,9 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
 
 /**
  * Supports the structure of the algorithm used by the {@link Instrument}, creates instances of {@link Oscillator}, obtains PCM data from then.
+ * <p>Instances of this class are created by the {@link Instrument} class.</p>
  *
+ * @see Instrument
  * @see AlgorithmPreset
  * @see Oscillator
  */
@@ -17,10 +19,7 @@ public class Algorithm {
     int[][] pattern = AlgorithmPreset.ALGO_1_OSC_1.getPattern();
     final Oscillator[] oscillators = new Oscillator[6];
 
-    /**
-     * @param sampleRate The sample rate that this algorithm is going to operate.
-     */
-    public Algorithm(int sampleRate) {
+    Algorithm(int sampleRate) {
         for (int i = 0; i < 6; i++) {
             oscillators[i] = new Oscillator(i, this, sampleRate);
         }

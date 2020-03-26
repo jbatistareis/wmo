@@ -7,7 +7,7 @@ import com.jbatista.wmo.util.MathFunctions;
 
 /**
  * Represents an actual digital oscillator.
- * <p>Instances of this class are created by the {@link Algorithm} class.</p>
+ * <p>Instances of this class are created by the {@link Algorithm} class. When initialized, it instantiates {@link EnvelopeGenerator} and {@link Breakpoint}.</p>
  *
  * @see Algorithm
  */

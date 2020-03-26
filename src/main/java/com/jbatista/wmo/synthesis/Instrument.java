@@ -7,8 +7,11 @@ import com.jbatista.wmo.util.MathFunctions;
 
 /**
  * Represents an entire keyboard and its functions.
- * <p>All starts here, this class contains every facility to define and play any sound.</p>
+ * <p>All starts here, this class instantiates the {@link Algorithm}, and contains every facility to define and play any sound.</p>
  * <p>Audio is obtained in PCM frames that can be written directly to audio outputs, obtaining a frame is the same as to read a PCM file.</p>
+ *
+ * @see Algorithm
+ * @see Oscillator
  */
 public class Instrument {
 
@@ -30,9 +33,6 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    /**
-     * @param sampleRate The sample rate that this instrument is going to operate.
-     */
     public Instrument(int sampleRate) {
         this.sampleRate = sampleRate;
         this.algorithm = new Algorithm(sampleRate);
