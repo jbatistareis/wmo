@@ -1,15 +1,13 @@
 package com.jbatista.wmo.preset;
 
 /**
- * <p>A 2D array representing an algorithm structure.</p>
+ * A 2D array representing an algorithm structure.
  * <p><code>[Carriers...], [Oscillator X, Feedback source Y], [Oscillator X, Modulated by oscillator Y]...</code></p>
- * <p>
- *  <ul>
- *     <li><code>Index 0</code> contains the oscillators that are going to act as carriers.</li>
- *     <li><code>Index 1</code> contains the oscillator that is going to receive feedback and its source.</li>
- *     <li><code>Index 2</code> onward describes from where an oscillator receives its modulation, repeats for every oscillator. They are omitted if there's no modulation, like on organ presets.</li>
- *  </ul>
- * </p>
+ * <ul>
+ *    <li><code>Index 0</code> contains the oscillators that are going to act as carriers.</li>
+ *    <li><code>Index 1</code> contains the oscillator that is going to receive feedback and its source.</li>
+ *    <li><code>Index 2</code> onward describes from where an oscillator receives its modulation, repeats for every oscillator. They are omitted if there's no modulation, like on organ presets.</li>
+ * </ul>
  */
 public enum AlgorithmPreset {
 

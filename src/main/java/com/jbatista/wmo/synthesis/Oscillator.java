@@ -5,6 +5,12 @@ import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.Dsp;
 import com.jbatista.wmo.util.MathFunctions;
 
+/**
+ * Represents an actual digital oscillator.
+ * <p>Instances of this class are created by the {@link Algorithm} class.</p>
+ *
+ * @see Algorithm
+ */
 public class Oscillator {
 
     private final int id;
@@ -27,13 +33,9 @@ public class Oscillator {
     private double modulatorSample;
 
     /**
-     * <p>Represents an actual digital oscillator.</p>
-     * <p>Instances of this class are created by the {@link Algorithm}  class.</p>
-     *
      * @param id         ID of the oscillator, in the range of 0 to 5.
      * @param algorithm  The Algorithm instance that it is bound to.
      * @param sampleRate The sample rate that this oscillator is going to operate.
-     * @see Algorithm
      */
     Oscillator(int id, Algorithm algorithm, int sampleRate) {
         this.id = id;
@@ -121,7 +123,7 @@ public class Oscillator {
     // </editor-fold>
 
     /**
-     * <p>Creates a mono audio sample frame based on the pitch and time offset, instantiated and controlled by the {@link Algorithm} it is bound to.</p>
+     * Creates a mono audio sample frame based on the pitch and time offset, instantiated and controlled by the {@link Algorithm} it is bound to.
      * <p>The state of the oscillator is defined by the use of the methods {@link #start start} and {@link #stop stop}.</p>
      * <p>If this oscillator has modulators, the other oscillators are started in chain.</p>
      *
@@ -161,7 +163,7 @@ public class Oscillator {
     // fixed frequency calculation from [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782]
 
     /**
-     * <p>Puts the oscillator in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Oscillator#stop(int) stop} method is called.</p>
+     * Puts the oscillator in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Oscillator#stop(int) stop} method is called.
      * <p>The fixed frequency calculation was taken from hexter's <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782">dx7_voice.c</a>.</p>
      *
      * @param keyId     ID representing an unique key, in the range of 0 to 131.

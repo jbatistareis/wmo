@@ -2,6 +2,12 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.preset.AlgorithmPreset;
 
+/**
+ * Supports the structure of the algorithm used by the {@link Instrument}, creates instances of {@link Oscillator}, obtains PCM data from then.
+ *
+ * @see AlgorithmPreset
+ * @see Oscillator
+ */
 public class Algorithm {
 
     private final boolean[][] activeCarriers = new boolean[132][6];
@@ -12,11 +18,7 @@ public class Algorithm {
     final Oscillator[] oscillators = new Oscillator[6];
 
     /**
-     * <p>Supports the structure of the algorithm used by the {@link Instrument}.</p>
-     *
      * @param sampleRate The sample rate that this algorithm is going to operate.
-     * @see AlgorithmPreset
-     * @see Oscillator
      */
     public Algorithm(int sampleRate) {
         for (int i = 0; i < 6; i++) {
@@ -62,7 +64,7 @@ public class Algorithm {
     }
 
     /**
-     * <p>Puts every carrier defined by the {@link Algorithm#loadAlgorithmPreset algorithm} in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Algorithm#stop(int) stop} method is called.</p>
+     * Puts every carrier defined by the {@link Algorithm#loadAlgorithmPreset algorithm} in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Algorithm#stop(int) stop} method is called.
      *
      * @param keyId     ID representing an unique key, in the range of 0 to 131.
      * @param frequency Indicates the frequency at which the oscillators are going to operate.
