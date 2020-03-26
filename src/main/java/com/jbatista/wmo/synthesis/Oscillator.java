@@ -1,6 +1,5 @@
 package com.jbatista.wmo.synthesis;
 
-import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.WaveForm;
 import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.Dsp;
@@ -11,8 +10,8 @@ public class Oscillator {
     private final int id;
     private final double[] sineFrequency = new double[132];
     private final Algorithm algorithm;
+    private final int sampleRate;
 
-    private int sampleRate = 44100;
     private boolean mute = false;
     private WaveForm waveForm = WaveForm.SINE;
     private int outputLevel = 75;
@@ -27,8 +26,18 @@ public class Oscillator {
 
     private double modulatorSample;
 
-    Oscillator(int id, Algorithm algorithm) {
+    /**
+     * <p>Represents an actual digital oscillator.</p>
+     * <p>Instances of this class are created by the {@link Algorithm}  class.</p>
+     *
+     * @param id         ID of the oscillator, in the range of 0 to 5.
+     * @param algorithm  The Algorithm instance that it is bound to.
+     * @param sampleRate The sample rate that this oscillator is going to operate.
+     * @see Algorithm
+     */
+    Oscillator(int id, Algorithm algorithm, int sampleRate) {
         this.id = id;
+        this.sampleRate = sampleRate;
         this.envelopeGenerator = new EnvelopeGenerator(sampleRate);
         this.algorithm = algorithm;
     }
@@ -36,14 +45,6 @@ public class Oscillator {
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public int getId() {
         return id;
-    }
-
-    public int getSampleRate() {
-        return sampleRate;
-    }
-
-    public void setSampleRate(int sampleRate) {
-        this.sampleRate = sampleRate;
     }
 
     public boolean isMute() {
@@ -119,6 +120,17 @@ public class Oscillator {
     }
     // </editor-fold>
 
+    /**
+     * <p>Creates a mono audio sample frame based on the pitch and time offset, instantiated and controlled by the {@link Algorithm} it is bound to.</p>
+     * <p>The state of the oscillator is defined by the use of the methods {@link #start start} and {@link #stop stop}.</p>
+     * <p>If this oscillator has modulators, the other oscillators are started in chain.</p>
+     *
+     * @param keyId       ID representing an unique key, in the range of 0 to 131.
+     * @param pitchOffset Defines the value which will multiply the frequency, creating a pitch bend. (WIP)
+     * @param time        Time offset.
+     * @return A single audio frame.
+     * @see Algorithm#getSample
+     */
     double getSample(int keyId, double pitchOffset, long time) {
         if (mute) {
             return 0;
@@ -146,11 +158,16 @@ public class Oscillator {
         return envelopeGenerator.getEnvelopeAmplitude(keyId) * Dsp.oscillator(waveForm, frequency, modulation, 0, time);
     }
 
-    void start(KeyboardNote note) {
-        start(note.getId(), note.getFrequency());
-    }
-
     // fixed frequency calculation from [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782]
+
+    /**
+     * <p>Puts the oscillator in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Oscillator#stop(int) stop} method is called.</p>
+     * <p>The fixed frequency calculation was taken from hexter's <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782">dx7_voice.c</a>.</p>
+     *
+     * @param keyId     ID representing an unique key, in the range of 0 to 131.
+     * @param frequency Indicates the frequency at which this oscillator is going to operate.
+     * @see <a href="https://github.com/smbolton/hexter">hexter</a>
+     */
     void start(int keyId, double frequency) {
         if (!mute) {
             for (int i = 2; i < algorithm.pattern.length; i++) {
@@ -171,10 +188,11 @@ public class Oscillator {
         }
     }
 
-    void stop(KeyboardNote note) {
-        stop(note.getId());
-    }
-
+    /**
+     * Puts the oscillator in the <code>release</code> stage.
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     */
     void stop(int keyId) {
         for (int i = 2; i < algorithm.pattern.length; i++) {
             if (algorithm.pattern[i][0] == id) {
@@ -189,10 +207,23 @@ public class Oscillator {
         }
     }
 
-    boolean isActive(int keyId) {
+    /**
+     * Tells if the oscillator is in the <code>idle</code> stage.
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     * @return True if the oscillator is currently idle.
+     * @see Algorithm#getSample
+     * @see Algorithm#hasActiveCarriers
+     */
+    public boolean isActive(int keyId) {
         return envelopeGenerator.getEnvelopeState(keyId) != EnvelopeState.IDLE;
     }
 
+    /**
+     * Helper method for display purposes.
+     *
+     * @return If the oscillator is in fixed frequency mode, returns it's frequency in Hz. Otherwise returns the frequency ratio.
+     */
     public double getEffectiveFrequency() {
         return (fixedFrequency
                 ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) frequencyRatio & 3) + frequencyFine / 100.0))

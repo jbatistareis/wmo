@@ -147,7 +147,7 @@ public class Dx7Sysex {
         instrumentPreset.setPitchSustainLevel(pitchEgLevel3);
         instrumentPreset.setPitchReleaseLevel(pitchEgLevel4);
 
-        instrumentPreset.setAlgorithm(ALGORITHMS[algorithm + 8]);
+        instrumentPreset.setAlgorithm(ALGORITHMS[algorithm + 11]);
 
         instrumentPreset.setOscillatorKeySync(oscillatorKeySync == 1);
         instrumentPreset.setFeedback(feedback);

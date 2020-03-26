@@ -2,17 +2,21 @@ package com.jbatista.wmo.preset;
 
 /**
  * <p>A 2D array representing an algorithm structure.</p>
- * <p><code>[0], [1], [n]</code></p>
  * <p><code>[Carriers...], [Oscillator X, Feedback source Y], [Oscillator X, Modulated by oscillator Y]...</code></p>
  * <p>
  *  <ul>
  *     <li><code>Index 0</code> contains the oscillators that are going to act as carriers.</li>
- *     <li><code>Index 1</code> contains the oscillator that is going to receive feedback, and its source.</li>
- *     <li><code>Index 2</code> onward describes from where an oscillator receives its modulation, repeats for every oscillator.</li>
+ *     <li><code>Index 1</code> contains the oscillator that is going to receive feedback and its source.</li>
+ *     <li><code>Index 2</code> onward describes from where an oscillator receives its modulation, repeats for every oscillator. They are omitted if there's no modulation, like on organ presets.</li>
  *  </ul>
  * </p>
  */
 public enum AlgorithmPreset {
+
+    ALGO_1_OSC_1(1, 1, new int[][]{{0}, {0, 0}}),
+
+    ALGO_2_OSC_1(2, 1, new int[][]{{0}, {1, 1}, {0, 1}}),
+    ALGO_2_OSC_2(2, 2, new int[][]{{0, 1}, {1, 1}}),
 
     ALGO_4_OSC_1(4, 1, new int[][]{{0}, {3, 3}, {0, 1}, {1, 2}, {2, 3}}),
     ALGO_4_OSC_2(4, 2, new int[][]{{0}, {3, 3}, {0, 1}, {1, 2}, {1, 3}}),

@@ -30,7 +30,7 @@ public class InstrumentPreset {
     private int lfoPModeSensitivity = 3;
     private WaveForm lfoWave = WaveForm.TRIANGLE;
 
-    private AlgorithmPreset algorithm = AlgorithmPreset.ALGO_4_OSC_1;
+    private AlgorithmPreset algorithm = AlgorithmPreset.ALGO_1_OSC_1;
     private OscillatorPreset[] oscillatorPresets = new OscillatorPreset[]{
             new OscillatorPreset(0), new OscillatorPreset(1), new OscillatorPreset(2),
             new OscillatorPreset(3), new OscillatorPreset(4), new OscillatorPreset(5)};

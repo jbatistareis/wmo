@@ -12,7 +12,7 @@ public class Instrument {
     private int keyId = 0;
 
     // parameters
-    private int sampleRate = 44100;
+    private final int sampleRate;
     private double gain = 0.01;
     private int transpose = 0;
     private final Algorithm algorithm;
@@ -25,21 +25,23 @@ public class Instrument {
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
 
-    public Instrument() {
-        this.algorithm = new Algorithm();
+    /**
+     * <p>Represents an entire keyboard and its functions.</p>
+     * <p>All starts here, this class contains every facility to define and play any sound.</p>
+     * <p>Audio is obtained in PCM frames that can be written directly to audio outputs, obtaining a frame is the same as to read a PCM file.</p>
+     *
+     * @param sampleRate The sample rate that this instrument is going to operate.
+     */
+    public Instrument(int sampleRate) {
+        this.sampleRate = sampleRate;
+        this.algorithm = new Algorithm(sampleRate);
 
         loadInstrumentPreset(new InstrumentPreset());
     }
 
     // <editor-fold defaultstate="collapsed" desc="getters/setters">
-
     public int getSampleRate() {
         return sampleRate;
-    }
-
-    public void setSampleRate(int sampleRate) {
-        this.sampleRate = sampleRate;
-        this.algorithm.setSampleRate(sampleRate);
     }
 
     public double getGain() {
@@ -67,6 +69,15 @@ public class Instrument {
     }
     // </editor-fold>
 
+    /**
+     * <p>Creates a mono PCM frame.</p>
+     * <p>Not very useful to play audio, use {@link #getByteFrame}, {@link #getShortFrame}, or {@link #getFloatFrame} to obtain a frame that can be used as audio data.</p>
+     *
+     * @return A single audio frame.
+     * @see #getByteFrame
+     * @see #getShortFrame
+     * @see #getFloatFrame
+     */
     public double getSample() {
         frameSample = 0;
 
@@ -85,6 +96,14 @@ public class Instrument {
         return frameSample;
     }
 
+    /**
+     * <p>Creates a stereo 16bit PCM frame, composed of two identical channels, in a interleaved array: <code>[L, L][R, R]</code>.</p>
+     * <p>Ideal to be used with {@link javax.sound.sampled.SourceDataLine#write(byte[], int, int)}.</p>
+     *
+     * @param bigEndian Defines the endianness of the values.
+     * @return A single audio frame.
+     * @see #getSample
+     */
     public byte[] getByteFrame(boolean bigEndian) {
         getSample();
         frameSample *= 32768;
@@ -96,6 +115,13 @@ public class Instrument {
         return buffer16bit;
     }
 
+    /**
+     * <p>Creates a stereo PCM frame, composed of two identical channels, in a interleaved array: <code>[L][R]</code>.</p>
+     * <p>Ideal to be used with libraries that support this kind of data, like <a href="https://libgdx.badlogicgames.com/">LibGdx</a>.</p>
+     *
+     * @return A single audio frame.
+     * @see #getSample
+     */
     public short[] getShortFrame() {
         getSample();
 
@@ -106,6 +132,13 @@ public class Instrument {
         return shortBuffer;
     }
 
+    /**
+     * <p>Creates a stereo PCM frame, composed of two identical channels, in a interleaved array: <code>[L][R]</code>.</p>
+     * <p>Ideal to be used with libraries that support this kind of data, like <a href="https://libgdx.badlogicgames.com/">LibGdx</a>.</p>
+     *
+     * @return A single audio frame.
+     * @see #getSample
+     */
     public float[] getFloatFrame() {
         getSample();
 
@@ -116,10 +149,24 @@ public class Instrument {
         return floatBuffer;
     }
 
+    /**
+     * Helper method that extracts the {@link KeyboardNote#getId id} from the {@link KeyboardNote} and passes to {@link #pressKey(int)}.
+     *
+     * @param key The note that is being pressed.
+     * @see #pressKey(int)
+     */
     public void pressKey(KeyboardNote key) {
         pressKey(key.getId());
     }
 
+    /**
+     * <p>Presses a key and starts the carrier chain defined by the {@link Algorithm}, applying the defined transposition setting.</p>
+     * <p>Use this method to interact with the instrument.</p>
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     * @see Algorithm
+     * @see Oscillator
+     */
     public void pressKey(int keyId) {
         keyId += transpose;
 
@@ -129,10 +176,24 @@ public class Instrument {
         }
     }
 
+    /**
+     * Helper method that extracts the {@link KeyboardNote#getId id} from the {@link KeyboardNote} and passes to {@link #releaseKey(int)}.
+     *
+     * @param key The note that is being released.
+     * @see #releaseKey(int)
+     */
     public void releaseKey(KeyboardNote key) {
         releaseKey(key.getId());
     }
 
+    /**
+     * <p>Releases a key and stops the carrier chain defined by the {@link Algorithm}, applying the defined transposition setting.</p>
+     * <p>Use this method to interact with the instrument.</p>
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     * @see Algorithm
+     * @see Oscillator
+     */
     public void releaseKey(int keyId) {
         keyId += transpose;
 
@@ -141,6 +202,11 @@ public class Instrument {
         }
     }
 
+    /**
+     * Releases all keys, silencing the instrument.
+     *
+     * @see Algorithm#stopAll
+     */
     public void releaseAllKeys() {
         algorithm.stopAll();
     }
