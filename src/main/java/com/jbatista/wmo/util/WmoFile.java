@@ -212,8 +212,8 @@ public class WmoFile {
                     file.write(instrument.getOscillatorPresets()[i].getBreakpointNote().getId());
                     file.write(instrument.getOscillatorPresets()[i].getBreakpointLeftDepth());
                     file.write(instrument.getOscillatorPresets()[i].getBreakpointRightDepth());
-                    file.write(instrument.getOscillatorPresets()[i].getBreakpointRightCurve().getId());
                     file.write(instrument.getOscillatorPresets()[i].getBreakpointLeftCurve().getId());
+                    file.write(instrument.getOscillatorPresets()[i].getBreakpointRightCurve().getId());
 
                     file.write(instrument.getOscillatorPresets()[i].getFrequencyDetune());
                     file.write(instrument.getOscillatorPresets()[i].getRateScaling());

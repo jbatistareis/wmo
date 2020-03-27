@@ -223,8 +223,6 @@ public class Instrument {
         for (OscillatorPreset oscillatorPreset : instrumentPreset.getOscillatorPresets()) {
             algorithm.getOscillator(oscillatorPreset.getId()).loadOscillatorPreset(oscillatorPreset);
         }
-
-        filterChain.clear();
     }
 
 }
