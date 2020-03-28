@@ -23,14 +23,14 @@ WIP!
 
 ## TODO
 * Proper README/documentation
-* API fine tuning
-* Parameters fine tuning
 * Pitch envelope
 * LFO
 * MIDI support
 * Filter serialization
 * More filters
 * Channel separation/manipulation
+* ~~API fine tuning~~ **OK!**
+* ~~Parameters fine tuning~~ **OK!**
 * ~~Improve feedback~~ **OK!**
 * ~~Transpose~~ **OK!**
 * [~~A demo interface~~](https://github.com/jbatistareis/wmo-operator) **OK!**
