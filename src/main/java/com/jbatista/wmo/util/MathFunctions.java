@@ -2,16 +2,18 @@ package com.jbatista.wmo.util;
 
 import java.util.Random;
 
-/*
-    Interpolation algorithms based on Lewis Van Winkle's 2009 blog post "Simple Interpolation" [https://codeplea.com/simple-interpolation]
-*/
-
+/**
+ * Provides commons mathematical methods and constants.
+ *
+ * @see <a href="https://codeplea.com/simple-interpolation">CodePlea article: "Simple Interpolation"</a>
+ */
 public class MathFunctions {
 
-    public static final double TAU = Math.PI * 2;
-    public static final double PI_D2 = Math.PI / 2;
-    public static final double NATURAL_LOG10 = 2.30258509299;
-    private static final int SIGNED_24_BIT_MAX = 8388607;
+    public static final double TAU = 6.2831;
+    public static final double PI_DIV_2 = 1.5707;
+    public static final double NATURAL_LOG10 = 2.3025;
+    public static final int SIGNED_16_BIT_MAX = 32767;
+    public static final int SIGNED_24_BIT_MAX = 8388607;
     public static final Random RANDOM = new Random();
 
     public static int primitiveFrom16bit(boolean bigEndian, boolean signed, byte b1, byte b2) {

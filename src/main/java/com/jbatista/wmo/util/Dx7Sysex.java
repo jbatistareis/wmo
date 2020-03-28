@@ -1,7 +1,5 @@
 package com.jbatista.wmo.util;
 
-// Detailed description of the format can be found on https://github.com/asb2m10/dexed/blob/master/Documentation/sysex-format.txt
-
 import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.TransitionCurve;
 import com.jbatista.wmo.WaveForm;
@@ -15,6 +13,11 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provides means of reading sysex files.
+ *
+ * @see <a href="https://github.com/asb2m10/dexed/blob/master/Documentation/sysex-format.txt">DX7 sysex format.</a>
+ */
 public class Dx7Sysex {
 
     private static final String ERROR_HEADER = "\nThe following errors where found during processing:";
@@ -29,7 +32,16 @@ public class Dx7Sysex {
     private static final WaveForm[] WAVE_FORMS = WaveForm.values();
     private static final TransitionCurve[] CURVES = TransitionCurve.values();
 
-    public static List<InstrumentPreset> readInstruments(File sysex) throws IOException, SysexException {
+    /**
+     * Reads a sysex file, and returns a list of {@link InstrumentPreset presets} from it's defined voices.
+     *
+     * @param sysex The sysex file.
+     * @return A list of presets ready to be used.
+     * @throws IOException
+     * @throws SysexException
+     * @see com.jbatista.wmo.synthesis.Instrument
+     */
+    public static List<InstrumentPreset> extractPresets(File sysex) throws IOException, SysexException {
         final List<InstrumentPreset> instruments = new ArrayList<>();
 
         final byte[] header = new byte[6];
@@ -223,7 +235,7 @@ public class Dx7Sysex {
             oscillatorPreset.setBreakpointRightCurve(CURVES[breakpointRightCurve]);
 
             oscillatorPreset.setFrequencyDetune(detune);
-            oscillatorPreset.setRateScaling(rateScale);
+            oscillatorPreset.setSpeedScaling(rateScale);
 
             oscillatorPreset.setVelocitySensitivity(velocitySensitivity);
             oscillatorPreset.setAmSensitivity(amSensitivity);
@@ -235,7 +247,7 @@ public class Dx7Sysex {
 
             oscillatorPreset.setFrequencyFine(frequencyFine);
 
-            instrumentPreset.addOscillatorPreset(operator, oscillatorPreset);
+            instrumentPreset.addOscillatorPreset(oscillatorPreset);
         }
 
         return instrumentPreset;

@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Provides means of serializing WMO presets.
+ */
 public class WmoFile {
 
     private static final AlgorithmPreset[] ALGORITHMS = AlgorithmPreset.values();
@@ -21,14 +24,14 @@ public class WmoFile {
     private static final WaveForm[] WAVE_FORMS = WaveForm.values();
     private static final TransitionCurve[] CURVES = TransitionCurve.values();
 
-    public static List<InstrumentPreset> loadWmoInstruments(File wmo) throws IOException {
+    public static List<InstrumentPreset> loadWmoInstruments(File wmoFile) throws IOException {
         final List<InstrumentPreset> presets = new ArrayList<>();
         final byte[] data = new byte[161];
 
-        try (final RandomAccessFile file = new RandomAccessFile(wmo, "r")) {
+        try (final RandomAccessFile file = new RandomAccessFile(wmoFile, "r")) {
             file.read(data);
 
-            for (int i = 0; i < (wmo.length() / data.length); i++) {
+            for (int i = 0; i < (wmoFile.length() / data.length); i++) {
                 file.read(data);
                 presets.add(parseBytes(data));
             }
@@ -166,7 +169,7 @@ public class WmoFile {
             oscillatorPreset.setBreakpointRightCurve(CURVES[breakpointRightCurve]);
 
             oscillatorPreset.setFrequencyDetune(detune);
-            oscillatorPreset.setRateScaling(rateScale);
+            oscillatorPreset.setSpeedScaling(rateScale);
 
             oscillatorPreset.setVelocitySensitivity(velocitySensitivity);
             oscillatorPreset.setAmSensitivity(amSensitivity);
@@ -178,23 +181,23 @@ public class WmoFile {
 
             oscillatorPreset.setFrequencyFine(frequencyFine);
 
-            instrumentPreset.addOscillatorPreset(operator, oscillatorPreset);
+            instrumentPreset.addOscillatorPreset(oscillatorPreset);
         }
 
         return instrumentPreset;
     }
 
-    public static void saveSingleWmoInstrument(InstrumentPreset instrument, File wmo) throws IOException {
+    public static void saveSingleWmoInstrument(InstrumentPreset instrument, File wmoFile) throws IOException {
         final List<InstrumentPreset> instrumentPresets = new ArrayList<>();
         instrumentPresets.add(instrument);
 
-        saveBulkWmoInstruments(instrumentPresets, wmo);
+        saveBulkWmoInstruments(instrumentPresets, wmoFile);
     }
 
-    public static void saveBulkWmoInstruments(List<InstrumentPreset> instruments, File wmo) throws IOException {
+    public static void saveBulkWmoInstruments(List<InstrumentPreset> instruments, File wmoFile) throws IOException {
         final List<AlgorithmPreset> algorithms = Arrays.asList(ALGORITHMS);
 
-        try (final RandomAccessFile file = new RandomAccessFile(wmo, "rw")) {
+        try (final RandomAccessFile file = new RandomAccessFile(wmoFile, "rw")) {
             for (InstrumentPreset instrument : instruments) {
                 for (int i = 0; i < instrument.getAlgorithm().getOscillatorCount(); i++) {
                     file.write(instrument.getOscillatorPresets()[i].getId());
@@ -216,7 +219,7 @@ public class WmoFile {
                     file.write(instrument.getOscillatorPresets()[i].getBreakpointRightCurve().getId());
 
                     file.write(instrument.getOscillatorPresets()[i].getFrequencyDetune());
-                    file.write(instrument.getOscillatorPresets()[i].getRateScaling());
+                    file.write(instrument.getOscillatorPresets()[i].getSpeedScaling());
 
                     file.write(instrument.getOscillatorPresets()[i].getVelocitySensitivity());
                     file.write(instrument.getOscillatorPresets()[i].getAmSensitivity());

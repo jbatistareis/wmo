@@ -2,14 +2,16 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.TransitionCurve;
+import com.jbatista.wmo.preset.OscillatorPreset;
 
 /**
  * Performs volume level scaling on keys, making a key sound quieter or louder when going up or down the keyboard.
  * <p>Instances of this class are created by the {@link Oscillator} class.</p>
+ * <p>Internally, breakpoints are calculated based on the key ID. So it is important to pass the correct value to {@link Instrument#pressKey(int)}.</p>
  * <ul>
- *     <li>Setting a {@link #setNote note} marks the central point where the volume will change from left and right of it.</li>
- *     <li>Setting the {@link #setLeftCurve left} and {@link #setRightCurve right} curves tells if the volume will increase or decrease, in linear or exponential progression.</li>
- *     <li>Setting the {@link #setLeftDepth left} and {@link #setRightDepth right} depths tells how fast the volume change is going to happen.</li>
+ *     <li>Setting a {@link com.jbatista.wmo.preset.OscillatorPreset#setBreakpointNote(KeyboardNote) note} marks the central point where the volume will change from left and right of it.</li>
+ *     <li>Setting the {@link com.jbatista.wmo.preset.OscillatorPreset#setBreakpointLeftCurve(TransitionCurve) left} and {@link com.jbatista.wmo.preset.OscillatorPreset#setBreakpointRightCurve(TransitionCurve) right} curves tells if the volume will increase or decrease, in linear or exponential progression.</li>
+ *     <li>Setting the {@link com.jbatista.wmo.preset.OscillatorPreset#setBreakpointLeftDepth(int) left} and {@link com.jbatista.wmo.preset.OscillatorPreset#setBreakpointRightDepth(int) right} depths tells how fast the volume change is going to happen.</li>
  * </ul>
  *
  * @see Oscillator
@@ -18,102 +20,13 @@ import com.jbatista.wmo.TransitionCurve;
  */
 public class Breakpoint {
 
-    private KeyboardNote note = KeyboardNote.A_4;
-    private int breakpoint = 81;
+    private final int oscillatorId;
+    private final Instrument instrument;
 
-    private TransitionCurve leftCurve = TransitionCurve.LINEAR_DECREASE;
-    private TransitionCurve rightCurve = TransitionCurve.LINEAR_DECREASE;
-
-    private int leftDepth = 0;
-    private int rightDepth = 0;
-
-    Breakpoint() {
+    Breakpoint(int oscillatorId, Instrument instrument) {
+        this.oscillatorId = oscillatorId;
+        this.instrument = instrument;
     }
-
-    // <editor-fold defaultstate="collapsed" desc="getters/setters">
-    public KeyboardNote getNote() {
-        return note;
-    }
-
-    /**
-     * @param note The starting point of the breakpoint.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#setBreakpointNote
-     */
-    public void setNote(KeyboardNote note) {
-        if (note.getId() < 21) {
-            note = KeyboardNote.A_MINUS_1;
-        } else if (note.getId() > 120) {
-            note = KeyboardNote.C_8;
-        }
-
-        this.note = note;
-        this.breakpoint = note.getId();
-    }
-
-    /**
-     * @return The shape of the progression curve.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#getBreakpointLeftCurve
-     */
-    public TransitionCurve getLeftCurve() {
-        return leftCurve;
-    }
-
-    /**
-     * @param leftCurve The shape of the progression curve.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#setBreakpointLeftCurve
-     */
-    public void setLeftCurve(TransitionCurve leftCurve) {
-        this.leftCurve = leftCurve;
-    }
-
-    /**
-     * @return The shape of the progression curve.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#getBreakpointRightCurve
-     */
-    public TransitionCurve getRightCurve() {
-        return rightCurve;
-    }
-
-    /**
-     * @param rightCurve The shape of the progression curve.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#setBreakpointRightCurve
-     */
-    public void setRightCurve(TransitionCurve rightCurve) {
-        this.rightCurve = rightCurve;
-    }
-
-    /**
-     * @return The speed at which the volume change will occur, to the left of the breakpoint.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#getBreakpointLeftDepth
-     */
-    public int getLeftDepth() {
-        return leftDepth;
-    }
-
-    /**
-     * @param leftDepth The speed at which the volume change will occur, to the left of the breakpoint.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#setBreakpointLeftDepth
-     */
-    public void setLeftDepth(int leftDepth) {
-        this.leftDepth = Math.max(0, Math.min(leftDepth, 99));
-    }
-
-    /**
-     * @return The speed at which the volume change will occur, to the right of the breakpoint.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#getBreakpointRightDepth
-     */
-    public int getRightDepth() {
-        return rightDepth;
-    }
-
-    /**
-     * @param rightDepth The speed at which the volume change will occur, to the right of the breakpoint.
-     * @see com.jbatista.wmo.preset.OscillatorPreset#setBreakpointRightDepth
-     */
-    public void setRightDepth(int rightDepth) {
-        this.rightDepth = Math.max(0, Math.min(rightDepth, 99));
-    }
-    // </editor-fold>
 
     /**
      * Gives the output level parameter offset, to be added to the oscillator output level parameter. Based on breakpoint position, curve shape, and curve depth.
@@ -129,22 +42,23 @@ public class Breakpoint {
         final int depth;
         final TransitionCurve curve;
 
-        if (keyId < breakpoint) {
-            if (leftDepth == 0) {
+        if (keyId < oscillatorPreset().getBreakpointNote().getId()) {
+            if (oscillatorPreset().getBreakpointLeftDepth() == 0) {
                 return 0;
             }
 
-            curve = leftCurve;
-            depth = leftDepth;
-            distance = breakpoint - keyId;
-        } else if (keyId > breakpoint) {
-            if (rightDepth == 0) {
+            curve = oscillatorPreset().getBreakpointLeftCurve();
+            depth = oscillatorPreset().getBreakpointLeftDepth();
+            distance = oscillatorPreset().getBreakpointNote().getId() - keyId;
+
+        } else if (keyId > oscillatorPreset().getBreakpointNote().getId()) {
+            if (oscillatorPreset().getBreakpointRightDepth() == 0) {
                 return 0;
             }
 
-            curve = rightCurve;
-            depth = rightDepth;
-            distance = keyId - breakpoint;
+            curve = oscillatorPreset().getBreakpointRightCurve();
+            depth = oscillatorPreset().getBreakpointRightDepth();
+            distance = keyId - oscillatorPreset().getBreakpointNote().getId();
         } else {
             return 0;
         }
@@ -180,6 +94,10 @@ public class Breakpoint {
 
     private int linCalc(int distance, int depth) {
         return (int) (distance / 45d * depth);
+    }
+
+    private OscillatorPreset oscillatorPreset() {
+        return instrument.preset.getOscillatorPresets()[oscillatorId];
     }
 
 }

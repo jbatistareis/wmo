@@ -4,7 +4,7 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
 
 /**
  * Supports the structure of the algorithm used by the {@link Instrument}, creates instances of {@link Oscillator}, obtains PCM data from then.
- * <p>Instances of this class are created by the {@link Instrument} class.</p>
+ * <p>Instances of this class are created by {@link Instrument}.</p>
  *
  * @see Instrument
  * @see AlgorithmPreset
@@ -12,37 +12,24 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
  */
 public class Algorithm {
 
+    final Instrument instrument;
+
     private final boolean[][] activeCarriers = new boolean[132][6];
     private final long[] elapsed = new long[132];
     private double tempSample;
 
-    int[][] pattern = AlgorithmPreset.ALGO_1_OSC_1.getPattern();
     final Oscillator[] oscillators = new Oscillator[6];
 
-    Algorithm(int sampleRate) {
+    Algorithm(int sampleRate, Instrument instrument) {
+        this.instrument = instrument;
+
         for (int i = 0; i < 6; i++) {
-            oscillators[i] = new Oscillator(i, this, sampleRate);
+            oscillators[i] = new Oscillator(i, sampleRate, instrument);
         }
-    }
-
-    public void setFeedback(int feedback) {
-        for (int i = 0; i < 6; i++) {
-            oscillators[i].setFeedback(0);
-        }
-
-        getOscillator(pattern[1][0]).setFeedback(feedback);
-    }
-
-    public void loadAlgorithmPreset(AlgorithmPreset algorithm) {
-        this.pattern = algorithm.getPattern();
-    }
-
-    public Oscillator getOscillator(int id) {
-        return oscillators[id];
     }
 
     /**
-     * Sets off the chain of oscillators connected to the carriers of the {@link Algorithm#loadAlgorithmPreset defined algorithm}, resulting on an audio frame used by the {@link Instrument}.
+     * Sets off the chain of oscillators defined as carriers on the algorithm.
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      * @return A single audio frame.
@@ -52,18 +39,18 @@ public class Algorithm {
     double getSample(int keyId) {
         tempSample = 0;
 
-        for (int i = 0; i < pattern[0].length; i++) {
-            tempSample += oscillators[pattern[0][i]].getSample(keyId, 1, elapsed[keyId]);
-            activeCarriers[keyId][oscillators[pattern[0][i]].getId()] = oscillators[pattern[0][i]].isActive(keyId);
+        for (int i = 0; i < instrument.preset.getAlgorithm().getPattern()[0].length; i++) {
+            tempSample += oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].getSample(keyId, 1, elapsed[keyId]);
+            activeCarriers[keyId][oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].id] = oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
 
-        return tempSample / pattern[0].length;
+        return tempSample / instrument.preset.getAlgorithm().getPattern()[0].length;
     }
 
     /**
-     * Puts every carrier defined by the {@link Algorithm#loadAlgorithmPreset algorithm} in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Algorithm#stop(int) stop} method is called.
+     * Puts every carrier defined by the algorithm in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link #stop(int)} method is called.
      *
      * @param keyId     ID representing an unique key, in the range of 0 to 131.
      * @param frequency Indicates the frequency at which the oscillators are going to operate.
@@ -73,8 +60,8 @@ public class Algorithm {
             elapsed[keyId] = 0;
         }
 
-        for (int i = 0; i < pattern[0].length; i++) {
-            oscillators[pattern[0][i]].start(keyId, frequency);
+        for (int i = 0; i < instrument.preset.getAlgorithm().getPattern()[0].length; i++) {
+            oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].start(keyId, frequency);
         }
     }
 
@@ -84,8 +71,8 @@ public class Algorithm {
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
     void stop(int keyId) {
-        for (int i = 0; i < pattern[0].length; i++) {
-            oscillators[pattern[0][i]].stop(keyId);
+        for (int i = 0; i < instrument.preset.getAlgorithm().getPattern()[0].length; i++) {
+            oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].stop(keyId);
         }
     }
 
@@ -94,8 +81,8 @@ public class Algorithm {
      */
     void stopAll() {
         for (int i = 0; i < 132; i++) {
-            for (int j = 0; j < pattern[0].length; j++) {
-                oscillators[pattern[0][j]].stop(i);
+            for (int j = 0; j < instrument.preset.getAlgorithm().getPattern()[0].length; j++) {
+                oscillators[instrument.preset.getAlgorithm().getPattern()[0][j]].stop(i);
             }
         }
     }

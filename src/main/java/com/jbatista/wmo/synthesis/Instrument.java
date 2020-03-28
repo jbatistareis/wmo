@@ -2,31 +2,27 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.preset.InstrumentPreset;
-import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.MathFunctions;
 
 /**
  * Represents an entire keyboard and its functions.
- * <p>All starts here, this class instantiates the {@link Algorithm}, and contains every facility to define and play any sound.</p>
+ * <p>This class provides means of controlling keys and obtaining audio, to control the parameters, use a {@link InstrumentPreset preset}.</p>
  * <p>Audio is obtained in PCM frames that can be written directly to audio outputs, obtaining a frame is the same as to read a PCM file.</p>
  *
- * @see Algorithm
- * @see Oscillator
+ * @see InstrumentPreset
+ * @see #setPreset(InstrumentPreset)
  */
 public class Instrument {
 
-    private final static KeyboardNote[] NOTES = KeyboardNote.values();
+    private static final KeyboardNote[] NOTES = KeyboardNote.values();
 
     private int keyId = 0;
-
-    // parameters
-    private final int sampleRate;
-    private double gain = 0.01;
-    private int transpose = 0;
-    private final Algorithm algorithm;
-    private final FilterChain filterChain = new FilterChain();
-
     private final boolean[] keysQueue = new boolean[132];
+
+    private final int sampleRate;
+    final Algorithm algorithm;
+    private final FilterChain filterChain = new FilterChain();
+    InstrumentPreset preset = new InstrumentPreset();
 
     private double frameSample;
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
@@ -35,40 +31,24 @@ public class Instrument {
 
     public Instrument(int sampleRate) {
         this.sampleRate = sampleRate;
-        this.algorithm = new Algorithm(sampleRate);
-
-        loadInstrumentPreset(new InstrumentPreset());
+        this.algorithm = new Algorithm(sampleRate, this);
     }
 
-    // <editor-fold defaultstate="collapsed" desc="getters/setters">
     public int getSampleRate() {
         return sampleRate;
-    }
-
-    public double getGain() {
-        return gain;
-    }
-
-    public void setGain(double gain) {
-        this.gain = Math.max(0, Math.min(gain, 1));
-    }
-
-    public int getTranspose() {
-        return transpose;
-    }
-
-    public void setTranspose(int transpose) {
-        this.transpose = Math.max(-24, Math.min(transpose, 24));
-    }
-
-    public Algorithm getAlgorithm() {
-        return algorithm;
     }
 
     public FilterChain getFilterChain() {
         return filterChain;
     }
-    // </editor-fold>
+
+    public InstrumentPreset getPreset() {
+        return preset;
+    }
+
+    public void setPreset(InstrumentPreset preset) {
+        this.preset = preset;
+    }
 
     /**
      * Creates a mono PCM frame.
@@ -92,7 +72,7 @@ public class Instrument {
             }
         }
 
-        frameSample = gain * filterChain.getResult(frameSample);
+        frameSample = preset.getGain() * filterChain.getResult(frameSample);
 
         return frameSample;
     }
@@ -107,7 +87,7 @@ public class Instrument {
      */
     public byte[] getByteFrame(boolean bigEndian) {
         getSample();
-        frameSample *= 32768;
+        frameSample *= MathFunctions.SIGNED_16_BIT_MAX;
 
         // TODO channel stuff, [L][R]
         MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) frameSample);
@@ -169,7 +149,7 @@ public class Instrument {
      * @see Oscillator
      */
     public void pressKey(int keyId) {
-        keyId += transpose;
+        keyId += preset.getTranspose();
 
         if ((keyId >= 0) || (keyId <= 131)) {
             algorithm.start(keyId, NOTES[keyId].getFrequency());
@@ -196,7 +176,7 @@ public class Instrument {
      * @see Oscillator
      */
     public void releaseKey(int keyId) {
-        keyId += transpose;
+        keyId += preset.getTranspose();
 
         if ((keyId >= 0) || (keyId <= 131)) {
             algorithm.stop(keyId);
@@ -210,19 +190,6 @@ public class Instrument {
      */
     public void releaseAllKeys() {
         algorithm.stopAll();
-    }
-
-    public void loadInstrumentPreset(InstrumentPreset instrumentPreset) {
-        setGain(instrumentPreset.getGain());
-        setTranspose(instrumentPreset.getTranspose());
-
-        algorithm.stopAll();
-        algorithm.loadAlgorithmPreset(instrumentPreset.getAlgorithm());
-        algorithm.setFeedback(instrumentPreset.getFeedback());
-
-        for (OscillatorPreset oscillatorPreset : instrumentPreset.getOscillatorPresets()) {
-            algorithm.getOscillator(oscillatorPreset.getId()).loadOscillatorPreset(oscillatorPreset);
-        }
     }
 
 }
