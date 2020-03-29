@@ -15,23 +15,25 @@ import com.jbatista.wmo.util.MathFunctions;
 public class Oscillator {
 
     final int id;
+    private final long instrumentId;
 
     private final double[] sineFrequency = new double[132];
-    private final Instrument instrument;
     private final int sampleRate;
 
     private int correctedOutputLevel;
     private final EnvelopeGenerator envelopeGenerator;
     private final Breakpoint breakpoint;
 
-    private double modulatorSample;
-
-    Oscillator(int id, int sampleRate, Instrument instrument) {
+    Oscillator(int id, int sampleRate, long instrumentId) {
         this.id = id;
         this.sampleRate = sampleRate;
-        this.instrument = instrument;
-        this.envelopeGenerator = new EnvelopeGenerator(id, sampleRate, instrument);
-        this.breakpoint = new Breakpoint(id, instrument);
+        this.instrumentId = instrumentId;
+        this.envelopeGenerator = new EnvelopeGenerator(id, sampleRate, instrumentId);
+        this.breakpoint = new Breakpoint(id, instrumentId);
+    }
+
+    private OscillatorPreset oscillatorPreset() {
+        return Instrument.presets.get(instrumentId).getOscillatorPresets()[id];
     }
 
     /**
@@ -45,27 +47,19 @@ public class Oscillator {
      * @return A single audio frame.
      * @see Algorithm#getSample
      */
-    double getSample(int keyId, double pitchOffset, long time) {
+    double getSample(int keyId, double pitchOffset, double modulation, int feedback, long time) {
         if (oscillatorPreset().isMute()) {
             return 0;
         }
 
-        modulatorSample = 0;
-
-        for (int i = 2; i < algorithm().length; i++) {
-            if (algorithm()[i][0] == id) {
-                modulatorSample += instrument.algorithm.oscillators[algorithm()[i][1]].getSample(keyId, pitchOffset, time);
-            }
-        }
-
-        if (algorithm()[1][0] == id) {
-            modulatorSample += Math.pow(2, (instrument.preset.getFeedback() - 7))
-                    * produceSample(keyId, pitchOffset * sineFrequency[keyId], modulatorSample, time);
+        if (feedback > 0) {
+            modulation += Math.pow(2, (feedback - 7))
+                    * produceSample(keyId, pitchOffset * sineFrequency[keyId], modulation, time);
         }
 
         envelopeGenerator.advanceEnvelope(keyId);
 
-        return produceSample(keyId, pitchOffset * sineFrequency[keyId], modulatorSample, time);
+        return produceSample(keyId, pitchOffset * sineFrequency[keyId], modulation, time);
     }
 
     private double produceSample(int keyId, double frequency, double modulation, long time) {
@@ -84,12 +78,6 @@ public class Oscillator {
      */
     void start(int keyId, double frequency) {
         if (!oscillatorPreset().isMute()) {
-            for (int i = 2; i < algorithm().length; i++) {
-                if (algorithm()[i][0] == id) {
-                    instrument.algorithm.oscillators[algorithm()[i][1]].start(keyId, frequency);
-                }
-            }
-
             sineFrequency[keyId] = ((oscillatorPreset().isFixedFrequency()
                     ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) oscillatorPreset().getFrequencyRatio() & 3) + oscillatorPreset().getFrequencyFine() / 100.0))
                     : frequency * ((oscillatorPreset().getFrequencyRatio() == 0) ? 0.5 : oscillatorPreset().getFrequencyRatio()) * Tables.FREQUENCY_FINE[oscillatorPreset().getFrequencyFine()])
@@ -108,12 +96,6 @@ public class Oscillator {
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
     void stop(int keyId) {
-        for (int i = 2; i < algorithm().length; i++) {
-            if (algorithm()[i][0] == id) {
-                instrument.algorithm.oscillators[algorithm()[i][1]].stop(keyId);
-            }
-        }
-
         if (oscillatorPreset().isMute()) {
             envelopeGenerator.reset(keyId);
         } else {
@@ -142,14 +124,6 @@ public class Oscillator {
         return (oscillatorPreset().isFixedFrequency()
                 ? Math.exp(MathFunctions.NATURAL_LOG10 * (((int) oscillatorPreset().getFrequencyRatio() & 3) + oscillatorPreset().getFrequencyFine() / 100.0))
                 : ((oscillatorPreset().getFrequencyRatio() == 0) ? 0.5 : oscillatorPreset().getFrequencyRatio()) * Tables.FREQUENCY_FINE[oscillatorPreset().getFrequencyFine()]);
-    }
-
-    private OscillatorPreset oscillatorPreset() {
-        return instrument.preset.getOscillatorPresets()[id];
-    }
-
-    private int[][] algorithm() {
-        return instrument.preset.getAlgorithm().getPattern();
     }
 
 }

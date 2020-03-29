@@ -21,11 +21,23 @@ import com.jbatista.wmo.preset.OscillatorPreset;
 public class Breakpoint {
 
     private final int oscillatorId;
-    private final Instrument instrument;
+    private final long instrumentId;
 
-    Breakpoint(int oscillatorId, Instrument instrument) {
+    Breakpoint(int oscillatorId, long instrumentId) {
         this.oscillatorId = oscillatorId;
-        this.instrument = instrument;
+        this.instrumentId = instrumentId;
+    }
+
+    private int expCalc(int distance, int depth) {
+        return (int) (Math.exp((distance - 72) / 13.5) * depth);
+    }
+
+    private int linCalc(int distance, int depth) {
+        return (int) (distance / 45d * depth);
+    }
+
+    private OscillatorPreset oscillatorPreset() {
+        return Instrument.presets.get(instrumentId).getOscillatorPresets()[oscillatorId];
     }
 
     /**
@@ -86,18 +98,6 @@ public class Breakpoint {
         }
 
         return offset;
-    }
-
-    private int expCalc(int distance, int depth) {
-        return (int) (Math.exp((distance - 72) / 13.5) * depth);
-    }
-
-    private int linCalc(int distance, int depth) {
-        return (int) (distance / 45d * depth);
-    }
-
-    private OscillatorPreset oscillatorPreset() {
-        return instrument.preset.getOscillatorPresets()[oscillatorId];
     }
 
 }

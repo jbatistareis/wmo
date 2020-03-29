@@ -12,20 +12,24 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
  */
 public class Algorithm {
 
-    final Instrument instrument;
-
+    private final long instrumentId;
     private final boolean[][] activeCarriers = new boolean[132][6];
     private final long[] elapsed = new long[132];
     private double tempSample;
+    private double pitchOffset = 1;
 
     final Oscillator[] oscillators = new Oscillator[6];
 
-    Algorithm(int sampleRate, Instrument instrument) {
-        this.instrument = instrument;
+    Algorithm(int sampleRate, long instrumentId) {
+        this.instrumentId = instrumentId;
 
         for (int i = 0; i < 6; i++) {
-            oscillators[i] = new Oscillator(i, sampleRate, instrument);
+            oscillators[i] = new Oscillator(i, sampleRate, instrumentId);
         }
+    }
+
+    private int[][] getPattern() {
+        return Instrument.presets.get(instrumentId).getAlgorithm().getPattern();
     }
 
     /**
@@ -39,14 +43,40 @@ public class Algorithm {
     double getSample(int keyId) {
         tempSample = 0;
 
-        for (int i = 0; i < instrument.preset.getAlgorithm().getPattern()[0].length; i++) {
-            tempSample += oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].getSample(keyId, 1, elapsed[keyId]);
-            activeCarriers[keyId][oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].id] = oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].isActive(keyId);
+        for (int i = 0; i < getPattern()[0].length; i++) {
+            tempSample += oscillators[getPattern()[0][i]].getSample(
+                    keyId,
+                    pitchOffset,
+                    getModulation(keyId, getPattern()[0][i], 0, elapsed[keyId]),
+                    0,
+                    elapsed[keyId]);
+
+            activeCarriers[keyId][oscillators[getPattern()[0][i]].id] = oscillators[getPattern()[0][i]].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
 
-        return tempSample / instrument.preset.getAlgorithm().getPattern()[0].length;
+        return tempSample / getPattern()[0].length;
+    }
+
+    // obtain the modulation sample using recursion
+    private double getModulation(int keyId, int oscillator, double modulation, long elapsed) {
+        for (int i = 2; i < getPattern().length; i++) {
+            if (getPattern()[i][0] == oscillator) {
+                double accumulator = 0;
+
+                modulation += oscillators[getPattern()[i][1]].getSample(
+                        keyId,
+                        pitchOffset,
+                        getModulation(keyId, getPattern()[i][1], accumulator, elapsed),
+                        (getPattern()[1][0] == oscillator)
+                                ? Instrument.presets.get(instrumentId).getFeedback()
+                                : 0,
+                        elapsed);
+            }
+        }
+
+        return modulation;
     }
 
     /**
@@ -60,8 +90,8 @@ public class Algorithm {
             elapsed[keyId] = 0;
         }
 
-        for (int i = 0; i < instrument.preset.getAlgorithm().getPattern()[0].length; i++) {
-            oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].start(keyId, frequency);
+        for (int i = 0; i < oscillators.length; i++) {
+            oscillators[i].start(keyId, frequency);
         }
     }
 
@@ -71,8 +101,8 @@ public class Algorithm {
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
     void stop(int keyId) {
-        for (int i = 0; i < instrument.preset.getAlgorithm().getPattern()[0].length; i++) {
-            oscillators[instrument.preset.getAlgorithm().getPattern()[0][i]].stop(keyId);
+        for (int i = 0; i < oscillators.length; i++) {
+            oscillators[i].stop(keyId);
         }
     }
 
@@ -81,8 +111,8 @@ public class Algorithm {
      */
     void stopAll() {
         for (int i = 0; i < 132; i++) {
-            for (int j = 0; j < instrument.preset.getAlgorithm().getPattern()[0].length; j++) {
-                oscillators[instrument.preset.getAlgorithm().getPattern()[0][j]].stop(i);
+            for (int j = 0; j < getPattern()[0].length; j++) {
+                oscillators[getPattern()[0][j]].stop(i);
             }
         }
     }

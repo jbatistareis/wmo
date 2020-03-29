@@ -13,7 +13,7 @@ public class EnvelopeGenerator {
 
     private final int oscillatorId;
     private final int sampleRate;
-    private final Instrument instrument;
+    private final long instrumentId;
 
     private final EnvelopeState[] state = new EnvelopeState[132];
     private final double[] startAmplitude = new double[132];
@@ -24,10 +24,16 @@ public class EnvelopeGenerator {
     private final double[] factor = new double[5];
     private final int[] size = new int[5];
 
-    EnvelopeGenerator(int oscillatorId, int sampleRate, Instrument instrument) {
+    // only recalculate envelope duration if speed changes
+    private int previousAttackSpeed = -1;
+    private int previousDecaySpeed = -1;
+    private int previousSustainSpeed = -1;
+    private int previousReleaseSpeed = -1;
+
+    EnvelopeGenerator(int oscillatorId, int sampleRate, long instrumentId) {
         this.oscillatorId = oscillatorId;
         this.sampleRate = sampleRate;
-        this.instrument = instrument;
+        this.instrumentId = instrumentId;
 
         this.size[EnvelopeState.PRE_IDLE.getId()] = sampleRate / 5;
         this.factor[EnvelopeState.PRE_IDLE.getId()] = 1d / size[EnvelopeState.PRE_IDLE.getId()];
@@ -35,6 +41,10 @@ public class EnvelopeGenerator {
 
     EnvelopeState getEnvelopeState(int keyId) {
         return state[keyId];
+    }
+
+    private OscillatorPreset oscillatorPreset() {
+        return Instrument.presets.get(instrumentId).getOscillatorPresets()[oscillatorId];
     }
 
     void setEnvelopeState(int keyId, EnvelopeState envelopeState) {
@@ -137,17 +147,33 @@ public class EnvelopeGenerator {
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
     void initialize(int keyId) {
-        size[EnvelopeState.ATTACK.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getAttackSpeed()] * sampleRate);
-        factor[EnvelopeState.ATTACK.getId()] = 1d / size[EnvelopeState.ATTACK.getId()];
+        if (previousAttackSpeed != oscillatorPreset().getAttackSpeed()) {
+            size[EnvelopeState.ATTACK.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getAttackSpeed()] * sampleRate);
+            factor[EnvelopeState.ATTACK.getId()] = 1d / size[EnvelopeState.ATTACK.getId()];
 
-        size[EnvelopeState.DECAY.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getDecaySpeed()] * sampleRate);
-        factor[EnvelopeState.DECAY.getId()] = 1d / size[EnvelopeState.DECAY.getId()];
+            previousAttackSpeed = oscillatorPreset().getAttackSpeed();
+        }
 
-        size[EnvelopeState.SUSTAIN.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getSustainSpeed()] * sampleRate);
-        factor[EnvelopeState.SUSTAIN.getId()] = 1d / size[EnvelopeState.SUSTAIN.getId()];
+        if (previousDecaySpeed != oscillatorPreset().getDecaySpeed()) {
+            size[EnvelopeState.DECAY.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getDecaySpeed()] * sampleRate);
+            factor[EnvelopeState.DECAY.getId()] = 1d / size[EnvelopeState.DECAY.getId()];
 
-        size[EnvelopeState.RELEASE.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getReleaseSpeed()] * sampleRate);
-        factor[EnvelopeState.RELEASE.getId()] = 1d / size[EnvelopeState.RELEASE.getId()];
+            previousDecaySpeed = oscillatorPreset().getDecaySpeed();
+        }
+
+        if (previousSustainSpeed != oscillatorPreset().getSustainSpeed()) {
+            size[EnvelopeState.SUSTAIN.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getSustainSpeed()] * sampleRate);
+            factor[EnvelopeState.SUSTAIN.getId()] = 1d / size[EnvelopeState.SUSTAIN.getId()];
+
+            previousSustainSpeed = oscillatorPreset().getSustainSpeed();
+        }
+
+        if (previousReleaseSpeed != oscillatorPreset().getReleaseSpeed()) {
+            size[EnvelopeState.RELEASE.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getReleaseSpeed()] * sampleRate);
+            factor[EnvelopeState.RELEASE.getId()] = 1d / size[EnvelopeState.RELEASE.getId()];
+
+            previousReleaseSpeed = oscillatorPreset().getReleaseSpeed();
+        }
 
         position[keyId] = 0;
         progress[keyId] = 0;
@@ -172,10 +198,6 @@ public class EnvelopeGenerator {
         currentAmplitude[keyId] = 0;
 
         state[keyId] = EnvelopeState.IDLE;
-    }
-
-    private OscillatorPreset oscillatorPreset() {
-        return instrument.preset.getOscillatorPresets()[oscillatorId];
     }
 
 }

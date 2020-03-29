@@ -4,9 +4,13 @@ import com.jbatista.wmo.KeyboardNote;
 import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.util.MathFunctions;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Represents an entire keyboard and its functions.
- * <p>This class provides means of controlling keys and obtaining audio, to control the parameters, use a {@link InstrumentPreset preset}.</p>
+ * <p>This class provides means of controlling keys and obtaining audio, to control the parameters use a {@link InstrumentPreset preset}.</p>
  * <p>Audio is obtained in PCM frames that can be written directly to audio outputs, obtaining a frame is the same as to read a PCM file.</p>
  *
  * @see InstrumentPreset
@@ -16,13 +20,17 @@ public class Instrument {
 
     private static final KeyboardNote[] NOTES = KeyboardNote.values();
 
+    private final long id = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    static final Map<Long, InstrumentPreset> presets = new HashMap<>(16);
+
     private int keyId = 0;
     private final boolean[] keysQueue = new boolean[132];
 
+    private InstrumentPreset preset;
     private final int sampleRate;
-    final Algorithm algorithm;
+    private final Algorithm algorithm;
     private final FilterChain filterChain = new FilterChain();
-    InstrumentPreset preset = new InstrumentPreset();
+
 
     private double frameSample;
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
@@ -30,8 +38,10 @@ public class Instrument {
     private final float[] floatBuffer = new float[]{0, 0};
 
     public Instrument(int sampleRate) {
+        setPreset(new InstrumentPreset());
+
         this.sampleRate = sampleRate;
-        this.algorithm = new Algorithm(sampleRate, this);
+        this.algorithm = new Algorithm(sampleRate, id);
     }
 
     public int getSampleRate() {
@@ -47,7 +57,7 @@ public class Instrument {
     }
 
     public void setPreset(InstrumentPreset preset) {
-        this.preset = preset;
+        presets.put(id, this.preset = preset);
     }
 
     /**
