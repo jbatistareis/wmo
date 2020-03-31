@@ -12,7 +12,7 @@ import com.jbatista.wmo.preset.AlgorithmPreset;
  */
 public class Algorithm {
 
-    private final long instrumentId;
+    private final Instrument instrument;
     private final boolean[][] activeCarriers = new boolean[132][6];
     private final long[] elapsed = new long[132];
     private double tempSample;
@@ -20,16 +20,16 @@ public class Algorithm {
 
     final Oscillator[] oscillators = new Oscillator[6];
 
-    Algorithm(int sampleRate, long instrumentId) {
-        this.instrumentId = instrumentId;
+    Algorithm(int sampleRate, Instrument instrument) {
+        this.instrument = instrument;
 
         for (int i = 0; i < 6; i++) {
-            oscillators[i] = new Oscillator(i, sampleRate, instrumentId);
+            oscillators[i] = new Oscillator(i, sampleRate, instrument);
         }
     }
 
     private int[][] getPattern() {
-        return Instrument.presets.get(instrumentId).getAlgorithm().getPattern();
+        return instrument.preset.getAlgorithm().getPattern();
     }
 
     /**
@@ -45,14 +45,14 @@ public class Algorithm {
 
         for (int i = 0; i < getPattern()[0].length; i++) {
             tempSample += oscillators[getPattern()[0][i]]
-                    .getSample(keyId, pitchOffset, getModulation(keyId, getPattern()[0][i], 0, true), elapsed[keyId]);
+                    .getSample(keyId, pitchOffset, getModulation(keyId, getPattern()[0][i], 0, true), elapsed[keyId]) / 13;
 
             activeCarriers[keyId][oscillators[getPattern()[0][i]].id] = oscillators[getPattern()[0][i]].isActive(keyId);
         }
 
         elapsed[keyId] += 1;
 
-        return tempSample / getPattern()[0].length;
+        return tempSample / (getPattern()[0].length * 13);
     }
 
     // obtain the modulation sample using recursion
@@ -69,7 +69,7 @@ public class Algorithm {
 
         // checks if this oscillator receives feedback or not
         if (feedbackOn && (oscillator == getPattern()[1][0])) {
-            modulation += Math.pow(2, Instrument.presets.get(instrumentId).getFeedback() - 7) * oscillators[getPattern()[1][0]].getSample(
+            modulation += Math.pow(2, instrument.preset.getFeedback() - 7) * oscillators[getPattern()[1][0]].getSample(
                     keyId,
                     pitchOffset,
                     getModulation(keyId, getPattern()[1][1], 0, false),

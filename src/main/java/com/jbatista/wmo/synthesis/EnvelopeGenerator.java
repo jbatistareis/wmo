@@ -13,7 +13,7 @@ public class EnvelopeGenerator {
 
     private final int oscillatorId;
     private final int sampleRate;
-    private final long instrumentId;
+    private final Instrument instrument;
 
     private final EnvelopeState[] state = new EnvelopeState[132];
     private final double[] startAmplitude = new double[132];
@@ -30,10 +30,10 @@ public class EnvelopeGenerator {
     private int previousSustainSpeed = -1;
     private int previousReleaseSpeed = -1;
 
-    EnvelopeGenerator(int oscillatorId, int sampleRate, long instrumentId) {
+    EnvelopeGenerator(int oscillatorId, int sampleRate, Instrument instrument) {
         this.oscillatorId = oscillatorId;
         this.sampleRate = sampleRate;
-        this.instrumentId = instrumentId;
+        this.instrument = instrument;
 
         this.size[EnvelopeState.PRE_IDLE.getId()] = sampleRate / 5;
         this.factor[EnvelopeState.PRE_IDLE.getId()] = 1d / size[EnvelopeState.PRE_IDLE.getId()];
@@ -46,7 +46,7 @@ public class EnvelopeGenerator {
     }
 
     private OscillatorPreset oscillatorPreset() {
-        return Instrument.presets.get(instrumentId).getOscillatorPresets()[oscillatorId];
+        return instrument.preset.getOscillatorPresets()[oscillatorId];
     }
 
     private void checkParameters() {

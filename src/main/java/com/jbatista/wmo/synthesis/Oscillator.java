@@ -15,7 +15,7 @@ import com.jbatista.wmo.util.MathFunctions;
 public class Oscillator {
 
     final int id;
-    private final long instrumentId;
+    private final Instrument instrument;
 
     private final double[] sineFrequency = new double[132];
     private final int sampleRate;
@@ -26,16 +26,16 @@ public class Oscillator {
     private final EnvelopeGenerator envelopeGenerator;
     private final Breakpoint breakpoint;
 
-    Oscillator(int id, int sampleRate, long instrumentId) {
+    Oscillator(int id, int sampleRate, Instrument instrument) {
         this.id = id;
         this.sampleRate = sampleRate;
-        this.instrumentId = instrumentId;
-        this.envelopeGenerator = new EnvelopeGenerator(id, sampleRate, instrumentId);
-        this.breakpoint = new Breakpoint(id, instrumentId);
+        this.instrument = instrument;
+        this.envelopeGenerator = new EnvelopeGenerator(id, sampleRate, instrument);
+        this.breakpoint = new Breakpoint(id, instrument);
     }
 
     private OscillatorPreset oscillatorPreset() {
-        return Instrument.presets.get(instrumentId).getOscillatorPresets()[id];
+        return instrument.preset.getOscillatorPresets()[id];
     }
 
     /**

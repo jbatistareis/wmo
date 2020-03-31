@@ -17,7 +17,7 @@ import com.jbatista.wmo.WaveForm;
 public class InstrumentPreset {
 
     private String name = "  ------  ";
-    private double gain = 0.01;
+    private double gain = 1;
     private int transpose = 0;
     private int feedback = 0;
 
@@ -114,12 +114,12 @@ public class InstrumentPreset {
 
     /**
      * Defines a volume attenuation of the output.
-     * <p>Defaults to <b>0.01</b>.</p>
+     * <p>Defaults to <b>1</b>.</p>
      *
-     * @param gain A value from 0 to 1.
+     * @param gain A value from 0 to 2.
      */
     public void setGain(double gain) {
-        this.gain = Math.max(0, Math.min(gain, 1));
+        this.gain = Math.max(0, Math.min(gain, 2));
     }
 
     public int getTranspose() {

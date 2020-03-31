@@ -36,6 +36,7 @@ public class Mixer {
 
     /**
      * Defines how loud the final output will be.
+     * <p>Defaults to <b>1</b></p>
      *
      * @param masterGain A value from 0 to 2.
      */
