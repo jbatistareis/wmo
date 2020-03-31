@@ -29,7 +29,7 @@ public class OscillatorPreset {
     private boolean fixedFrequency = false;
     private int frequencyFine = 0;
     private int frequencyDetune = 0;
-    private int outputLevel = 75;
+    private int outputLevel = 99;
     private int velocitySensitivity = 0;
     private int amSensitivity = 0;
 
@@ -190,7 +190,7 @@ public class OscillatorPreset {
 
     /**
      * Defines how loud an how much this oscillator is going to affect the oscillators that are modulated by it.
-     * <p>Defaults to <b>75</b>.</p>
+     * <p>Defaults to <b>99</b>.</p>
      *
      * @param outputLevel A value from 0 to 99.
      */
