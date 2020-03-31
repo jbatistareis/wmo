@@ -44,12 +44,8 @@ public class Algorithm {
         tempSample = 0;
 
         for (int i = 0; i < getPattern()[0].length; i++) {
-            tempSample += oscillators[getPattern()[0][i]].getSample(
-                    keyId,
-                    pitchOffset,
-                    getModulation(keyId, getPattern()[0][i], 0, elapsed[keyId]),
-                    0,
-                    elapsed[keyId]);
+            tempSample += oscillators[getPattern()[0][i]]
+                    .getSample(keyId, pitchOffset, getModulation(keyId, getPattern()[0][i], 0, true), elapsed[keyId]);
 
             activeCarriers[keyId][oscillators[getPattern()[0][i]].id] = oscillators[getPattern()[0][i]].isActive(keyId);
         }
@@ -60,20 +56,24 @@ public class Algorithm {
     }
 
     // obtain the modulation sample using recursion
-    private double getModulation(int keyId, int oscillator, double modulation, long elapsed) {
+    private double getModulation(int keyId, int oscillator, double modulation, boolean feedbackOn) {
         for (int i = 2; i < getPattern().length; i++) {
             if (getPattern()[i][0] == oscillator) {
-                double accumulator = 0;
-
                 modulation += oscillators[getPattern()[i][1]].getSample(
                         keyId,
                         pitchOffset,
-                        getModulation(keyId, getPattern()[i][1], accumulator, elapsed),
-                        (getPattern()[1][0] == oscillator)
-                                ? Instrument.presets.get(instrumentId).getFeedback()
-                                : 0,
-                        elapsed);
+                        getModulation(keyId, getPattern()[i][1], 0, feedbackOn),
+                        elapsed[keyId]);
             }
+        }
+
+        // checks if this oscillator receives feedback or not
+        if (feedbackOn && (oscillator == getPattern()[1][0])) {
+            modulation += Math.pow(2, Instrument.presets.get(instrumentId).getFeedback() - 7) * oscillators[getPattern()[1][0]].getSample(
+                    keyId,
+                    pitchOffset,
+                    getModulation(keyId, getPattern()[1][1], 0, false),
+                    elapsed[keyId]);
         }
 
         return modulation;
@@ -112,7 +112,7 @@ public class Algorithm {
     void stopAll() {
         for (int i = 0; i < 132; i++) {
             for (int j = 0; j < getPattern()[0].length; j++) {
-                oscillators[getPattern()[0][j]].stop(i);
+                oscillators[getPattern()[0][j]].silence(i);
             }
         }
     }

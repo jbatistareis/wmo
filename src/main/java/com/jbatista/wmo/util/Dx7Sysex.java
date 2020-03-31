@@ -20,13 +20,6 @@ import java.util.List;
  */
 public class Dx7Sysex {
 
-    private static final String ERROR_HEADER = "\nThe following errors where found during processing:";
-    private static final String START_ERROR = "Incorrect sysex start, expected 0xf0, found 0x%x";
-    private static final String ID_ERROR = "Incorrect ID, expected 0x43, found 0x%x";
-    private static final String FORMAT_ERROR = "Incorrect format, expected 0x00 or 0x09, found 0x%x";
-    private static final String BYTE_COUNT_MS_ERROR = "Incorrect byte count MS, expected 0x01 or 0x20, found 0x%x";
-    private static final String BYTE_COUNT_LS_ERROR = "Incorrect byte count LS, expected 0x1B or 0x00, found 0x%x";
-
     private static final AlgorithmPreset[] ALGORITHMS = AlgorithmPreset.values();
     private static final KeyboardNote[] NOTES = KeyboardNote.values();
     private static final WaveForm[] WAVE_FORMS = WaveForm.values();
@@ -41,7 +34,7 @@ public class Dx7Sysex {
      * @throws SysexException
      * @see com.jbatista.wmo.synthesis.Instrument
      */
-    public static List<InstrumentPreset> extractPresets(File sysex) throws IOException, SysexException {
+    public static List<InstrumentPreset> extractInstruments(File sysex) throws IOException, SysexException {
         final List<InstrumentPreset> instruments = new ArrayList<>();
 
         final byte[] header = new byte[6];
@@ -49,7 +42,6 @@ public class Dx7Sysex {
 
         try (final RandomAccessFile file = new RandomAccessFile(sysex, "r")) {
             file.read(header);
-            checkHeader(header);
 
             switch (header[3]) {
                 // single voice
@@ -61,44 +53,17 @@ public class Dx7Sysex {
                 case 0x09:
                     for (int i = 0; i < 32; i++) {
                         file.read(bulkVoice);
-                        instruments.add(parseBulkVoice(bulkVoice));
+                        instruments.add(parseBulkVoices(bulkVoice));
                     }
 
                     break;
 
                 default:
-                    throw new SysexException(String.format(FORMAT_ERROR, header[3]));
+                    throw new SysexException(String.format("Cannot identify voice format at file position 4, expected 0x00 (single) or 0x09 (bulk), found 0x%x.", header[3]));
             }
-        } catch (IOException | SysexException ex) {
-            throw ex;
         }
 
         return instruments;
-    }
-
-
-    private static void checkHeader(byte[] header) throws SysexException {
-        final StringBuilder sbError = new StringBuilder(ERROR_HEADER);
-
-        if (header[0] != 0xFFFFFFF0) {
-            sbError.append('\n').append(String.format(START_ERROR, header[0]));
-        }
-        if (header[1] != 0x43) {
-            sbError.append('\n').append(String.format(ID_ERROR, header[1]));
-        }
-        if ((header[3] != 0x00) && (header[3] != 0x09)) {
-            sbError.append('\n').append(String.format(FORMAT_ERROR, header[3]));
-        }
-        if ((header[4] != 0x10) && (header[4] != 0x20)) {
-            sbError.append('\n').append(String.format(BYTE_COUNT_MS_ERROR, header[4]));
-        }
-        if ((header[5] != 0x1B) && (header[5] != 0x00)) {
-            sbError.append('\n').append(String.format(BYTE_COUNT_LS_ERROR, header[5]));
-        }
-
-        if (sbError.length() > 52) {
-            throw new SysexException(sbError.toString());
-        }
     }
 
     private static InstrumentPreset parseSingleVoice(byte[] patch) {
@@ -106,35 +71,76 @@ public class Dx7Sysex {
         return null;
     }
 
-    private static InstrumentPreset parseBulkVoice(byte[] bulkVoice) {
-        // general parameters
-        final int pitchEgRate1 = bulkVoice[102];
-        final int pitchEgRate2 = bulkVoice[103];
-        final int pitchEgRate3 = bulkVoice[104];
-        final int pitchEgRate4 = bulkVoice[105];
+    private static InstrumentPreset parseBulkVoices(byte[] bulkVoice) {
+        final InstrumentPreset instrumentPreset = new InstrumentPreset();
 
-        final int pitchEgLevel1 = bulkVoice[106];
-        final int pitchEgLevel2 = bulkVoice[107];
-        final int pitchEgLevel3 = bulkVoice[108];
-        final int pitchEgLevel4 = bulkVoice[109];
+        final byte[] operatorParams = new byte[17];
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 17; j++) {
+                operatorParams[j] = bulkVoice[j + 17 * i];
+            }
 
-        final int algorithm = bulkVoice[110];
+            final OscillatorPreset oscillatorPreset = new OscillatorPreset(5 - i);
 
-        final int oscillatorKeySync = bulkVoice[111] >> 3;
-        final int feedback = bulkVoice[111] & 7;
+            oscillatorPreset.setAttackSpeed(operatorParams[0]);
+            oscillatorPreset.setDecaySpeed(operatorParams[1]);
+            oscillatorPreset.setSustainSpeed(operatorParams[2]);
+            oscillatorPreset.setReleaseSpeed(operatorParams[3]);
 
-        final int lfoSpeed = bulkVoice[112];
-        final int lfoDelay = bulkVoice[113];
-        final int lfoPmDepth = bulkVoice[114];
-        final int lfoAmDepth = bulkVoice[115];
+            oscillatorPreset.setAttackLevel(operatorParams[4]);
+            oscillatorPreset.setDecayLevel(operatorParams[5]);
+            oscillatorPreset.setSustainLevel(operatorParams[6]);
+            oscillatorPreset.setReleaseLevel(operatorParams[7]);
 
-        final int lfoPmModeSensitivity = bulkVoice[116] >> 4;
-        final int lfoWave = (bulkVoice[116] >> 1) & 7;
-        final int lfoKeySync = bulkVoice[116] & 1;
+            oscillatorPreset.setBreakpointNote(NOTES[Math.max(21, Math.min(operatorParams[8] + 21, 120))]);
+            oscillatorPreset.setBreakpointLeftDepth(operatorParams[9]);
+            oscillatorPreset.setBreakpointRightDepth(operatorParams[10]);
+            oscillatorPreset.setBreakpointLeftCurve(CURVES[operatorParams[11] & 3]);
+            oscillatorPreset.setBreakpointRightCurve(CURVES[operatorParams[11] >> 2]);
 
-        final int transpose = bulkVoice[117];
+            oscillatorPreset.setFrequencyDetune((operatorParams[12] >> 3) - 7);
+            oscillatorPreset.setSpeedScaling(operatorParams[12] & 7);
 
-        final String name = String.valueOf(new char[]{
+            oscillatorPreset.setVelocitySensitivity(operatorParams[13] >> 2);
+            oscillatorPreset.setAmSensitivity(operatorParams[13] & 3);
+
+            oscillatorPreset.setOutputLevel(operatorParams[14]);
+
+            oscillatorPreset.setFrequencyRatio(operatorParams[15] >> 1);
+            oscillatorPreset.setFixedFrequency((operatorParams[15] & 1) == 1);
+
+            oscillatorPreset.setFrequencyFine(operatorParams[16]);
+
+            instrumentPreset.addOscillatorPreset(oscillatorPreset);
+        }
+
+        instrumentPreset.setPitchAttackSpeed(bulkVoice[102]);
+        instrumentPreset.setPitchDecaySpeed(bulkVoice[103]);
+        instrumentPreset.setPitchSustainSpeed(bulkVoice[104]);
+        instrumentPreset.setPitchReleaseSpeed(bulkVoice[105]);
+
+        instrumentPreset.setPitchAttackLevel(bulkVoice[106]);
+        instrumentPreset.setPitchDecayLevel(bulkVoice[107]);
+        instrumentPreset.setPitchSustainLevel(bulkVoice[108]);
+        instrumentPreset.setPitchReleaseLevel(bulkVoice[109]);
+
+        instrumentPreset.setAlgorithm(ALGORITHMS[bulkVoice[110] + 11]);
+
+        instrumentPreset.setOscillatorKeySync((bulkVoice[111] >> 3) == 1);
+        instrumentPreset.setFeedback(bulkVoice[111] & 7);
+
+        instrumentPreset.setLfoSpeed(bulkVoice[112]);
+        instrumentPreset.setLfoDelay(bulkVoice[113]);
+        instrumentPreset.setLfoPmDepth(bulkVoice[114]);
+        instrumentPreset.setLfoAmDepth(bulkVoice[115]);
+
+        instrumentPreset.setLfoPModeSensitivity(bulkVoice[116] >> 4);
+        instrumentPreset.setLfoWave(WAVE_FORMS[(bulkVoice[116] >> 1) & 7]);
+        instrumentPreset.setLfoKeySync((bulkVoice[116] & 1) == 1);
+
+        instrumentPreset.setTranspose(bulkVoice[117] - 24);
+
+        instrumentPreset.setName(String.valueOf(new char[]{
                 (char) bulkVoice[118],
                 (char) bulkVoice[119],
                 (char) bulkVoice[120],
@@ -144,111 +150,7 @@ public class Dx7Sysex {
                 (char) bulkVoice[124],
                 (char) bulkVoice[125],
                 (char) bulkVoice[126],
-                (char) bulkVoice[127]});
-
-        // preset
-        final InstrumentPreset instrumentPreset = new InstrumentPreset();
-
-        instrumentPreset.setPitchAttackSpeed(pitchEgRate1);
-        instrumentPreset.setPitchDecaySpeed(pitchEgRate2);
-        instrumentPreset.setPitchSustainSpeed(pitchEgRate3);
-        instrumentPreset.setPitchReleaseSpeed(pitchEgRate4);
-
-        instrumentPreset.setPitchAttackLevel(pitchEgLevel1);
-        instrumentPreset.setPitchDecayLevel(pitchEgLevel2);
-        instrumentPreset.setPitchSustainLevel(pitchEgLevel3);
-        instrumentPreset.setPitchReleaseLevel(pitchEgLevel4);
-
-        instrumentPreset.setAlgorithm(ALGORITHMS[algorithm + 11]);
-
-        instrumentPreset.setOscillatorKeySync(oscillatorKeySync == 1);
-        instrumentPreset.setFeedback(feedback);
-
-        instrumentPreset.setLfoSpeed(lfoSpeed);
-        instrumentPreset.setLfoDelay(lfoDelay);
-        instrumentPreset.setLfoPmDepth(lfoPmDepth);
-        instrumentPreset.setLfoAmDepth(lfoAmDepth);
-
-        instrumentPreset.setLfoPModeSensitivity(lfoPmModeSensitivity);
-        instrumentPreset.setLfoWave(WAVE_FORMS[lfoWave]);
-        instrumentPreset.setLfoKeySync(lfoKeySync == 1);
-
-        instrumentPreset.setTranspose(transpose - 24);
-
-        instrumentPreset.setName(name);
-
-        final byte[] operatorParams = new byte[17];
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 17; j++) {
-                operatorParams[j] = bulkVoice[j + 17 * i];
-            }
-
-            // oscillator parameters
-            final int operator = 5 - i;
-
-            final int egRate1 = operatorParams[0];
-            final int egRate2 = operatorParams[1];
-            final int egRate3 = operatorParams[2];
-            final int egRate4 = operatorParams[3];
-
-            final int egLevel1 = operatorParams[4];
-            final int egLevel2 = operatorParams[5];
-            final int egLevel3 = operatorParams[6];
-            final int egLevel4 = operatorParams[7];
-
-            final int breakpoint = operatorParams[8];
-            final int breakpointLeftDepth = operatorParams[9];
-            final int breakpointRightDepth = operatorParams[10];
-            final int breakpointLeftCurve = operatorParams[11] & 3;
-            final int breakpointRightCurve = operatorParams[11] >> 2;
-
-            final int detune = (operatorParams[12] >> 3) - 7;
-            final int rateScale = operatorParams[12] & 7;
-
-            final int velocitySensitivity = operatorParams[13] >> 2;
-            final int amSensitivity = operatorParams[13] & 3;
-
-            final int outputLevel = operatorParams[14];
-
-            final int frequencyCoarse = operatorParams[15] >> 1;
-            final int frequencyMode = operatorParams[15] & 1;
-
-            final int frequencyFine = operatorParams[16];
-
-            // set oscillator preset
-            final OscillatorPreset oscillatorPreset = new OscillatorPreset(operator);
-
-            oscillatorPreset.setAttackSpeed(egRate1);
-            oscillatorPreset.setDecaySpeed(egRate2);
-            oscillatorPreset.setSustainSpeed(egRate3);
-            oscillatorPreset.setReleaseSpeed(egRate4);
-
-            oscillatorPreset.setAttackLevel(egLevel1);
-            oscillatorPreset.setDecayLevel(egLevel2);
-            oscillatorPreset.setSustainLevel(egLevel3);
-            oscillatorPreset.setReleaseLevel(egLevel4);
-
-            oscillatorPreset.setBreakpointNote(NOTES[Math.max(21, Math.min(breakpoint + 21, 120))]);
-            oscillatorPreset.setBreakpointLeftDepth(breakpointLeftDepth);
-            oscillatorPreset.setBreakpointRightDepth(breakpointRightDepth);
-            oscillatorPreset.setBreakpointLeftCurve(CURVES[breakpointLeftCurve]);
-            oscillatorPreset.setBreakpointRightCurve(CURVES[breakpointRightCurve]);
-
-            oscillatorPreset.setFrequencyDetune(detune);
-            oscillatorPreset.setSpeedScaling(rateScale);
-
-            oscillatorPreset.setVelocitySensitivity(velocitySensitivity);
-            oscillatorPreset.setAmSensitivity(amSensitivity);
-
-            oscillatorPreset.setOutputLevel(outputLevel);
-
-            oscillatorPreset.setFrequencyRatio(frequencyCoarse);
-            oscillatorPreset.setFixedFrequency(frequencyMode == 1);
-
-            oscillatorPreset.setFrequencyFine(frequencyFine);
-
-            instrumentPreset.addOscillatorPreset(oscillatorPreset);
-        }
+                (char) bulkVoice[127]}));
 
         return instrumentPreset;
     }

@@ -21,6 +21,8 @@ public class Oscillator {
     private final int sampleRate;
 
     private int correctedOutputLevel;
+    private long previousTime;
+
     private final EnvelopeGenerator envelopeGenerator;
     private final Breakpoint breakpoint;
 
@@ -47,17 +49,16 @@ public class Oscillator {
      * @return A single audio frame.
      * @see Algorithm#getSample
      */
-    double getSample(int keyId, double pitchOffset, double modulation, int feedback, long time) {
+    double getSample(int keyId, double pitchOffset, double modulation, long time) {
         if (oscillatorPreset().isMute()) {
             return 0;
         }
 
-        if (feedback > 0) {
-            modulation += Math.pow(2, (feedback - 7))
-                    * produceSample(keyId, pitchOffset * sineFrequency[keyId], modulation, time);
+        if (time != previousTime) {
+            envelopeGenerator.advanceEnvelope(keyId);
         }
 
-        envelopeGenerator.advanceEnvelope(keyId);
+        previousTime = time;
 
         return produceSample(keyId, pitchOffset * sineFrequency[keyId], modulation, time);
     }
@@ -99,7 +100,20 @@ public class Oscillator {
         if (oscillatorPreset().isMute()) {
             envelopeGenerator.reset(keyId);
         } else {
-            envelopeGenerator.setEnvelopeState(keyId, EnvelopeState.RELEASE);
+            envelopeGenerator.stop(keyId);
+        }
+    }
+
+    /**
+     * Puts the oscillator gradually in the <code>idle</code> stage.
+     *
+     * @param keyId ID representing an unique key, in the range of 0 to 131.
+     */
+    void silence(int keyId) {
+        if (oscillatorPreset().isMute()) {
+            envelopeGenerator.reset(keyId);
+        } else {
+            envelopeGenerator.silence(keyId);
         }
     }
 

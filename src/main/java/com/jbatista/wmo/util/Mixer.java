@@ -75,7 +75,7 @@ public class Mixer {
      */
     public byte[] getByteFrame(boolean bigEndian) {
         getSample();
-        frameSample *= 32768;
+        frameSample *= MathFunctions.SIGNED_16_BIT_MAX;
 
         // TODO channel stuff, [L][R]
         MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) frameSample);
