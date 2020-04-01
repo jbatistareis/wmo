@@ -15,8 +15,10 @@ public class Dsp {
                 return squareWave(frequency, modulation, phase, time);
             case TRIANGLE:
                 return triangleWave(frequency, modulation, phase, time);
+            case SAWTOOTH_UP:
+                return sawtoothWave(true, frequency, modulation, phase, time);
             case SAWTOOTH_DOWN:
-                return sawtoothWave(frequency, modulation, phase, time);
+                return sawtoothWave(false, frequency, modulation, phase, time);
             case WHITE_NOISE:
                 return whiteNoise();
             default:
@@ -51,11 +53,11 @@ public class Dsp {
     }
 
     private static double triangleWave(double frequency, double modulation, double phase, long time) {
-        return MathFunctions.PI_DIV_2 * Math.asin(sineWave(frequency, modulation, phase, time));
+        return MathFunctions.FRAC_2_DIV_PI * Math.asin(sineWave(frequency, modulation, phase, time));
     }
 
-    private static double sawtoothWave(double frequency, double modulation, double phase, long time) {
-        return -MathFunctions.PI_DIV_2 * Math.atan(1 / Math.tan(Math.PI * time * frequency + modulation + phase));
+    private static double sawtoothWave(boolean up, double frequency, double modulation, double phase, long time) {
+        return (up ? 1 : -1) * MathFunctions.FRAC_2_DIV_PI * Math.atan(Math.tan(Math.PI * time * frequency + modulation + phase));
     }
 
     private static double whiteNoise() {

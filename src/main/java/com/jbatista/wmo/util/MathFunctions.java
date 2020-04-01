@@ -10,7 +10,8 @@ import java.util.Random;
 public class MathFunctions {
 
     public static final double TAU = 6.2831;
-    public static final double PI_DIV_2 = 1.5707;
+    public static final double FRAC_PI_DIV_2 = 1.5707;
+    public static final double FRAC_2_DIV_PI = 0.6366;
     public static final double NATURAL_LOG10 = 2.3025;
     public static final int SIGNED_16_BIT_MAX = 32767;
     public static final int SIGNED_24_BIT_MAX = 8388607;
