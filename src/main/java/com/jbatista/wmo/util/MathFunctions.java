@@ -3,7 +3,7 @@ package com.jbatista.wmo.util;
 import java.util.Random;
 
 /**
- * Provides commons mathematical methods and constants.
+ * <p>Provides commons mathematical methods and constants.</p>
  *
  * @see <a href="https://codeplea.com/simple-interpolation">CodePlea article: "Simple Interpolation"</a>
  */

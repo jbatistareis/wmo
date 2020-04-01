@@ -5,7 +5,7 @@ import com.jbatista.wmo.TransitionCurve;
 import com.jbatista.wmo.WaveForm;
 
 /**
- * Holds every setting related to the oscillator: frequency, wave form, envelope generator, and breakpoint.
+ * <p>Holds every setting related to the oscillator: frequency, wave form, envelope generator, and breakpoint.</p>
  * <p>To be implemented:</p>
  * <ul>
  *     <li>Velocity sensitivity.</li>

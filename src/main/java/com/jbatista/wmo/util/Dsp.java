@@ -3,7 +3,7 @@ package com.jbatista.wmo.util;
 import com.jbatista.wmo.WaveForm;
 
 /**
- * Provides common methods for audio wave creation and modification.
+ * <p>Provides common methods for audio wave creation and modification.</p>
  */
 public class Dsp {
 
@@ -26,7 +26,7 @@ public class Dsp {
     }
 
     /**
-     * Distorts the wave angle according to a factor.
+     * <p>Distorts the wave angle according to a factor.</p>
      * <p>As it moves to negative, the wave turns into a triangle, then distorts completely.</p>
      * <p>As it moves to positive, the wave turns into a square.</p>
      *

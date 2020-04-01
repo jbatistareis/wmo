@@ -4,7 +4,7 @@ import com.jbatista.wmo.synthesis.FilterChain;
 import com.jbatista.wmo.synthesis.Instrument;
 
 /**
- * Aggregates the output of a series of instruments together, producing a single PCM frame.
+ * <p>Aggregates the output of a series of instruments together, producing a single PCM frame.</p>
  * <p>Audio is obtained the same way of an instrument.</p>
  *
  * @see Instrument
@@ -35,7 +35,7 @@ public class Mixer {
     }
 
     /**
-     * Defines how loud the final output will be.
+     * <p>Defines how loud the final output will be.</p>
      * <p>Defaults to <b>1</b></p>
      *
      * @param masterGain A value from 0 to 2.
@@ -45,7 +45,7 @@ public class Mixer {
     }
 
     /**
-     * Defines how loud a specific instrument will be.
+     * <p>Defines how loud a specific instrument will be.</p>
      *
      * @param position The position of an added instrument.
      * @param gain     A value from 0 to 1.
@@ -71,6 +71,7 @@ public class Mixer {
     }
 
     /**
+     * @param bigEndian Defines the endianness of the values.
      * @return A single audio frame.
      * @see Instrument#getByteFrame(boolean)
      */

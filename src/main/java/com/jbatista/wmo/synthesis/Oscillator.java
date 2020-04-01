@@ -5,7 +5,7 @@ import com.jbatista.wmo.util.Dsp;
 import com.jbatista.wmo.util.MathFunctions;
 
 /**
- * Represents a digital oscillator.
+ * <p>Represents a digital oscillator.</p>
  * <p>Instances of this class are created by the {@link Algorithm} class. When initialized, it instantiates {@link EnvelopeGenerator} and {@link Breakpoint}.</p>
  *
  * @see Algorithm
@@ -39,7 +39,7 @@ public class Oscillator {
     }
 
     /**
-     * Creates a mono audio sample frame based on the pitch and time offset, instantiated and controlled by the {@link Algorithm} it is bound to.
+     * <p>Creates a mono audio sample frame based on the pitch and time offset, instantiated and controlled by the {@link Algorithm} it is bound to.</p>
      * <p>The state of the oscillator is defined by the use of the methods {@link #start start} and {@link #stop stop}.</p>
      * <p>If this oscillator has modulators, the other oscillators are started in chain.</p>
      *
@@ -70,12 +70,12 @@ public class Oscillator {
     }
 
     /**
-     * Puts the oscillator in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Oscillator#stop(int) stop} method is called.
-     * <p>The fixed frequency calculation was taken from hexter's <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782">dx7_voice.c</a>.</p>
+     * <p>Puts the oscillator in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link Oscillator#stop(int) stop} method is called.</p>
+     * <p>The fixed frequency calculation was taken from <a href="https://github.com/smbolton/hexter">hexter</a>.</p>
      *
      * @param keyId     ID representing an unique key, in the range of 0 to 131.
      * @param frequency Indicates the frequency at which this oscillator is going to operate.
-     * @see <a href="https://github.com/smbolton/hexter">hexter</a>
+     * @see <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L782">dx7_voice.c">dx7_voice.c</a>
      */
     void start(int keyId, double frequency) {
         if (!oscillatorPreset().isMute()) {
@@ -92,7 +92,7 @@ public class Oscillator {
     }
 
     /**
-     * Puts the oscillator in the <code>release</code> stage.
+     * <p>Puts the oscillator in the <code>release</code> stage.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -105,7 +105,7 @@ public class Oscillator {
     }
 
     /**
-     * Puts the oscillator gradually in the <code>idle</code> stage.
+     * <p>Puts the oscillator gradually in the <code>idle</code> stage.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -118,7 +118,7 @@ public class Oscillator {
     }
 
     /**
-     * Tells if the oscillator is in the <code>idle</code> stage.
+     * <p>Tells if the oscillator is in the <code>idle</code> stage.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      * @return True if the oscillator is currently idle.
@@ -130,7 +130,7 @@ public class Oscillator {
     }
 
     /**
-     * Helper method for display purposes.
+     * <p>Helper method for display purposes.</p>
      *
      * @return If the oscillator is in fixed frequency mode, returns it's frequency in Hz. Otherwise, returns the frequency ratio.
      */

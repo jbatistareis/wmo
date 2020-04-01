@@ -2,7 +2,11 @@ package com.jbatista.wmo.synthesis;
 
 class Tables {
 
-    // Information from Yahaya Abdullah's site [https://sites.google.com/site/yalaorg/home]
+    /**
+     * <p>Output level factors for oscillator multiplication, taken from <a href="https://sites.google.com/site/yalaorg/">Yahaya Abdullah's site</a>.</p>
+     *
+     * @see <a href="https://sites.google.com/site/yalaorg/audio-music-synthesis/fmsynth/fmsynthdx">FM DX Supplement</a>
+     */
     static final double[] OSCILLATOR_OUTPUT_LEVELS = new double[]{
             0.000218, 0.000337, 0.000476, 0.000674, 0.000952, 0.001235, 0.001602, 0.001905, 0.002265, 0.002694, // 00 - 09
             0.003204, 0.003810, 0.004531, 0.005388, 0.006408, 0.007620, 0.008310, 0.009062, 0.010776, 0.011752, // 10 - 19
@@ -16,7 +20,11 @@ class Tables {
             6.016799, 6.561366, 7.155220, 7.802823, 8.509039, 9.279172, 10.119009, 11.034858, 12.033598, 13.122731 // 90 - 99
     };
 
-    // Based on hexter implementation [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice_tables.c#L292]
+    /**
+     * <p>LFO frequencies in Hz, taken from <a href="https://github.com/smbolton/hexter">hexter</a>.</p>
+     *
+     * @see <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice_tables.c#L292">dx7_voice_tables.c</a>
+     */
     static final double[] LFO_FREQUENCY = new double[]{
             0.062506, 0.124815, 0.311474, 0.435381, 0.619784, 0.744396, 0.930495, 1.116390, 1.284220, 1.496880, // 00 - 09
             1.567830, 1.738994, 1.910158, 2.081322, 2.252486, 2.423650, 2.580668, 2.737686, 2.894704, 3.051722, // 10 - 19
@@ -30,7 +38,10 @@ class Tables {
             36.650200, 37.812480, 38.974760, 40.137040, 41.299320, 42.461600, 43.639800, 44.818000, 45.996200, 47.174400  // 90 - 99
     };
 
-    // 5 exponent
+    /**
+     * <p>Custom factors for envelope amplitude calculation, <i>not accurate at all</i>.</p>
+     * <p>This is just an exponential progression with an exponent of 5.</p>
+     */
     static final double[] ENV_EXP_INCREASE = new double[]{
             0.0010, 0.0010, 0.0010, 0.0010, 0.0011, 0.0012, 0.0013, 0.0015, 0.0017, 0.0019, // 00 - 09
             0.0023, 0.0027, 0.0031, 0.0037, 0.0043, 0.0050, 0.0059, 0.0068, 0.0078, 0.0089, // 10 - 19
@@ -44,7 +55,11 @@ class Tables {
             0.7538, 0.7789, 0.8045, 0.8307, 0.8575, 0.8848, 0.9127, 0.9412, 0.9703, 1.0000  // 90 - 99
     };
 
-    // Based on hexter implementation [https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice_data.c#L71]
+    /**
+     * <p>Factors from envelope speed calculation, taken from <a href="https://github.com/smbolton/hexter">hexter</a>.</p>
+     *
+     * @see <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice_data.c#L71">dx7_voice_data.c</a>
+     */
     static final double[] ENV_SPEED = new double[]{
             39.638000, 37.013000, 34.388000, 31.763000, 27.210500, 22.658000, 20.408000, 18.158000, 15.908000, 14.557000, // 00 - 09
             13.206000, 12.108333, 11.010667, 9.913000, 8.921000, 7.929000, 7.171333, 6.413667, 5.656000, 5.307000, // 10 - 19
@@ -58,6 +73,9 @@ class Tables {
             0.002250, 0.002000, 0.001749, 0.001499, 0.001443, 0.001387, 0.001242, 0.001096, 0.000951, 0.000815  // 90 - 99
     };
 
+    /**
+     * <p>Factors for oscillator frequency fine addition.</p>
+     */
     static final double[] FREQUENCY_FINE = new double[]{
             1.00, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07, 1.08, 1.09, // 00 - 09
             1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16, 1.17, 1.18, 1.19, // 10 - 19
@@ -71,7 +89,11 @@ class Tables {
             1.90, 1.91, 1.92, 1.93, 1.94, 1.95, 1.96, 1.97, 1.98, 1.99  // 90 - 99
     };
 
-    // this is not correct, but works...
+    /**
+     * <p>Factors for oscillator frequency detune addition, taken from <a href="https://github.com/smbolton/hexter">hexter</a>.</p>
+     *
+     * @see <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L788">dx7_voice.c</a>
+     */
     static final double[] FREQUENCY_DETUNE = new double[]{
             -0.21875, -0.1875, -0.15625, -0.125, -0.09375, -0.0625, -0.03125, 0.0, 0.03125, 0.0625, 0.09375, 0.125, 0.15625, 0.1875, 0.21875 // -7 - 7
     };

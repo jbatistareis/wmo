@@ -4,7 +4,7 @@ import com.jbatista.wmo.preset.OscillatorPreset;
 import com.jbatista.wmo.util.MathFunctions;
 
 /**
- * Provides amplitude modulation for an {@link Oscillator}, based on <a href="https://en.wikipedia.org/wiki/Envelope_(music)">ADSR</a> parameters.
+ * <p>Provides amplitude modulation for an {@link Oscillator}, based on <a href="https://en.wikipedia.org/wiki/Envelope_(music)">ADSR</a> parameters.</p>
  * <p>Instances of this class are created by the {@link Oscillator} class.</p>
  *
  * @see Oscillator
@@ -151,7 +151,7 @@ public class EnvelopeGenerator {
     }
 
     /**
-     * Sets the required parameters for the next value of the envelope shape.
+     * <p>Sets the required parameters for the next value of the envelope shape.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -163,7 +163,7 @@ public class EnvelopeGenerator {
     }
 
     /**
-     * Puts the envelope on the {@link EnvelopeState#ATTACK} position.
+     * <p>Puts the envelope on the {@link EnvelopeState#ATTACK} position.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -180,7 +180,7 @@ public class EnvelopeGenerator {
     }
 
     /**
-     * Puts the envelope on the {@link EnvelopeState#RELEASE} position.
+     * <p>Puts the envelope on the {@link EnvelopeState#RELEASE} position.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -195,7 +195,7 @@ public class EnvelopeGenerator {
     }
 
     /**
-     * * Puts the envelope <b>immediately</b> on the {@link EnvelopeState#IDLE} position.
+     * <p>Puts the envelope <b>immediately</b> on the {@link EnvelopeState#IDLE} position.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -211,7 +211,7 @@ public class EnvelopeGenerator {
     }
 
     /**
-     * * Puts the envelope <b>gradually</b> on the {@link EnvelopeState#IDLE} position.
+     * <p>Puts the envelope <b>gradually</b> on the {@link EnvelopeState#IDLE} position.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */

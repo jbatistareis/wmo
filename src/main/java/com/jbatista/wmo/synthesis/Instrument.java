@@ -5,7 +5,7 @@ import com.jbatista.wmo.preset.InstrumentPreset;
 import com.jbatista.wmo.util.MathFunctions;
 
 /**
- * Represents an entire keyboard and its functions.
+ * <p>Represents an entire keyboard and its functions.</p>
  * <p>This class provides means of controlling keys and obtaining audio, to control the parameters use a {@link InstrumentPreset preset}.</p>
  * <p>Audio is obtained in PCM frames that can be written directly to audio outputs, obtaining a frame is the same as to read a PCM file.</p>
  *
@@ -53,7 +53,7 @@ public class Instrument {
     }
 
     /**
-     * Creates a mono PCM frame.
+     * <p>Creates a mono PCM frame.</p>
      * <p>Not very useful to play audio, use {@link #getByteFrame}, {@link #getShortFrame}, or {@link #getFloatFrame} to obtain a frame that can be used as audio data.</p>
      *
      * @return A single audio frame.
@@ -80,7 +80,7 @@ public class Instrument {
     }
 
     /**
-     * Creates a stereo 16bit PCM frame, composed of two identical channels, in a interleaved array: <code>[L, L][R, R]</code>.
+     * <p>Creates a stereo 16bit PCM frame, composed of two identical channels, in a interleaved array: <code>[L, L][R, R]</code>.</p>
      * <p>Ideal to be used with {@link javax.sound.sampled.SourceDataLine#write(byte[], int, int)}.</p>
      *
      * @param bigEndian Defines the endianness of the values.
@@ -99,7 +99,7 @@ public class Instrument {
     }
 
     /**
-     * Creates a stereo PCM frame, composed of two identical channels, in a interleaved array: <code>[L][R]</code>.
+     * <p>Creates a stereo PCM frame, composed of two identical channels, in a interleaved array: <code>[L][R]</code>.</p>
      * <p>Ideal to be used with libraries that support this kind of data, like <a href="https://libgdx.badlogicgames.com/">LibGdx</a>.</p>
      *
      * @return A single audio frame.
@@ -116,7 +116,7 @@ public class Instrument {
     }
 
     /**
-     * Creates a stereo PCM frame, composed of two identical channels, in a interleaved array: <code>[L][R]</code>.
+     * <p>Creates a stereo PCM frame, composed of two identical channels, in a interleaved array: <code>[L][R]</code>.</p>
      * <p>Ideal to be used with libraries that support this kind of data, like <a href="https://libgdx.badlogicgames.com/">LibGdx</a>.</p>
      *
      * @return A single audio frame.
@@ -133,7 +133,7 @@ public class Instrument {
     }
 
     /**
-     * Helper method that extracts the {@link KeyboardNote#getId id} from the {@link KeyboardNote} and passes to {@link #pressKey(int)}.
+     * <p>Helper method that extracts the {@link KeyboardNote#getId id} from the {@link KeyboardNote} and passes to {@link #pressKey(int)}.</p>
      *
      * @param key The note that is being pressed.
      * @see #pressKey(int)
@@ -143,7 +143,7 @@ public class Instrument {
     }
 
     /**
-     * Presses a key and starts the carrier chain defined by the {@link Algorithm}, applying the defined transposition setting.
+     * <p>Presses a key and starts the carrier chain defined by the {@link Algorithm}, applying the defined transposition setting.</p>
      * <p>Use this method to interact with the instrument.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
@@ -160,7 +160,7 @@ public class Instrument {
     }
 
     /**
-     * Helper method that extracts the {@link KeyboardNote#getId id} from the {@link KeyboardNote} and passes to {@link #releaseKey(int)}.
+     * <p>Helper method that extracts the {@link KeyboardNote#getId id} from the {@link KeyboardNote} and passes to {@link #releaseKey(int)}.</p>
      *
      * @param key The note that is being released.
      * @see #releaseKey(int)
@@ -186,7 +186,7 @@ public class Instrument {
     }
 
     /**
-     * Releases all keys, silencing the instrument.
+     * <p>Releases all keys, silencing the instrument.</p>
      *
      * @see Algorithm#stopAll
      */

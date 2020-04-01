@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides means of reading sysex files.
+ * <p>Provides means of reading sysex files.</p>
  *
  * @see <a href="https://github.com/asb2m10/dexed/blob/master/Documentation/sysex-format.txt">DX7 sysex format.</a>
  */
@@ -26,7 +26,7 @@ public class Dx7Sysex {
     private static final TransitionCurve[] CURVES = TransitionCurve.values();
 
     /**
-     * Reads a sysex file, and returns a list of {@link InstrumentPreset presets} from it's defined voices.
+     * <p>Reads a sysex file, and returns a list of {@link InstrumentPreset presets} from it's defined voices.</p>
      *
      * @param sysex The sysex file.
      * @return A list of presets ready to be used.

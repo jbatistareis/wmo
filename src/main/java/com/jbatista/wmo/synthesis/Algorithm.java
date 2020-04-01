@@ -3,7 +3,7 @@ package com.jbatista.wmo.synthesis;
 import com.jbatista.wmo.preset.AlgorithmPreset;
 
 /**
- * Supports the structure of the algorithm used by the {@link Instrument}, creates instances of {@link Oscillator}, obtains PCM data from then.
+ * <p>Supports the structure of the algorithm used by the {@link Instrument}, creates instances of {@link Oscillator}, obtains PCM data from then.</p>
  * <p>Instances of this class are created by {@link Instrument}.</p>
  *
  * @see Instrument
@@ -33,7 +33,7 @@ public class Algorithm {
     }
 
     /**
-     * Sets off the chain of oscillators defined as carriers on the algorithm.
+     * <p>Sets off the chain of oscillators defined as carriers on the algorithm.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      * @return A single audio frame.
@@ -80,7 +80,7 @@ public class Algorithm {
     }
 
     /**
-     * Puts every carrier defined by the algorithm in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link #stop(int)} method is called.
+     * <p>Puts every carrier defined by the algorithm in the <code>attack</code> stage, the envelope keeps progressing to <code>sustain</code> until the {@link #stop(int)} method is called.</p>
      *
      * @param keyId     ID representing an unique key, in the range of 0 to 131.
      * @param frequency Indicates the frequency at which the oscillators are going to operate.
@@ -96,7 +96,7 @@ public class Algorithm {
     }
 
     /**
-     * Puts the carriers in the <code>release</code> stage.
+     * <p>Puts the carriers in the <code>release</code> stage.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -107,7 +107,7 @@ public class Algorithm {
     }
 
     /**
-     * Puts every carrier of every key in the <code>release</code> stage.
+     * <p>Puts every carrier of every key in the <code>release</code> stage.</p>
      */
     void stopAll() {
         for (int i = 0; i < 132; i++) {
@@ -118,7 +118,7 @@ public class Algorithm {
     }
 
     /**
-     * Helper method used by {@link Instrument} to know if it needs to call {@link #getSample}.
+     * <p>Helper method used by {@link Instrument} to know if it needs to call {@link #getSample}.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      * @return True if there are any oscillator in a state other than from <code>idle</code>.

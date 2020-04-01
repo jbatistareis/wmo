@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Provides means of serializing WMO presets.
+ * <p>Provides means of serializing WMO presets.</p>
  */
 public class WmoFile {
 

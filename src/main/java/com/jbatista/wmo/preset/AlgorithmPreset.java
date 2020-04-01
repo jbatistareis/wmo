@@ -1,7 +1,7 @@
 package com.jbatista.wmo.preset;
 
 /**
- * A 2D array representing an algorithm structure.
+ * <p>A 2D array representing an algorithm structure.</p>
  * <p><code>[Carriers...], [Oscillator X, Feedback source Y], [Oscillator X, Modulated by oscillator Y]...</code></p>
  * <ul>
  *    <li><code>Index 0</code> contains the oscillators that are going to act as carriers.</li>

@@ -3,7 +3,7 @@ package com.jbatista.wmo.preset;
 import com.jbatista.wmo.WaveForm;
 
 /**
- * Holds parameters for the entire instrument: transposition, oscillators, feedback, algorithm, pitch envelope, LFO.
+ * <p>Holds parameters for the entire instrument: transposition, oscillators, feedback, algorithm, pitch envelope, LFO.</p>
  * <p>To be implemented:</p>
  * <ul>
  *     <li>Pitch envelope.</li>

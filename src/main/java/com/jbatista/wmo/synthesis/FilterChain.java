@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 /**
- * Contains a series of filters applied to a PCM sample.
+ * <p>Contains a series of filters applied to a PCM sample.</p>
  * <p>Filters are added in two ways, each one with a different effect:</p>
  * <ul>
  *     <li>Filters added with {@link #sum(Filter) sum} are going to be applied on the sample individually, and the result will be added to the output, preserving the input.</li>
@@ -62,7 +62,7 @@ public class FilterChain {
     }
 
     /**
-     * Filters added with this method are going to sum the result to the output, leaving the input intact for the next filter.
+     * <p>Filters added with this method are going to sum the result to the output, leaving the input intact for the next filter.</p>
      *
      * @param filter The filter to be added to the chain.
      * @return The filter chain.
@@ -78,7 +78,7 @@ public class FilterChain {
     }
 
     /**
-     * Filters added with this method are going to send the result to the next filter, losing the original input.
+     * <p>Filters added with this method are going to send the result to the next filter, losing the original input.</p>
      *
      * @param filter The filter to be linked to the chain.
      * @return The filter chain.

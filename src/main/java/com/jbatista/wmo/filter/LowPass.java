@@ -2,11 +2,11 @@ package com.jbatista.wmo.filter;
 
 import com.jbatista.wmo.util.MathFunctions;
 
-/*
-    Based on the 'Cookbook formulae for audio equalizer biquad filter coefficients' by Robert Bristow-Johnson
-    https://www.w3.org/2011/audio/audio-eq-cookbook.html
-*/
-
+/**
+ * <p>Based on the <i>'Cookbook formulae for audio equalizer biquad filter coefficients'</i> by Robert Bristow-Johnson.</p>
+ *
+ * @see <a href="https://www.w3.org/2011/audio/audio-eq-cookbook.html">Audio EQ Cookbook</a>
+ */
 public class LowPass extends BiquadFilter {
 
     public LowPass(int sampleRate) {

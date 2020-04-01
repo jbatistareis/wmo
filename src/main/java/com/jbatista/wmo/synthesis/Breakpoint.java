@@ -5,7 +5,7 @@ import com.jbatista.wmo.TransitionCurve;
 import com.jbatista.wmo.preset.OscillatorPreset;
 
 /**
- * Performs volume level scaling on keys, making a key sound quieter or louder when going up or down the keyboard.
+ * <p>Performs volume level scaling on keys, making a key sound quieter or louder when going up or down the keyboard.</p>
  * <p>Instances of this class are created by the {@link Oscillator} class.</p>
  * <p>Internally, breakpoints are calculated based on the key ID. So it is important to pass the correct value to {@link Instrument#pressKey(int)}.</p>
  * <ul>
@@ -41,7 +41,7 @@ public class Breakpoint {
     }
 
     /**
-     * Gives the output level parameter offset, to be added to the oscillator output level parameter. Based on breakpoint position, curve shape, and curve depth.
+     * <p>Gives the output level parameter offset, to be added to the oscillator output level parameter. Based on breakpoint position, curve shape, and curve depth.</p>
      * <p>This logic is based on hexter's <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L500">dx7_voice.c</a></p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
