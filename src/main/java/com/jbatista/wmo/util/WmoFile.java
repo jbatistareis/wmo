@@ -19,6 +19,7 @@ import java.util.List;
  */
 public class WmoFile {
 
+    private static final int dataSize = 162;
     private static final List<AlgorithmPreset> ALGORITHMS = Arrays.asList(AlgorithmPreset.values());
     private static final KeyboardNote[] NOTES = KeyboardNote.values();
     private static final WaveForm[] WAVE_FORMS = WaveForm.values();
@@ -26,13 +27,10 @@ public class WmoFile {
 
     public static List<InstrumentPreset> loadInstruments(File wmoFile) throws IOException {
         final List<InstrumentPreset> presets = new ArrayList<>();
-        final byte[] data = new byte[162];
+        final byte[] data = new byte[dataSize];
 
         try (final RandomAccessFile file = new RandomAccessFile(wmoFile, "r")) {
-            file.read(data);
-
-            for (int i = 0; i < (wmoFile.length() / data.length); i++) {
-                file.read(data);
+            while (file.read(data) != -1) {
                 presets.add(parseBytes(data));
             }
 
@@ -122,6 +120,8 @@ public class WmoFile {
                 (char) data[160]}));
 
         // TODO instrumentPreset.setGain(data[161]);
+
+        System.out.println(instrumentPreset);
 
         return instrumentPreset;
     }
