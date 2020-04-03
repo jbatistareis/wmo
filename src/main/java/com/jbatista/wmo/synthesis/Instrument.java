@@ -15,7 +15,7 @@ import com.jbatista.wmo.util.MathFunctions;
 public class Instrument {
     private static final KeyboardNote[] NOTES = KeyboardNote.values();
 
-    InstrumentPreset preset;
+    InstrumentPreset preset = new InstrumentPreset();
 
     private int keyId = 0;
     private final boolean[] keysQueue = new boolean[132];
@@ -30,8 +30,6 @@ public class Instrument {
     private final float[] floatBuffer = new float[]{0, 0};
 
     public Instrument(int sampleRate) {
-        setPreset(new InstrumentPreset());
-
         this.sampleRate = sampleRate;
         this.algorithm = new Algorithm(sampleRate, this);
     }
@@ -49,6 +47,7 @@ public class Instrument {
     }
 
     public void setPreset(InstrumentPreset preset) {
+        this.algorithm.stopAll();
         this.preset = preset;
     }
 
