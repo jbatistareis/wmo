@@ -24,11 +24,10 @@ public class EnvelopeGenerator {
     private final double[] factor = new double[5];
     private final int[] size = new int[5];
 
-    // only recalculate envelope duration if speed changes
-    private int previousAttackSpeed = -1;
-    private int previousDecaySpeed = -1;
-    private int previousSustainSpeed = -1;
-    private int previousReleaseSpeed = -1;
+    private int currentAttackSpeed = -1;
+    private int currentDecaySpeed = -1;
+    private int currentSustainSpeed = -1;
+    private int currentReleaseSpeed = -1;
 
     EnvelopeGenerator(int oscillatorId, int sampleRate, Instrument instrument) {
         this.oscillatorId = oscillatorId;
@@ -49,33 +48,36 @@ public class EnvelopeGenerator {
         return instrument.preset.getOscillatorPresets()[oscillatorId];
     }
 
+    /**
+     * <p>Helper method that only recalculate envelope duration if speed changes.</p>
+     */
     private void checkParameters() {
-        if (previousAttackSpeed != oscillatorPreset().getAttackSpeed()) {
+        if (currentAttackSpeed != oscillatorPreset().getAttackSpeed()) {
             size[EnvelopeState.ATTACK.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getAttackSpeed()] * sampleRate);
             factor[EnvelopeState.ATTACK.getId()] = 1d / size[EnvelopeState.ATTACK.getId()];
 
-            previousAttackSpeed = oscillatorPreset().getAttackSpeed();
+            currentAttackSpeed = oscillatorPreset().getAttackSpeed();
         }
 
-        if (previousDecaySpeed != oscillatorPreset().getDecaySpeed()) {
+        if (currentDecaySpeed != oscillatorPreset().getDecaySpeed()) {
             size[EnvelopeState.DECAY.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getDecaySpeed()] * sampleRate);
             factor[EnvelopeState.DECAY.getId()] = 1d / size[EnvelopeState.DECAY.getId()];
 
-            previousDecaySpeed = oscillatorPreset().getDecaySpeed();
+            currentDecaySpeed = oscillatorPreset().getDecaySpeed();
         }
 
-        if (previousSustainSpeed != oscillatorPreset().getSustainSpeed()) {
+        if (currentSustainSpeed != oscillatorPreset().getSustainSpeed()) {
             size[EnvelopeState.SUSTAIN.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getSustainSpeed()] * sampleRate);
             factor[EnvelopeState.SUSTAIN.getId()] = 1d / size[EnvelopeState.SUSTAIN.getId()];
 
-            previousSustainSpeed = oscillatorPreset().getSustainSpeed();
+            currentSustainSpeed = oscillatorPreset().getSustainSpeed();
         }
 
-        if (previousReleaseSpeed != oscillatorPreset().getReleaseSpeed()) {
+        if (currentReleaseSpeed != oscillatorPreset().getReleaseSpeed()) {
             size[EnvelopeState.RELEASE.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getReleaseSpeed()] * sampleRate);
             factor[EnvelopeState.RELEASE.getId()] = 1d / size[EnvelopeState.RELEASE.getId()];
 
-            previousReleaseSpeed = oscillatorPreset().getReleaseSpeed();
+            currentReleaseSpeed = oscillatorPreset().getReleaseSpeed();
         }
     }
 
