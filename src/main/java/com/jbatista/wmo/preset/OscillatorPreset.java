@@ -10,7 +10,6 @@ import com.jbatista.wmo.WaveForm;
  * <ul>
  *     <li>Velocity sensitivity.</li>
  *     <li>AM sensitivity.</li>
- *     <li>Speed scaling.</li>
  * </ul>
  *
  * @see WaveForm

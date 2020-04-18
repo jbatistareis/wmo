@@ -21,21 +21,24 @@ public class EnvelopeGenerator {
     private final double[] currentAmplitude = new double[132];
     private final double[] position = new double[132];
     private final double[] progress = new double[132];
-    private final double[] factor = new double[5];
-    private final int[] size = new int[5];
+    private final double[][] factor = new double[132][5];
+    private final int[][] size = new int[132][5];
 
     private int currentAttackSpeed = -1;
     private int currentDecaySpeed = -1;
     private int currentSustainSpeed = -1;
     private int currentReleaseSpeed = -1;
+    private int currentSpeedScale = -1;
 
     EnvelopeGenerator(int oscillatorId, int sampleRate, Instrument instrument) {
         this.oscillatorId = oscillatorId;
         this.sampleRate = sampleRate;
         this.instrument = instrument;
 
-        this.size[EnvelopeState.PRE_IDLE.getId()] = sampleRate / 5;
-        this.factor[EnvelopeState.PRE_IDLE.getId()] = 1d / size[EnvelopeState.PRE_IDLE.getId()];
+        for (int i = 0; i < 132; i++) {
+            this.size[i][EnvelopeState.PRE_IDLE.getId()] = sampleRate / 5;
+            this.factor[i][EnvelopeState.PRE_IDLE.getId()] = 1d / size[i][EnvelopeState.PRE_IDLE.getId()];
+        }
 
         checkParameters();
     }
@@ -52,32 +55,40 @@ public class EnvelopeGenerator {
      * <p>Helper method that only recalculate envelope duration if speed changes.</p>
      */
     private void checkParameters() {
-        if (currentAttackSpeed != oscillatorPreset().getAttackSpeed()) {
-            size[EnvelopeState.ATTACK.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getAttackSpeed()] * sampleRate);
-            factor[EnvelopeState.ATTACK.getId()] = 1d / size[EnvelopeState.ATTACK.getId()];
+        boolean scaleChange = false;
 
+        if (currentSpeedScale != oscillatorPreset().getSpeedScaling()) {
+            currentSpeedScale = oscillatorPreset().getSpeedScaling();
+
+            scaleChange = true;
+        }
+
+        if ((currentAttackSpeed != oscillatorPreset().getAttackSpeed()) || scaleChange) {
+            changeParameters(EnvelopeState.ATTACK, oscillatorPreset().getAttackSpeed());
             currentAttackSpeed = oscillatorPreset().getAttackSpeed();
         }
 
-        if (currentDecaySpeed != oscillatorPreset().getDecaySpeed()) {
-            size[EnvelopeState.DECAY.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getDecaySpeed()] * sampleRate);
-            factor[EnvelopeState.DECAY.getId()] = 1d / size[EnvelopeState.DECAY.getId()];
-
+        if ((currentDecaySpeed != oscillatorPreset().getDecaySpeed()) || scaleChange) {
+            changeParameters(EnvelopeState.DECAY, oscillatorPreset().getDecaySpeed());
             currentDecaySpeed = oscillatorPreset().getDecaySpeed();
         }
 
-        if (currentSustainSpeed != oscillatorPreset().getSustainSpeed()) {
-            size[EnvelopeState.SUSTAIN.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getSustainSpeed()] * sampleRate);
-            factor[EnvelopeState.SUSTAIN.getId()] = 1d / size[EnvelopeState.SUSTAIN.getId()];
-
+        if ((currentSustainSpeed != oscillatorPreset().getSustainSpeed()) || scaleChange) {
+            changeParameters(EnvelopeState.SUSTAIN, oscillatorPreset().getSustainSpeed());
             currentSustainSpeed = oscillatorPreset().getSustainSpeed();
         }
 
-        if (currentReleaseSpeed != oscillatorPreset().getReleaseSpeed()) {
-            size[EnvelopeState.RELEASE.getId()] = (int) (Tables.ENV_SPEED[oscillatorPreset().getReleaseSpeed()] * sampleRate);
-            factor[EnvelopeState.RELEASE.getId()] = 1d / size[EnvelopeState.RELEASE.getId()];
-
+        if ((currentReleaseSpeed != oscillatorPreset().getReleaseSpeed()) || scaleChange) {
+            changeParameters(EnvelopeState.RELEASE, oscillatorPreset().getReleaseSpeed());
             currentReleaseSpeed = oscillatorPreset().getReleaseSpeed();
+        }
+    }
+
+    private void changeParameters(EnvelopeState envelopeState, int speed) {
+        for (int i = 0; i < 132; i++) {
+            size[i][envelopeState.getId()]
+                    = (int) (Tables.ENV_SPEED[Math.max(0, Math.min(speed + Tables.SPEED_SCALE[oscillatorPreset().getSpeedScaling()][i], 99))] * sampleRate);
+            factor[i][envelopeState.getId()] = 1d / size[i][envelopeState.getId()];
         }
     }
 
@@ -143,7 +154,7 @@ public class EnvelopeGenerator {
     }
 
     boolean applyEnvelope(int keyId, EnvelopeState envelopeState) {
-        if (position[keyId] < size[envelopeState.getId()]) {
+        if (position[keyId] < size[keyId][envelopeState.getId()]) {
             currentAmplitude[keyId] = MathFunctions.linearInterpolation(startAmplitude[keyId], endAmplitude[keyId], progress[keyId]);
 
             return false;
@@ -160,7 +171,7 @@ public class EnvelopeGenerator {
     void advanceEnvelope(int keyId) {
         if (state[keyId].getId() <= 4) {
             position[keyId] += 1;
-            progress[keyId] += factor[state[keyId].getId()];
+            progress[keyId] += factor[keyId][state[keyId].getId()];
         }
     }
 

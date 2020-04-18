@@ -98,4 +98,20 @@ class Tables {
             -0.21875, -0.1875, -0.15625, -0.125, -0.09375, -0.0625, -0.03125, 0.0, 0.03125, 0.0625, 0.09375, 0.125, 0.15625, 0.1875, 0.21875 // -7 - 7
     };
 
+    /**
+     * <p>Values for seed scale increments, taken from <a href="https://github.com/smbolton/hexter">hexter</a>.</p>
+     *
+     * @see <a href="https://github.com/smbolton/hexter/blob/737dbb04c407184fae0e203c1d73be8ad3fd55ba/src/dx7_voice.c#L577">dx7_voice.c</a>
+     */
+    static final int[][] SPEED_SCALE = new int[8][132];
+
+    // build tables
+    static {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 132; j++) {
+                SPEED_SCALE[i][j] = (int) (i * (j - 21) / 130d * 131d / 132d * 6d);
+            }
+        }
+    }
+
 }
