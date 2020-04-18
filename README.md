@@ -22,7 +22,7 @@ WIP!
 
 
 ## Basics
-The idea is that you instantiate an [Instrument](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java), pass a [Preset](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/preset/OscillatorPreset.java), and finally, [press](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java#L140) and [release](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java#L167) a key. *Midi support is being worked on.*  
+The idea is that you instantiate an [Instrument](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java), pass a [Preset](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/preset/InstrumentPreset.java), and finally, [press](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java#L140) and [release](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java#L167) a key. *Midi support is being worked on.*  
 Presets can be obtained from DX7 sysex files using the [Dx7Sysex](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/util/Dx7Sysex.java) utilitarian class, which reads bulk exported voices and returns a list of presets, one for each voice.  
 Audio is obtained via 16bit [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples, created by calling the one of the "getFrame" method variants ([getByteFrame](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java#L89), [getShortFrame](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java#L107), or [getFloatFrame](https://github.com/jbatistareis/wmo/blob/master/src/main/java/com/jbatista/wmo/synthesis/Instrument.java#L124)).  
 
@@ -33,7 +33,7 @@ See [WMO Operator](https://github.com/jbatistareis/wmo-operator) for another exa
 ```java
 final List<InstrumentPreset> presetsList = Dx7Sysex.extractInstruments(new File("rom1a.syx"));
 final Instrument instrument = new Instrument(44100);
-instrument.setPreset(presetsList.get(20)); // voice 20 should be VIBES 1 on the cartridge dump used
+instrument.setPreset(presetsList.get(20)); // preset 20 should be VIBES 1 on the cartridge dump used
 
 /*
     we are creating a child thread because writing to the audio output is a blocking operation
