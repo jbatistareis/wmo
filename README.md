@@ -74,21 +74,19 @@ for(KeyboardNote note : notes){
 
 
 ## TODO
-* Proper README/documentation
-* Envelope rate/speed scaling
-* Pitch envelope
-* LFO
-* MIDI support
-* Filter serialization
-* More filters
-* Channel separation/manipulation
-* ~~API fine tuning~~ **OK!**
-* ~~Parameters fine tuning~~ **OK!**
-* ~~Improve feedback~~ **OK!**
-* ~~Transpose~~ **OK!**
-* [~~A demo interface~~](https://github.com/jbatistareis/wmo-operator) **OK!**
-* ~~Create some instrument presets~~ **OK!**
-* ~~Break points~~ **OK!**
-* ~~Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)~~ **OK!**
-* ~~Investigate crackings~~ **OK!**
-* ~~Squash bugs on the envelope generator~~ **OK!**
+-[ ] Proper README/documentation
+-[x] [A demo interface](https://github.com/jbatistareis/wmo-operator)
+-[ ] Pitch envelope
+-[x] Break points
+-[x] Envelope rate/speed scaling
+-[x] Transpose
+-[x] Improve feedback
+-[ ] LFO
+-[x] Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)
+-[ ] Filter serialization
+-[ ] More filters
+-[ ] Channel separation/manipulation
+-[x] Instrument presets
+-[x] API fine tuning
+-[x] Parameters fine tuning
+-[ ] MIDI support
