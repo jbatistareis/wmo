@@ -74,19 +74,19 @@ for(KeyboardNote note : notes){
 
 
 ## TODO
--[ ] Proper README/documentation
--[x] [A demo interface](https://github.com/jbatistareis/wmo-operator)
--[ ] Pitch envelope
--[x] Break points
--[x] Envelope rate/speed scaling
--[x] Transpose
--[x] Improve feedback
--[ ] LFO
--[x] Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)
--[ ] Filter serialization
--[ ] More filters
--[ ] Channel separation/manipulation
--[x] Instrument presets
--[x] API fine tuning
--[x] Parameters fine tuning
--[ ] MIDI support
+- [ ] Proper README/documentation
+- [x] [A demo interface](https://github.com/jbatistareis/wmo-operator)
+- [ ] Pitch envelope
+- [x] Break points
+- [x] Envelope rate/speed scaling
+- [x] Transpose
+- [x] Improve feedback
+- [ ] LFO
+- [x] Filters running in parallel (aggregate the results of various filters, instead of just applying one filter after another)
+- [ ] Filter serialization
+- [ ] More filters
+- [ ] Channel separation/manipulation
+- [x] Instrument presets
+- [x] API fine tuning
+- [x] Parameters fine tuning
+- [ ] MIDI support
