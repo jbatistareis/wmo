@@ -28,7 +28,7 @@ Audio is obtained via 16bit [PCM](https://en.wikipedia.org/wiki/Pulse-code_modul
 
 
 ## Example
-This example utilizes [Java AudioSystem](https://docs.oracle.com/javase/8/docs/api/javax/sound/sampled/AudioSystem.html) the play the samples, it is a very basic use case.  
+This example utilizes [Java AudioSystem](https://docs.oracle.com/javase/8/docs/api/javax/sound/sampled/AudioSystem.html) to play the samples, it is a very basic use case.  
 See [WMO Operator](https://github.com/jbatistareis/wmo-operator) for another example, it uses LibGdx key press and release events to trigger the Instrument.
 ```java
 final List<InstrumentPreset> presetsList = Dx7Sysex.extractInstruments(new File("rom1a.syx"));
