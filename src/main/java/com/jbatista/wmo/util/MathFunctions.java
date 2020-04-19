@@ -17,25 +17,25 @@ public class MathFunctions {
     public static final int SIGNED_24_BIT_MAX = 8388607;
     public static final Random RANDOM = new Random();
 
-    public static int primitiveFrom16bit(boolean bigEndian, boolean signed, byte b1, byte b2) {
+    public static int primitiveFrom16bit(boolean bigEndian, boolean signed, byte[] data, int offset) {
         return (bigEndian
-                ? ((b1 & 0xFF) << 8) + (b2 & 0xFF)
-                : (b2 & 0xFF) + ((b1 & 0xFF) << 8))
-                - (signed ? Short.MAX_VALUE : 0);
+                ? ((data[offset] & 0xFF) << 8) | (data[offset + 1] & 0xFF)
+                : ((data[offset + 1] & 0xFF) << 8) | (data[offset] & 0xFF))
+                - (!signed ? Short.MAX_VALUE : 0);
     }
 
-    public static long primitiveFrom24bit(boolean bigEndian, boolean signed, byte b1, byte b2, byte b3) {
+    public static long primitiveFrom24bit(boolean bigEndian, boolean signed, byte[] data, int offset) {
         return (bigEndian
-                ? ((b1 & 0xFF) << 16) + ((b2 & 0xFF) << 8) + (b3 & 0xFF)
-                : (b3 & 0xFF) + ((b2 & 0xFF) << 8) + ((b1 & 0xFF) << 16))
-                - (signed ? SIGNED_24_BIT_MAX : 0);
+                ? ((data[offset] & 0xFF) << 16) | ((data[offset + 1] & 0xFF) << 8) | (data[offset + 2] & 0xFF)
+                : ((data[offset + 2] & 0xFF) << 16) | ((data[offset + 1] & 0xFF) << 8) | (data[offset] & 0xFF))
+                - (!signed ? SIGNED_24_BIT_MAX : 0);
     }
 
-    public static long primitiveFrom32bit(boolean bigEndian, boolean signed, byte b1, byte b2, byte b3, byte b4) {
-        return bigEndian
-                ? ((b1 & 0xFF) << 24) + ((b2 & 0xFF) << 16) + ((b3 & 0xFF) << 8) + (b4 & 0xFF)
-                : (b4 & 0xFF) + ((b3 & 0xFF) << 8) + ((b2 & 0xFF) << 16) + ((b1 & 0xFF) << 24)
-                - (signed ? Integer.MAX_VALUE : 0);
+    public static long primitiveFrom32bit(boolean bigEndian, boolean signed, byte[] data, int offset) {
+        return (bigEndian
+                ? ((data[offset] & 0xFF) << 24) | ((data[offset + 1] & 0xFF) << 16) | ((data[offset + 2] & 0xFF) << 8) | (data[offset + 3] & 0xFF)
+                : ((data[offset + 3] & 0xFF) << 24) | ((data[offset + 2] & 0xFF) << 16) | ((data[offset + 1] & 0xFF) << 8) | (data[offset] & 0xFF))
+                - (!signed ? Integer.MAX_VALUE : 0);
     }
 
     public static void primitiveTo16bit(boolean bigEndian, byte[] buffer, int bufferIndex, int value) {
