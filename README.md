@@ -40,7 +40,9 @@ instrument.setPreset(presetsList.get(20)); // preset 20 should be VIBES 1 on the
     so we want this part to work without being bothered
 */
 final Thread thread = new Thread(() -> {
-    try (final SourceDataLine dataLine = AudioSystem.getSourceDataLine(new AudioFormat(44100, 16, 2, true, true))) {
+    final AudioFormat audioFormat = new AudioFormat(44100, 16, 2, true, true);
+
+    try (final SourceDataLine dataLine = AudioSystem.getSourceDataLine(audioFormat)) {
     
         // initializes the audio output
         dataLine.open(audioFormat);
