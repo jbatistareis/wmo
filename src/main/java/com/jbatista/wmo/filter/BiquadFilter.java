@@ -5,7 +5,7 @@ package com.jbatista.wmo.filter;
 abstract class BiquadFilter implements Filter {
 
     protected double frequency = 0;
-    protected int sampleRate = 0;
+    protected double sampleRate = 0;
     protected double gain = 0;
     protected double bandwidth = 0;
     protected double q = 0;

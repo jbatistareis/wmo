@@ -35,7 +35,7 @@ public class LowPass extends BiquadFilter {
 
     @Override
     protected void calculateCoefficients() {
-        omega = (MathFunctions.TAU * frequency) / sampleRate;
+        omega = MathFunctions.TAU * frequency / sampleRate;
         sin = Math.sin(omega);
         cos = Math.cos(omega);
         alpha = sin / (2 * q);
