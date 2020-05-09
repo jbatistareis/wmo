@@ -36,7 +36,7 @@ public class EnvelopeGenerator {
         this.instrument = instrument;
 
         for (int i = 0; i < 132; i++) {
-            this.size[i][EnvelopeState.PRE_IDLE.getId()] = sampleRate / 5;
+            this.size[i][EnvelopeState.PRE_IDLE.getId()] = sampleRate / 3;
             this.factor[i][EnvelopeState.PRE_IDLE.getId()] = 1d / size[i][EnvelopeState.PRE_IDLE.getId()];
         }
 
