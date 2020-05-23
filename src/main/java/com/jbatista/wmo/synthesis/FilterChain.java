@@ -2,8 +2,9 @@ package com.jbatista.wmo.synthesis;
 
 import com.jbatista.wmo.filter.Filter;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * <p>Contains a series of filters applied to a PCM sample.</p>
@@ -17,7 +18,7 @@ import java.util.LinkedList;
  */
 public class FilterChain {
 
-    private final LinkedList<FilterChainItem> chain = new LinkedList<>();
+    private final List<FilterChainItem> chain = new ArrayList<>();
     private FilterChainItem chainItem;
     private double output;
     private int index = 0;
