@@ -24,7 +24,10 @@ public class Instrument {
     private final Algorithm algorithm;
     private final FilterChain filterChain = new FilterChain();
 
-    private double frameSample;
+    private int intFrameSample;
+    private short shortFrameSample;
+    private float floatFrameSample;
+    private double doubleFrameSample;
     private final byte[] buffer16bit = new byte[]{0, 0, 0, 0};
     private final short[] shortBuffer = new short[]{0, 0};
     private final float[] floatBuffer = new float[]{0, 0};
@@ -47,7 +50,7 @@ public class Instrument {
     }
 
     public void setPreset(InstrumentPreset preset) {
-        this.algorithm.stopAll();
+        silenceAllKeys();
         this.preset = preset;
     }
 
@@ -61,11 +64,11 @@ public class Instrument {
      * @see #getFloatFrame
      */
     public double getSample() {
-        frameSample = 0;
+        doubleFrameSample = 0;
 
         for (keyId = 0; keyId < 132; keyId++) {
             if (keysQueue[keyId]) {
-                frameSample += algorithm.getSample(keyId);
+                doubleFrameSample += algorithm.getSample(keyId);
 
                 if (!algorithm.hasActiveCarriers(keyId)) {
                     keysQueue[keyId] = false;
@@ -73,9 +76,9 @@ public class Instrument {
             }
         }
 
-        frameSample = preset.getGain() * filterChain.getResult(frameSample);
+        doubleFrameSample = preset.getGain() * filterChain.getResult(doubleFrameSample);
 
-        return frameSample;
+        return doubleFrameSample;
     }
 
     /**
@@ -88,11 +91,11 @@ public class Instrument {
      */
     public byte[] getByteFrame(boolean bigEndian) {
         getSample();
-        frameSample *= MathFunctions.SIGNED_16_BIT_MAX;
+        intFrameSample = (int) (doubleFrameSample * MathFunctions.SIGNED_16_BIT_MAX);
 
         // TODO channel stuff, [L][R]
-        MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, (int) frameSample);
-        MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 2, (int) frameSample);
+        MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 0, intFrameSample);
+        MathFunctions.primitiveTo16bit(bigEndian, buffer16bit, 2, intFrameSample);
 
         return buffer16bit;
     }
@@ -106,10 +109,11 @@ public class Instrument {
      */
     public short[] getShortFrame() {
         getSample();
+        shortFrameSample = (short) doubleFrameSample;
 
         // TODO channel stuff, [L][R]
-        shortBuffer[0] = (short) frameSample;
-        shortBuffer[1] = (short) frameSample;
+        shortBuffer[0] = shortFrameSample;
+        shortBuffer[1] = shortFrameSample;
 
         return shortBuffer;
     }
@@ -123,10 +127,11 @@ public class Instrument {
      */
     public float[] getFloatFrame() {
         getSample();
+        floatFrameSample = (float) doubleFrameSample;
 
         // TODO channel stuff, [L][R]
-        floatBuffer[0] = (float) frameSample;
-        floatBuffer[1] = (float) frameSample;
+        floatBuffer[0] = floatFrameSample;
+        floatBuffer[1] = floatFrameSample;
 
         return floatBuffer;
     }
@@ -185,12 +190,22 @@ public class Instrument {
     }
 
     /**
-     * <p>Releases all keys, silencing the instrument.</p>
+     * <p>Releases all keys.</p>
      *
      * @see Algorithm#stopAll
      */
     public void releaseAllKeys() {
         algorithm.stopAll();
     }
+
+    /**
+     * <p>Silences all keys.</p>
+     *
+     * @see Algorithm#stopAll
+     */
+    public void silenceAllKeys() {
+        algorithm.silenceAll();
+    }
+
 
 }

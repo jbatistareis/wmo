@@ -105,7 +105,7 @@ public class Oscillator {
     }
 
     /**
-     * <p>Puts the oscillator gradually in the <code>idle</code> stage.</p>
+     * <p>Puts the oscillator in the <code>idle</code> position.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */

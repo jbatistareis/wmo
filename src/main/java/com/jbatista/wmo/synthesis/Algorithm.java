@@ -96,7 +96,7 @@ public class Algorithm {
     }
 
     /**
-     * <p>Puts the carriers in the <code>release</code> stage.</p>
+     * <p>Puts every oscillator of the specified key in the <code>release</code> stage.</p>
      *
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
@@ -107,12 +107,27 @@ public class Algorithm {
     }
 
     /**
-     * <p>Puts every carrier of every key in the <code>release</code> stage.</p>
+     * <p>Puts every oscillator of every key in the <code>release</code> stage.</p>
      */
     void stopAll() {
         for (int i = 0; i < 132; i++) {
-            for (int j = 0; j < getPattern()[0].length; j++) {
-                oscillators[getPattern()[0][j]].silence(i);
+            if (hasActiveCarriers(i)) {
+                for (int j = 0; j < oscillators.length; j++) {
+                    oscillators[j].stop(i);
+                }
+            }
+        }
+    }
+
+    /**
+     * <p>Puts every oscillator of every key in the <code>idle</code> position.</p>
+     */
+    void silenceAll() {
+        for (int i = 0; i < 132; i++) {
+            if (hasActiveCarriers(i)) {
+                for (int j = 0; j < oscillators.length; j++) {
+                    oscillators[j].silence(i);
+                }
             }
         }
     }

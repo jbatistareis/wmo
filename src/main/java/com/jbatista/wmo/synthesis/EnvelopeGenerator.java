@@ -198,13 +198,15 @@ public class EnvelopeGenerator {
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
     void stop(int keyId) {
-        position[keyId] = 0;
-        progress[keyId] = 0;
+        if (state[keyId] != EnvelopeState.RELEASE) {
+            position[keyId] = 0;
+            progress[keyId] = 0;
 
-        startAmplitude[keyId] = currentAmplitude[keyId];
-        endAmplitude[keyId] = Tables.ENV_EXP_INCREASE[oscillatorPreset().getReleaseLevel()];
+            startAmplitude[keyId] = currentAmplitude[keyId];
+            endAmplitude[keyId] = Tables.ENV_EXP_INCREASE[oscillatorPreset().getReleaseLevel()];
 
-        state[keyId] = EnvelopeState.RELEASE;
+            state[keyId] = EnvelopeState.RELEASE;
+        }
     }
 
     /**
@@ -213,14 +215,16 @@ public class EnvelopeGenerator {
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
     void reset(int keyId) {
-        position[keyId] = 0;
-        progress[keyId] = 0;
+        if (state[keyId] != EnvelopeState.IDLE) {
+            position[keyId] = 0;
+            progress[keyId] = 0;
 
-        startAmplitude[keyId] = 0;
-        endAmplitude[keyId] = 0;
-        currentAmplitude[keyId] = 0;
+            startAmplitude[keyId] = 0;
+            endAmplitude[keyId] = 0;
+            currentAmplitude[keyId] = 0;
 
-        state[keyId] = EnvelopeState.IDLE;
+            state[keyId] = EnvelopeState.IDLE;
+        }
     }
 
     /**
@@ -229,13 +233,15 @@ public class EnvelopeGenerator {
      * @param keyId ID representing an unique key, in the range of 0 to 131.
      */
     void silence(int keyId) {
-        position[keyId] = 0;
-        progress[keyId] = 0;
+        if (state[keyId] != EnvelopeState.PRE_IDLE) {
+            position[keyId] = 0;
+            progress[keyId] = 0;
 
-        startAmplitude[keyId] = currentAmplitude[keyId];
-        endAmplitude[keyId] = 0;
+            startAmplitude[keyId] = currentAmplitude[keyId];
+            endAmplitude[keyId] = 0;
 
-        state[keyId] = EnvelopeState.PRE_IDLE;
+            state[keyId] = EnvelopeState.PRE_IDLE;
+        }
     }
 
 }
