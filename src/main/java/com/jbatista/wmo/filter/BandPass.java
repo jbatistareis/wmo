@@ -7,7 +7,7 @@ import com.jbatista.wmo.util.MathFunctions;
  *
  * @see <a href="https://www.w3.org/2011/audio/audio-eq-cookbook.html">Audio EQ Cookbook</a>
  */
-public class BandPass extends BiquadFilter {
+public class BandPass extends Biquad {
 
     public BandPass(int sampleRate) {
         this.sampleRate = sampleRate;

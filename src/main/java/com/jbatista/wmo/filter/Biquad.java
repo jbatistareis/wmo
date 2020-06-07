@@ -1,8 +1,7 @@
 package com.jbatista.wmo.filter;
 
 // uses direct-form I
-
-abstract class BiquadFilter implements Filter {
+abstract class Biquad implements Filter {
 
     protected double frequency = 0;
     protected double sampleRate = 0;
@@ -64,4 +63,5 @@ abstract class BiquadFilter implements Filter {
     }
 
     protected abstract void calculateCoefficients();
+
 }

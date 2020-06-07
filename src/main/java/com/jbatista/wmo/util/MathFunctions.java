@@ -108,7 +108,7 @@ public class MathFunctions {
     }
 
     public static double percentageInRange(double lowerLimit, double upperLimit, double value) {
-        return Math.max(0, Math.min(((value - lowerLimit) / (upperLimit - lowerLimit)) * 100, 100));
+        return ((value - lowerLimit) / (upperLimit - lowerLimit)) * 100;
     }
 
 }
